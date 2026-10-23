@@ -180,6 +180,17 @@ function Remove-UrlCredential {
     @{ value = $clean; userInfoRemoved = ($clean -ne $Value) }
 }
 
+function Hide-UserProfilePath {
+    # Replaces the profile folder (C:\Users\<name>) with %USERPROFILE%
+    # anywhere in the text: the user name must not reach the snapshot through
+    # paths, including paths embedded in names (Windows names firewall rules
+    # "TCP Query User{guid}C:\users\<name>\..."). Case-insensitive. Untyped
+    # parameter on purpose (see Remove-UrlCredential); empty becomes null.
+    param($Path)
+    if ($null -eq $Path -or [string]$Path -eq '') { return $null }
+    [string]$Path -replace '(?<![\w])[A-Za-z]:\\Users\\[^\\"]+', '%USERPROFILE%'
+}
+
 # --- Errors -----------------------------------------------------------------
 
 function Get-ErrorKind {
@@ -548,7 +559,7 @@ function New-SkipResult {
 
 Export-ModuleMember -Function @(
     'Get-TunnelEyeInfo', 'Test-Elevated', 'Format-Timestamp',
-    'ConvertTo-CollectorData', 'ConvertTo-CollectorJson', 'ConvertFrom-CollectorJson', 'Write-JsonFile', 'Get-RegistryValue', 'Remove-UrlCredential',
+    'ConvertTo-CollectorData', 'ConvertTo-CollectorJson', 'ConvertFrom-CollectorJson', 'Write-JsonFile', 'Get-RegistryValue', 'Remove-UrlCredential', 'Hide-UserProfilePath',
     'Get-ErrorKind', 'Add-CollectorError',
     'New-CollectorContext', 'Invoke-Source', 'Invoke-AllowNotFound', 'Invoke-NativeCommand', 'ConvertFrom-NativeBytes',
     'Complete-Collector', 'Write-CollectorResult', 'Invoke-Collector', 'New-SkipResult'
