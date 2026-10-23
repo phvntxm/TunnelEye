@@ -104,6 +104,19 @@ Describe 'Invoke-Source' {
     }
 }
 
+Describe 'Invoke-AllowNotFound' {
+    It 'passes output through' {
+        (@(Invoke-AllowNotFound { 1; 2 }) -join ',') | Should Be '1,2'
+    }
+    It 'turns ObjectNotFound into empty output' {
+        $r = @(Invoke-AllowNotFound { Write-Error -Message 'none' -Category ObjectNotFound -ErrorAction Stop })
+        $r.Count | Should Be 0
+    }
+    It 'rethrows other errors' {
+        { Invoke-AllowNotFound { throw [UnauthorizedAccessException]'denied' } } | Should Throw 'denied'
+    }
+}
+
 Describe 'Invoke-NativeCommand' {
     BeforeEach { $ctx = New-CollectorContext -Module 'test' -Version '1.0.0' }
 

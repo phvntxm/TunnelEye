@@ -108,10 +108,7 @@ Invoke-Collector -Module 'system' -Version '1.0.0' -OutFile $OutFile -ScriptBloc
     }
 
     $profiles = Invoke-Source -Context $ctx -Source 'Get-NetConnectionProfile' -AsList -ScriptBlock {
-        # With no connected network the cmdlet throws ObjectNotFound: that is an empty list, not an error.
-        $items = try { Get-NetConnectionProfile -ErrorAction Stop }
-        catch { if ($_.CategoryInfo.Category -ne 'ObjectNotFound') { throw } }
-        $items | ForEach-Object {
+        Invoke-AllowNotFound { Get-NetConnectionProfile -ErrorAction Stop } | ForEach-Object {
             [ordered]@{
                 name                     = $_.Name
                 interfaceAlias           = $_.InterfaceAlias
