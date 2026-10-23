@@ -4,9 +4,33 @@
 # Tests for collectors/routing.ps1 against the live machine.
 
 Import-Module (Join-Path $PSScriptRoot 'TestHelpers.psm1') -Force
+$collector = Join-Path (Get-RepoRoot) 'collectors\routing.ps1'
+
+Describe 'Routing helpers' {
+    . $collector
+
+    It 'effective metric is route + interface metric, null if either is unknown' {
+        (Get-EffectiveMetric 256 35)[1] | Should Be 291
+        $null -eq (Get-EffectiveMetric 0 $null)[1] | Should Be $true
+        $null -eq (Get-EffectiveMetric $null 35)[1] | Should Be $true
+    }
+    It 'treats "network unreachable" (Win32 1231) as reachable = false' {
+        # Same FullyQualifiedErrorId as the real cmdlet returns with no IPv6 route.
+        Mock Find-NetRoute {
+            throw (New-Object System.Management.Automation.ErrorRecord ([Exception]'The network location cannot be reached.'),
+                'Windows System Error 1231,Find-NetRoute', 'NotSpecified', $null)
+        }
+        $r = Find-RouteSelection -Kind 'externalIPv6' -Target '2001:db8::1' -MetricMap @{}
+        $r.reachable | Should Be $false
+        $null -eq $r.interfaceIndex | Should Be $true
+    }
+    It 'rethrows other lookup errors' {
+        Mock Find-NetRoute { throw [UnauthorizedAccessException]'denied' }
+        { Find-RouteSelection -Kind 'gateway' -Target '10.0.0.1' -MetricMap @{} } | Should Throw 'denied'
+    }
+}
 
 Describe 'Collector: routing' {
-    $collector = Join-Path (Get-RepoRoot) 'collectors\routing.ps1'
     $env = Invoke-CollectorScript -Path $collector -OutFile (Join-Path $TestDrive 'routing.json')
     $data = $env['data']
     $elevated = $env['elevated']
@@ -45,6 +69,39 @@ Describe 'Collector: routing' {
         foreach ($r in $data['routes']) {
             $r['interfaceIndex'] -is [int] | Should Be $true
             $r['protocol'] | Should Match '^[A-Za-z]+$'
+        }
+    }
+    It 'stores the effective metric of every route' {
+        foreach ($r in $data['routes']) {
+            if ($null -ne $r['interfaceMetric']) {
+                $r['effectiveMetric'] | Should Be ($r['routeMetric'] + $r['interfaceMetric'])
+            }
+            else {
+                $null -eq $r['effectiveMetric'] | Should Be $true
+            }
+        }
+    }
+    It 'selects routes for external IPv4, external IPv6 and every default gateway' {
+        $kinds = @($data['routeSelection'] | ForEach-Object { "$($_['kind'])=$($_['target'])" })
+        $kinds -contains 'externalIPv4=192.0.2.1' | Should Be $true
+        $kinds -contains 'externalIPv6=2001:db8::1' | Should Be $true
+        $gateways = @($data['routes'] | Where-Object { $_['destinationPrefix'] -in '0.0.0.0/0', '::/0' -and $_['nextHop'] -notin '0.0.0.0', '::' } |
+                ForEach-Object { $_['nextHop'] } | Sort-Object -Unique)
+        foreach ($g in $gateways) { $kinds -contains "gateway=$g" | Should Be $true }
+    }
+    It 'route selection matches Find-NetRoute on the live machine' {
+        foreach ($s in $data['routeSelection']) {
+            $s['reachable'] -is [bool] | Should Be $true
+            $live = @(Find-NetRoute -RemoteIPAddress $s['target'] -ErrorAction SilentlyContinue |
+                    Where-Object { $_.CimClass.CimClassName -eq 'MSFT_NetRoute' })
+            if ($s['reachable']) {
+                $s['interfaceIndex'] | Should Be ([int]$live[0].InterfaceIndex)
+                $s['destinationPrefix'] | Should Be $live[0].DestinationPrefix
+                $s['sourceAddress'] | Should Not BeNullOrEmpty
+            }
+            else {
+                $live.Count | Should Be 0
+            }
         }
     }
     It 'lists persistent routes as an array (empty store is not an error)' {
