@@ -33,6 +33,15 @@ GUID класса:            {4d36e972-e325-11ce-bfc1-08002be10318}
 Версия драйвера:        2019年9月27日 9.24.2.601
 Имя подписавшего:       Microsoft Windows Hardware Compatibility Publisher
 
+Опубликованное имя:     oem90.inf
+Исходное имя:           netvers.inf
+Имя поставщика:         Example Vendor
+Имя класса:             Net
+GUID класса:            {4d36e972-e325-11ce-bfc1-08002be10318}
+Версия класса:          4.0
+Версия драйвера:        05/06/2022 1.2.3.4
+Имя подписавшего:       Example Signer
+
 Опубликованное имя:     broken.inf
 Исходное имя:           broken.inf
 Имя поставщика:         Unknown

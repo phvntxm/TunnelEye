@@ -296,22 +296,37 @@ function Invoke-Source {
     return , $items.ToArray()
 }
 
-function Get-OemEncoding {
-    # Console tools (netsh, pnputil) write in the system OEM code page.
-    try {
-        $cp = (Get-ItemProperty -LiteralPath 'HKLM:\SYSTEM\CurrentControlSet\Control\Nls\CodePage' -Name OEMCP -ErrorAction Stop).OEMCP
-        return [Text.Encoding]::GetEncoding([int]$cp)
+function Get-LegacyEncodings {
+    # System OEM and ANSI code pages (866 and 1251 on Russian Windows), OEM first.
+    $nls = 'HKLM:\SYSTEM\CurrentControlSet\Control\Nls\CodePage'
+    $textInfo = [Globalization.CultureInfo]::CurrentCulture.TextInfo
+    $pages = foreach ($pair in @(@('OEMCP', $textInfo.OEMCodePage), @('ACP', $textInfo.ANSICodePage))) {
+        $cp = $null
+        try { $cp = [int](Get-RegistryValue -Path $nls -Name $pair[0]) } catch { }
+        if (-not $cp) { $cp = $pair[1] }
+        $cp
     }
-    catch {
-        return [Text.Encoding]::GetEncoding([Globalization.CultureInfo]::CurrentCulture.TextInfo.OEMCodePage)
+    foreach ($cp in ($pages | Select-Object -Unique)) {
+        try { [Text.Encoding]::GetEncoding($cp) } catch { }
     }
 }
 
+function Get-DecodingScore {
+    # Correctly decoded text has letters where wrong decodings of the same
+    # bytes produce box drawing, punctuation and symbols. Non-ASCII letters
+    # score +1, other non-ASCII characters -2.
+    param([string] $Text)
+    $nonAscii = [regex]::Matches($Text, '[^\x00-\x7F]').Count
+    $letters = [regex]::Matches($Text, '[\p{L}-[\x00-\x7F]]').Count
+    $letters - 2 * ($nonAscii - $letters)
+}
+
 function ConvertFrom-NativeBytes {
-    # Console tools write in the console code page they inherit: OEM (866 on
-    # Russian Windows) in a fresh console, UTF-8 if the parent ran chcp 65001.
-    # Some tools write UTF-16LE. Detect instead of guessing: BOM, then UTF-16
-    # by NUL bytes, then strict UTF-8, then OEM.
+    # Console tools write in different encodings: netsh uses the console code
+    # page it inherits (OEM 866 in a fresh console, UTF-8 after chcp 65001),
+    # pnputil writes ANSI 1251 when redirected, some tools write UTF-16LE.
+    # Detect instead of guessing: BOM, then UTF-16 by NUL bytes, then strict
+    # UTF-8, then the better-scoring of the OEM and ANSI code pages.
     param([Parameter(Mandatory)][AllowEmptyCollection()][byte[]] $Bytes)
 
     if ($Bytes.Length -eq 0) { return '' }
@@ -327,9 +342,17 @@ function ConvertFrom-NativeBytes {
     try {
         return (New-Object System.Text.UTF8Encoding($false, $true)).GetString($Bytes)
     }
-    catch {
-        return (Get-OemEncoding).GetString($Bytes)
+    catch { }
+
+    $best = $null
+    $bestScore = [int]::MinValue
+    foreach ($encoding in (Get-LegacyEncodings)) {
+        $text = $encoding.GetString($Bytes)
+        $score = Get-DecodingScore $text
+        # Strictly greater: on a tie (e.g. pure ASCII) OEM, listed first, wins.
+        if ($score -gt $bestScore) { $best = $text; $bestScore = $score }
     }
+    $best
 }
 
 function ConvertTo-CommandLineArgument {

@@ -1,0 +1,53 @@
+Служебная программа PnP (Майкрософт)
+
+Опубликованное имя:     oem101.inf
+Исходное имя:      netwtw6e.inf
+Имя поставщика:      Intel
+Имя класса:         Net
+GUID класса:         {4d36e972-e325-11ce-bfc1-08002be10318}
+Версия драйвера:     03/03/2026 24.30.1.1
+Имя подписавшего:        Microsoft Windows Hardware Compatibility Publisher
+Атрибуты:         Universal
+Версия WHCP:       Нет данных
+
+Опубликованное имя:     oem74.inf
+Исходное имя:      oemvista.inf
+Имя поставщика:      TAP-Windows Provider V9
+Имя класса:         Net
+GUID класса:         {4d36e972-e325-11ce-bfc1-08002be10318}
+Версия драйвера:     02/27/2024 9.27.0.0
+Имя подписавшего:        Microsoft Windows Hardware Compatibility Publisher
+Атрибуты:         Universal
+                    Attested
+Версия WHCP:       Нет данных
+
+Опубликованное имя:     oem55.inf
+Исходное имя:      prnms006.inf
+Имя поставщика:      Microsoft
+Имя класса:         Printer
+GUID класса:         {4d36e979-e325-11ce-bfc1-08002be10318}
+Версия класса:      4.0
+Версия драйвера:     11/29/2016 16.0.7629.4000
+Имя подписавшего:        Microsoft Windows Hardware Compatibility Publisher
+Атрибуты:         Declarative
+Версия WHCP:       Нет данных
+
+Опубликованное имя:     oem1.inf
+Исходное имя:      rt640x64.inf
+Имя поставщика:      Realtek
+Имя класса:         Net
+GUID класса:         {4d36e972-e325-11ce-bfc1-08002be10318}
+Версия драйвера:     01/19/2022 10.56.119.2022
+Имя подписавшего:        Microsoft Windows Hardware Compatibility Publisher
+Атрибуты:         Universal
+Версия WHCP:       Нет данных
+
+Опубликованное имя:     oem20.inf
+Исходное имя:      wintun.inf
+Имя поставщика:      WireGuard LLC
+Имя класса:         Net
+GUID класса:         {4d36e972-e325-11ce-bfc1-08002be10318}
+Версия драйвера:     10/13/2021 0.14.0.0
+Имя подписавшего:        Microsoft Windows Hardware Compatibility Publisher
+Атрибуты:         Universal
+Версия WHCP:       Нет данных
