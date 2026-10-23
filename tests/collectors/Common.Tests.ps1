@@ -181,6 +181,19 @@ Describe 'Complete-Collector' {
     }
 }
 
+Describe 'Get-RegistryValue' {
+    $cv = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+    It 'reads an existing value' {
+        Get-RegistryValue -Path $cv -Name 'CurrentBuild' | Should Match '^\d+$'
+    }
+    It 'returns null for a missing value' {
+        $null -eq (Get-RegistryValue -Path $cv -Name 'NoSuchValueXyz') | Should Be $true
+    }
+    It 'returns null for a missing key' {
+        $null -eq (Get-RegistryValue -Path 'HKLM:\SOFTWARE\NoSuchKeyXyz' -Name 'x') | Should Be $true
+    }
+}
+
 Describe 'Get-NonCamelCaseKeys' {
     It 'finds bad keys at any depth' {
         $data = ConvertFrom-CollectorJson '{"good":1,"Bad":2,"list":[{"also_bad":3}]}'

@@ -80,4 +80,22 @@ function Get-NonCamelCaseKeys {
     , $bad.ToArray()
 }
 
-Export-ModuleMember -Function Get-RepoRoot, Invoke-CollectorScript, Get-EnvelopeProblems, Get-NonCamelCaseKeys
+function Get-SensitiveKeys {
+    # Returns key paths whose names suggest secrets (must never be collected).
+    param([AllowNull()] $Node, [string] $Path = 'data')
+    $bad = New-Object System.Collections.Generic.List[string]
+    if ($Node -is [System.Collections.IDictionary]) {
+        foreach ($key in $Node.Keys) {
+            if ($key -match 'password|passphrase|keyMaterial|secret|psk|credential|token') { $bad.Add("$Path.$key") }
+            foreach ($b in (Get-SensitiveKeys -Node $Node[$key] -Path "$Path.$key")) { $bad.Add($b) }
+        }
+    }
+    elseif ($Node -is [object[]]) {
+        for ($i = 0; $i -lt $Node.Count; $i++) {
+            foreach ($b in (Get-SensitiveKeys -Node $Node[$i] -Path "$Path[$i]")) { $bad.Add($b) }
+        }
+    }
+    , $bad.ToArray()
+}
+
+Export-ModuleMember -Function Get-RepoRoot, Invoke-CollectorScript, Get-EnvelopeProblems, Get-NonCamelCaseKeys, Get-SensitiveKeys
