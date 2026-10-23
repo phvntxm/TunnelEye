@@ -7,7 +7,41 @@
 Import-Module (Join-Path $PSScriptRoot 'TestHelpers.psm1') -Force
 $collector = Join-Path (Get-RepoRoot) 'collectors\adapters.ps1'
 
-Describe 'ConvertFrom-PnputilDrivers' {
+Describe 'ConvertFrom-PnputilDrivers: real Russian output' {
+    # Real pnputil output from Russian Windows 11 25H2, bytes as written to a
+    # redirected stdout (ANSI 1251). Blocks of corporate software removed.
+    . $collector
+    $bytes = [IO.File]::ReadAllBytes((Join-Path $PSScriptRoot 'fixtures\pnputil-enum-drivers-ru.cp1251.txt'))
+    $text = ConvertFrom-NativeBytes -Bytes $bytes
+    $parsed = ConvertFrom-PnputilDrivers -Text $text
+    $byName = @{}
+    foreach ($p in $parsed.Packages) { $byName[$p.publishedName] = $p }
+
+    It 'decodes the ANSI 1251 bytes (not OEM 866)' {
+        $expected = [Text.Encoding]::GetEncoding(1251).GetString($bytes)
+        $text | Should BeExactly $expected
+    }
+    It 'parses every Net package fully and skips the printer block' {
+        (@($parsed.Packages | ForEach-Object { $_.publishedName }) -join ',') | Should Be 'oem101.inf,oem74.inf,oem1.inf,oem20.inf'
+        $parsed.Unparsed | Should Be 0
+        foreach ($p in $parsed.Packages) {
+            foreach ($key in 'originalName', 'provider', 'className', 'classGuid', 'driverDate', 'driverVersion', 'signer') {
+                "$($p.publishedName).$key=$($p[$key])" | Should Not Match '=$'
+            }
+        }
+    }
+    It 'reads values exactly' {
+        $p = $byName['oem74.inf']
+        $p.originalName | Should Be 'oemvista.inf'
+        $p.provider | Should Be 'TAP-Windows Provider V9'
+        $p.className | Should Be 'Net'
+        $p.driverDate | Should Be '2024-02-27'
+        $p.driverVersion | Should Be '9.27.0.0'
+        $p.signer | Should Be 'Microsoft Windows Hardware Compatibility Publisher'
+    }
+}
+
+Describe 'ConvertFrom-PnputilDrivers: edge cases' {
     . $collector
     $text = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'fixtures\pnputil-enum-drivers-ru.txt'), [Text.Encoding]::UTF8)
     $parsed = ConvertFrom-PnputilDrivers -Text $text
@@ -15,7 +49,13 @@ Describe 'ConvertFrom-PnputilDrivers' {
     foreach ($p in $parsed.Packages) { $byName[$p.publishedName] = $p }
 
     It 'keeps only Net-class packages, by class GUID in any case' {
-        (@($parsed.Packages | ForEach-Object { $_.publishedName }) -join ',') | Should Be 'oem23.inf,oem36.inf,oem77.inf'
+        (@($parsed.Packages | ForEach-Object { $_.publishedName }) -join ',') | Should Be 'oem23.inf,oem36.inf,oem77.inf,oem90.inf'
+    }
+    It 'handles an extra Class Version line before Driver Version' {
+        $p = $byName['oem90.inf']
+        $p.driverDate | Should Be '2022-05-06'
+        $p.driverVersion | Should Be '1.2.3.4'
+        $p.signer | Should Be 'Example Signer'
     }
     It 'takes fields by position regardless of label language' {
         $p = $byName['oem23.inf']

@@ -143,6 +143,9 @@ Describe 'Invoke-NativeCommand' {
 
 Describe 'ConvertFrom-NativeBytes' {
     $text = "Pr$([char]0x044F)moi dostup"   # contains Cyrillic 'ya'
+    It 'decodes ANSI 1251 bytes' {
+        ConvertFrom-NativeBytes -Bytes ([Text.Encoding]::GetEncoding(1251).GetBytes($text)) | Should BeExactly $text
+    }
     It 'decodes OEM 866 bytes' {
         ConvertFrom-NativeBytes -Bytes ([Text.Encoding]::GetEncoding(866).GetBytes($text)) | Should BeExactly $text
     }

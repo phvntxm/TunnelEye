@@ -37,16 +37,22 @@ function ConvertFrom-PnputilDrivers {
             $unparsed++
             continue
         }
-        # "Driver Version" is "<date> <version>". The date is MM/dd/yyyy in
-        # English output; other UI languages are not verified, so an
-        # unrecognized date becomes null instead of a guess.
+        # Some classes have an extra "Class Version" line after the GUID, so
+        # "Driver Version" ("<date> <version>") is searched for, not indexed;
+        # the signer follows it. The date is MM/dd/yyyy in both English and
+        # Russian output; an unrecognized date becomes null instead of a guess.
         $driverDate = $null
         $driverVersion = $null
-        if ($values[5] -match '^(\S+)\s+(\d+(?:\.\d+){1,3})$') {
-            $driverVersion = $Matches[2]
-            $date = [datetime]::MinValue
-            if ([datetime]::TryParseExact($Matches[1], [string[]]@('MM/dd/yyyy', 'dd.MM.yyyy', 'yyyy-MM-dd'), $inv, 'None', [ref]$date)) {
-                $driverDate = $date.ToString('yyyy-MM-dd', $inv)
+        $signer = $null
+        for ($i = 5; $i -lt $values.Count; $i++) {
+            if ($values[$i] -match '^(\S+)\s+(\d+(?:\.\d+){1,3})$') {
+                $driverVersion = $Matches[2]
+                $date = [datetime]::MinValue
+                if ([datetime]::TryParseExact($Matches[1], [string[]]@('MM/dd/yyyy', 'dd.MM.yyyy', 'yyyy-MM-dd'), $inv, 'None', [ref]$date)) {
+                    $driverDate = $date.ToString('yyyy-MM-dd', $inv)
+                }
+                if ($i + 1 -lt $values.Count) { $signer = $values[$i + 1] }
+                break
             }
         }
         $packages.Add([ordered]@{
@@ -57,7 +63,7 @@ function ConvertFrom-PnputilDrivers {
                 classGuid     = $values[4].ToLowerInvariant()
                 driverDate    = $driverDate
                 driverVersion = $driverVersion
-                signer        = $values[6]
+                signer        = $signer
             })
     }
     [pscustomobject]@{ Packages = $packages.ToArray(); Raw = ($rawBlocks -join "`r`n`r`n"); Unparsed = $unparsed }
