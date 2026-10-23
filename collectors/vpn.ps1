@@ -51,14 +51,6 @@ function ConvertFrom-ServicePathName {
     @{ path = $path; hasArguments = ($rest.Trim() -ne '') }
 }
 
-function Hide-UserProfilePath {
-    # Replaces the profile folder (C:\Users\<name>) with %USERPROFILE%: the
-    # user name must not reach the snapshot through paths.
-    param($Path)
-    if ($null -eq $Path) { return $null }
-    [string]$Path -replace '^[A-Za-z]:\\Users\\[^\\]+', '%USERPROFILE%'
-}
-
 function Test-Pattern {
     # Case-insensitive match of any value against a signature pattern (null = no pattern).
     param($Pattern, [object[]] $Values)
