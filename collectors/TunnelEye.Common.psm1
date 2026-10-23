@@ -167,6 +167,19 @@ function Get-RegistryValue {
     finally { $key.Close() }
 }
 
+# --- Secrets ---------------------------------------------------------------
+
+function Remove-UrlCredential {
+    # Strips user:password@ from proxy strings and URLs: credentials must
+    # never reach the snapshot. Returns @{ value; userInfoRemoved }.
+    # Untyped on purpose: a [string] parameter would turn $null into ''.
+    param($Value)
+    if ($null -eq $Value -or [string]$Value -eq '') { return @{ value = $null; userInfoRemoved = $false } }
+    $Value = [string]$Value
+    $clean = $Value -replace '(^|[=;\s]|://)[^@;=\s/]+@', '$1'
+    @{ value = $clean; userInfoRemoved = ($clean -ne $Value) }
+}
+
 # --- Errors -----------------------------------------------------------------
 
 function Get-ErrorKind {
@@ -535,7 +548,7 @@ function New-SkipResult {
 
 Export-ModuleMember -Function @(
     'Get-TunnelEyeInfo', 'Test-Elevated', 'Format-Timestamp',
-    'ConvertTo-CollectorData', 'ConvertTo-CollectorJson', 'ConvertFrom-CollectorJson', 'Write-JsonFile', 'Get-RegistryValue',
+    'ConvertTo-CollectorData', 'ConvertTo-CollectorJson', 'ConvertFrom-CollectorJson', 'Write-JsonFile', 'Get-RegistryValue', 'Remove-UrlCredential',
     'Get-ErrorKind', 'Add-CollectorError',
     'New-CollectorContext', 'Invoke-Source', 'Invoke-AllowNotFound', 'Invoke-NativeCommand', 'ConvertFrom-NativeBytes',
     'Complete-Collector', 'Write-CollectorResult', 'Invoke-Collector', 'New-SkipResult'
