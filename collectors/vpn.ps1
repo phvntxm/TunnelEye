@@ -1,0 +1,314 @@
+# Copyright 2026 phvntxm
+# SPDX-License-Identifier: Apache-2.0
+#
+# Collector 'vpn': built-in Windows VPN profiles and services, third-party VPN
+# clients, proxy tunnels and DPI bypass tools found by signatures
+# (vpn-signatures.json): installed software, services, drivers, adapters and
+# running processes. Kill switch and split tunneling of third-party clients
+# are derived by the analyzer from 'routing' and 'firewall'.
+# Schema: docs/schema/vpn.md. Read-only; no admin rights required.
+
+param([string] $OutFile)
+Import-Module (Join-Path $PSScriptRoot 'TunnelEye.Common.psm1') -Force
+
+$SignaturesPath = Join-Path $PSScriptRoot 'vpn-signatures.json'
+$BuiltInServiceNames = 'RasMan', 'RemoteAccess', 'IKEEXT', 'PolicyAgent', 'SstpSvc'
+$UninstallKeys = @(
+    @{ path = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'; scope = 'machine' }
+    @{ path = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall'; scope = 'machine' }
+    @{ path = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'; scope = 'user' }
+)
+
+function ConvertFrom-ServicePathName {
+    # Splits a service/driver ImagePath into the executable path and a flag for
+    # arguments. Arguments are dropped: they may carry tokens or config paths.
+    # Driver forms: \SystemRoot\..., \??\C:\..., System32\drivers\x.sys.
+    # Returns @{ path; hasArguments } or $null.
+    param($PathName)
+    if ($null -eq $PathName) { return $null }
+    $text = ([string]$PathName).Trim()
+    if ($text -eq '') { return $null }
+
+    $path = $null
+    $rest = ''
+    if ($text.StartsWith('"')) {
+        $end = $text.IndexOf('"', 1)
+        if ($end -lt 0) { $path = $text.Substring(1) }
+        else { $path = $text.Substring(1, $end - 1); $rest = $text.Substring($end + 1) }
+    }
+    elseif ($text -match '^(.*?\.(exe|sys|dll))(\s.*)?$') {
+        $path = $Matches[1]
+        if ($Matches[3]) { $rest = $Matches[3] }
+    }
+    else {
+        $space = $text.IndexOf(' ')
+        if ($space -lt 0) { $path = $text } else { $path = $text.Substring(0, $space); $rest = $text.Substring($space) }
+    }
+
+    if ($path.StartsWith('\??\')) { $path = $path.Substring(4) }
+    if ($path -match '^\\SystemRoot\\') { $path = '%SystemRoot%' + $path.Substring(11) }
+    elseif ($path -match '^(System32|SysWOW64)\\') { $path = '%SystemRoot%\' + $path }
+    @{ path = $path; hasArguments = ($rest.Trim() -ne '') }
+}
+
+function Hide-UserProfilePath {
+    # Replaces the profile folder (C:\Users\<name>) with %USERPROFILE%: the
+    # user name must not reach the snapshot through paths.
+    param($Path)
+    if ($null -eq $Path) { return $null }
+    [string]$Path -replace '^[A-Za-z]:\\Users\\[^\\]+', '%USERPROFILE%'
+}
+
+function Test-Pattern {
+    # Case-insensitive match of any value against a signature pattern (null = no pattern).
+    param($Pattern, [object[]] $Values)
+    if (-not $Pattern) { return $false }
+    foreach ($v in $Values) {
+        if ($null -ne $v -and [regex]::IsMatch([string]$v, $Pattern, 'IgnoreCase')) { return $true }
+    }
+    $false
+}
+
+function Get-SignatureValue {
+    # Signatures come from JSON as Dictionary[string,object], whose indexer
+    # throws on a missing key; optional fields read as $null.
+    param($Signature, [string] $Key)
+    if (([System.Collections.IDictionary]$Signature).Contains($Key)) { return $Signature[$Key] }
+    $null
+}
+
+function Find-VpnClients {
+    # Matches the inventory against signatures. Inventory: hashtable of arrays
+    # services/drivers (name, displayName), adapters (name, interfaceDescription,
+    # componentId), processes (name), software (displayName). Specific
+    # signatures claim items first; generic ones get only unclaimed items.
+    # Returns one entry per signature that matched anything, in signature order.
+    param(
+        [Parameter(Mandatory)][object[]] $Signatures,
+        [Parameter(Mandatory)][hashtable] $Inventory
+    )
+    $sections = @(
+        @{ key = 'services'; fields = @('name') }
+        @{ key = 'drivers'; fields = @('name') }
+        @{ key = 'adapters'; fields = @('name', 'interfaceDescription', 'componentId') }
+        @{ key = 'processes'; fields = @('name') }
+        @{ key = 'software'; fields = @('displayName') }
+    )
+    $claimed = @{}
+    foreach ($s in $sections) { $claimed[$s.key] = @{} }
+
+    $results = @{}
+    $ordered = @(@($Signatures | Where-Object { -not (Get-SignatureValue $_ 'generic') }) + @($Signatures | Where-Object { Get-SignatureValue $_ 'generic' }))
+    foreach ($sig in $ordered) {
+        $match = [ordered]@{}
+        $any = $false
+        foreach ($s in $sections) {
+            $items = [System.Collections.Generic.List[object]]::new()
+            $pattern = Get-SignatureValue $sig $s.key
+            $source = @($Inventory[$s.key])
+            for ($i = 0; $i -lt $source.Count; $i++) {
+                $item = $source[$i]
+                if ($null -eq $item) { continue }
+                if ((Get-SignatureValue $sig 'generic') -and $claimed[$s.key].ContainsKey($i)) { continue }
+                $values = @(foreach ($f in $s.fields) { $item[$f] })
+                if (Test-Pattern -Pattern $pattern -Values $values) {
+                    $items.Add($item)
+                    $claimed[$s.key][$i] = $true
+                }
+            }
+            $match[$s.key] = $items.ToArray()
+            if ($items.Count) { $any = $true }
+        }
+        if ($any) { $results[$sig['id']] = $match }
+    }
+
+    foreach ($sig in $Signatures) {
+        if (-not $results.ContainsKey($sig['id'])) { continue }
+        $m = $results[$sig['id']]
+        [ordered]@{
+            id        = $sig['id']
+            name      = $sig['name']
+            kind      = $sig['kind']
+            generic   = [bool](Get-SignatureValue $sig 'generic')
+            software  = $m['software']
+            services  = $m['services']
+            drivers   = $m['drivers']
+            adapters  = $m['adapters']
+            processes = $m['processes']
+        }
+    }
+}
+
+function ConvertTo-ServiceEntry {
+    param($Service)
+    $image = ConvertFrom-ServicePathName $Service.PathName
+    $imagePath = $null
+    $imageExists = $null
+    $hasArguments = $false
+    if ($null -ne $image) {
+        $imagePath = Hide-UserProfilePath $image.path
+        $hasArguments = $image.hasArguments
+        try { $imageExists = Test-Path -LiteralPath ([Environment]::ExpandEnvironmentVariables($image.path)) -PathType Leaf } catch { }
+    }
+    [ordered]@{
+        name         = $Service.Name
+        displayName  = $Service.DisplayName
+        state        = $Service.State
+        startMode    = $Service.StartMode
+        imagePath    = $imagePath
+        imageExists  = $imageExists
+        hasArguments = $hasArguments
+    }
+}
+
+function ConvertTo-ProfileEntry {
+    # One built-in VPN profile. EAP configuration XML and anything that could
+    # hold secrets is not collected.
+    param($Connection, [bool] $AllUser)
+    $c = $Connection
+    $routes = @(foreach ($r in @($c.Routes)) {
+            if ($null -ne $r) { [ordered]@{ destinationPrefix = $r.DestinationPrefix; routeMetric = $r.RouteMetric } }
+        })
+    $servers = @(foreach ($s in @($c.ServerList)) {
+            if ($null -ne $s) { [ordered]@{ serverAddress = $s.ServerAddress; friendlyName = $s.FriendlyName } }
+        })
+    $proxy = $null
+    if ($null -ne $c.Proxy) {
+        $server = Remove-UrlCredential $c.Proxy.ProxyServer
+        $script = Remove-UrlCredential $c.Proxy.AutoConfigurationScript
+        $proxy = [ordered]@{
+            proxyServer         = $server.value
+            autoConfigUrl       = $script.value
+            bypassProxyForLocal = $c.Proxy.BypassProxyForLocal
+            userInfoRemoved     = ($server.userInfoRemoved -or $script.userInfoRemoved)
+        }
+    }
+    [ordered]@{
+        name                  = $c.Name
+        guid                  = if ($c.Guid) { ([string]$c.Guid).Trim('{}').ToLowerInvariant() } else { $null }
+        allUserConnection     = $AllUser
+        serverAddress         = $c.ServerAddress
+        servers               = $servers
+        tunnelType            = $c.TunnelType
+        authenticationMethod  = @($c.AuthenticationMethod | ForEach-Object { [string]$_ })
+        encryptionLevel       = $c.EncryptionLevel
+        l2tpIPsecAuth         = $c.L2tpIPsecAuth
+        connectionStatus      = $c.ConnectionStatus
+        splitTunneling        = $c.SplitTunneling
+        routes                = $routes
+        dnsSuffix             = if ($c.DnsSuffix) { $c.DnsSuffix } else { $null }
+        idleDisconnectSeconds = $c.IdleDisconnectSeconds
+        rememberSignIn        = $c.RememberCredential
+        useWindowsSignIn      = $c.UseWinlogonCredential
+        proxy                 = $proxy
+    }
+}
+
+# Dot-sourcing (tests) loads the functions without collecting.
+if ($MyInvocation.InvocationName -eq '.') { return }
+
+Invoke-Collector -Module 'vpn' -Version '1.0.0' -OutFile $OutFile -ScriptBlock {
+    param($ctx)
+
+    # --- Built-in VPN ------------------------------------------------------
+
+    $profiles = $null
+    $userProfiles = Invoke-Source -Context $ctx -Source 'Get-VpnConnection' -AsList -ScriptBlock {
+        Invoke-AllowNotFound { Get-VpnConnection -ErrorAction Stop }
+    }
+    $allUserProfiles = Invoke-Source -Context $ctx -Source 'Get-VpnConnection -AllUserConnection' -AsList -ScriptBlock {
+        Invoke-AllowNotFound { Get-VpnConnection -AllUserConnection -ErrorAction Stop }
+    }
+    if ($null -ne $userProfiles -or $null -ne $allUserProfiles) {
+        $profiles = @(
+            foreach ($c in @($userProfiles)) { if ($null -ne $c) { ConvertTo-ProfileEntry -Connection $c -AllUser $false } }
+            foreach ($c in @($allUserProfiles)) { if ($null -ne $c) { ConvertTo-ProfileEntry -Connection $c -AllUser $true } }
+        )
+    }
+
+    # --- Inventory -----------------------------------------------------------
+
+    $allServices = Invoke-Source -Context $ctx -Source 'Win32_Service' -AsList -ScriptBlock {
+        Get-CimInstance -ClassName Win32_Service -ErrorAction Stop
+    }
+    $allDrivers = Invoke-Source -Context $ctx -Source 'Win32_SystemDriver' -AsList -ScriptBlock {
+        Get-CimInstance -ClassName Win32_SystemDriver -ErrorAction Stop
+    }
+    $adapters = Invoke-Source -Context $ctx -Source 'Get-NetAdapter' -AsList -ScriptBlock {
+        Get-NetAdapter -IncludeHidden -ErrorAction Stop | Sort-Object InterfaceIndex | ForEach-Object {
+            [ordered]@{
+                name                 = $_.Name
+                interfaceDescription = $_.InterfaceDescription
+                interfaceIndex       = [int]$_.InterfaceIndex
+                componentId          = if ($_.ComponentID) { $_.ComponentID } else { $null }
+                status               = $_.Status
+            }
+        }
+    }
+    # Names only: paths and command lines may reveal the user and secrets.
+    $processes = Invoke-Source -Context $ctx -Source 'Get-Process' -AsList -ScriptBlock {
+        Get-Process -ErrorAction Stop | Group-Object ProcessName | Sort-Object Name | ForEach-Object {
+            [ordered]@{ name = $_.Name; count = $_.Count }
+        }
+    }
+    # HKCU is the hive of the account the collector runs as (see dns-proxy).
+    $software = Invoke-Source -Context $ctx -Source 'Uninstall' -AsList -ScriptBlock {
+        $seen = @{}
+        foreach ($k in $UninstallKeys) {
+            if (-not (Test-Path -LiteralPath $k.path)) { continue }
+            foreach ($item in (Get-ChildItem -LiteralPath $k.path -ErrorAction Stop)) {
+                # Trimmed: some installers register the same name with trailing spaces.
+                $name = ([string]$item.GetValue('DisplayName', '')).Trim()
+                if (-not $name) { continue }
+                $version = ([string]$item.GetValue('DisplayVersion', '')).Trim()
+                $id = '{0}|{1}|{2}' -f $name, $version, $k.scope
+                if ($seen.ContainsKey($id)) { continue }
+                $seen[$id] = $true
+                [ordered]@{
+                    displayName    = $name
+                    displayVersion = if ($version) { $version } else { $null }
+                    publisher      = $item.GetValue('Publisher', $null)
+                    scope          = $k.scope
+                }
+            }
+        }
+    }
+
+    $builtInServices = $null
+    if ($null -ne $allServices) {
+        $builtInServices = @($allServices | Where-Object { $BuiltInServiceNames -contains $_.Name } | Sort-Object Name | ForEach-Object {
+                [ordered]@{ name = $_.Name; state = $_.State; startMode = $_.StartMode }
+            })
+    }
+
+    # --- Signature matching ------------------------------------------------
+
+    $clients = $null
+    $signatures = Invoke-Source -Context $ctx -Source 'vpn-signatures.json' -ScriptBlock {
+        $doc = ConvertFrom-CollectorJson -Json ([IO.File]::ReadAllText($SignaturesPath, [Text.Encoding]::UTF8))
+        , @($doc['clients'])
+    }
+    if ($null -ne $signatures) {
+        # A failed inventory source is already in errors; matching runs on the rest.
+        $inventory = @{
+            services  = @(foreach ($s in @($allServices)) { if ($null -ne $s) { @{ name = $s.Name; displayName = $s.DisplayName; raw = $s } } })
+            drivers   = @(foreach ($s in @($allDrivers)) { if ($null -ne $s) { @{ name = $s.Name; displayName = $s.DisplayName; raw = $s } } })
+            adapters  = @($adapters | Where-Object { $null -ne $_ })
+            processes = @($processes | Where-Object { $null -ne $_ })
+            software  = @($software | Where-Object { $null -ne $_ })
+        }
+        $clients = @(Find-VpnClients -Signatures $signatures -Inventory $inventory | ForEach-Object {
+                $_['services'] = @($_['services'] | ForEach-Object { ConvertTo-ServiceEntry $_['raw'] })
+                $_['drivers'] = @($_['drivers'] | ForEach-Object { ConvertTo-ServiceEntry $_['raw'] })
+                $_
+            })
+    }
+
+    [ordered]@{
+        builtIn = [ordered]@{
+            profiles = $profiles
+            services = $builtInServices
+        }
+        clients = $clients
+    }
+}

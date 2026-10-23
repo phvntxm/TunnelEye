@@ -19,17 +19,6 @@ function Get-AddressFamilyName {
     switch ([int]$Value) { 2 { 'IPv4' } 23 { 'IPv6' } default { [string]$Value } }
 }
 
-function Remove-UrlCredential {
-    # Strips user:password@ from proxy strings and URLs: credentials must
-    # never reach the snapshot. Returns @{ value; userInfoRemoved }.
-    # Untyped on purpose: a [string] parameter would turn $null into ''.
-    param($Value)
-    if ($null -eq $Value -or [string]$Value -eq '') { return @{ value = $null; userInfoRemoved = $false } }
-    $Value = [string]$Value
-    $clean = $Value -replace '(^|[=;\s]|://)[^@;=\s/]+@', '$1'
-    @{ value = $clean; userInfoRemoved = ($clean -ne $Value) }
-}
-
 function ConvertFrom-ConnectionSettingsBlob {
     # Decodes DefaultConnectionSettings / WinHttpSettings: DWORD version,
     # DWORD counter, DWORD flags, then length-prefixed ANSI strings: proxy,
