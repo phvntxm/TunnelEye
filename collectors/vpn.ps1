@@ -19,38 +19,6 @@ $UninstallKeys = @(
     @{ path = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'; scope = 'user' }
 )
 
-function ConvertFrom-ServicePathName {
-    # Splits a service/driver ImagePath into the executable path and a flag for
-    # arguments. Arguments are dropped: they may carry tokens or config paths.
-    # Driver forms: \SystemRoot\..., \??\C:\..., System32\drivers\x.sys.
-    # Returns @{ path; hasArguments } or $null.
-    param($PathName)
-    if ($null -eq $PathName) { return $null }
-    $text = ([string]$PathName).Trim()
-    if ($text -eq '') { return $null }
-
-    $path = $null
-    $rest = ''
-    if ($text.StartsWith('"')) {
-        $end = $text.IndexOf('"', 1)
-        if ($end -lt 0) { $path = $text.Substring(1) }
-        else { $path = $text.Substring(1, $end - 1); $rest = $text.Substring($end + 1) }
-    }
-    elseif ($text -match '^(.*?\.(exe|sys|dll))(\s.*)?$') {
-        $path = $Matches[1]
-        if ($Matches[3]) { $rest = $Matches[3] }
-    }
-    else {
-        $space = $text.IndexOf(' ')
-        if ($space -lt 0) { $path = $text } else { $path = $text.Substring(0, $space); $rest = $text.Substring($space) }
-    }
-
-    if ($path.StartsWith('\??\')) { $path = $path.Substring(4) }
-    if ($path -match '^\\SystemRoot\\') { $path = '%SystemRoot%' + $path.Substring(11) }
-    elseif ($path -match '^(System32|SysWOW64)\\') { $path = '%SystemRoot%\' + $path }
-    @{ path = $path; hasArguments = ($rest.Trim() -ne '') }
-}
-
 function Test-Pattern {
     # Case-insensitive match of any value against a signature pattern (null = no pattern).
     param($Pattern, [object[]] $Values)
