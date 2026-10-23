@@ -87,6 +87,46 @@ Describe 'vpn helpers' {
     }
 }
 
+Describe 'vpn process owners' {
+    . $collector
+
+    $t0 = [datetime]::new(2026, 10, 23, 8, 0, 0).Ticks
+    $instances = @(
+        @{ processId = 4; parentProcessId = 0; name = 'System'; path = $null; startTicks = $t0 }
+        @{ processId = 100; parentProcessId = 4; name = 'Happ'; path = 'C:\Program Files\Vendor\Happ\Happ.exe'; startTicks = $t0 + 10 }
+        @{ processId = 200; parentProcessId = 100; name = 'xray'; path = 'C:\Program Files\Vendor\Happ\core\xray.exe'; startTicks = $t0 + 20 }
+        @{ processId = 300; parentProcessId = 4; name = 'sing-box'; path = 'C:\Program Files\Vendor\Happ\core\sing-box.exe'; startTicks = $t0 + 30 }
+        @{ processId = 400; parentProcessId = 4; name = 'mihomo'; path = 'C:\Tools\mihomo.exe'; startTicks = $t0 + 40 }
+        @{ processId = 500; parentProcessId = 410; name = 'helper'; path = $null; startTicks = $t0 + 50 }
+        @{ processId = 510; parentProcessId = 500; name = 'v2ray'; path = 'D:\v2ray\v2ray.exe'; startTicks = $t0 + 60 }
+        @{ processId = 410; parentProcessId = 4; name = 'Happ'; path = $null; startTicks = $t0 + 70 }
+    )
+    $names = @{ happ = @('Happ', 'happd') }
+    $dirs = @{ happ = @('C:\Program Files\Vendor\Happ') }
+    $owners = Find-ProcessOwners -Instances $instances -TargetNames @('xray', 'sing-box', 'mihomo', 'v2ray', 'absent') `
+        -ClientProcessNames $names -ClientDirectories $dirs
+
+    It 'links a core to the client by its parent process' {
+        $owners['xray'].Count | Should Be 1
+        $owners['xray'][0]['clientId'] | Should Be 'happ'
+        $owners['xray'][0]['evidence'] | Should Be 'parentProcess'
+    }
+    It 'links a core to the client by the folder of its executable' {
+        $owners['sing-box'][0]['clientId'] | Should Be 'happ'
+        $owners['sing-box'][0]['evidence'] | Should Be 'imagePath'
+    }
+    It 'leaves unrelated cores without owners' {
+        $owners['mihomo'].Count | Should Be 0
+        $owners['absent'].Count | Should Be 0
+    }
+    It 'does not trust a parent PID reused by a later process' {
+        # v2ray -> helper (pid 500) -> pid 410, but 410 started after both.
+        $owners['v2ray'].Count | Should Be 0
+    }
+    It 'never returns paths' {
+        (ConvertTo-CollectorJson $owners) | Should Not Match 'Program Files|\\\\'
+    }
+}
 Describe 'vpn signatures file' {
     $doc = ConvertFrom-CollectorJson -Json ([IO.File]::ReadAllText($signaturesFile, [Text.Encoding]::UTF8))
     $clients = @($doc['clients'])
@@ -159,6 +199,14 @@ Describe 'Collector: vpn' {
             } | ForEach-Object { $_.Name } | Sort-Object)
         $found = @($data['clients'] | ForEach-Object { $_['services'] } | ForEach-Object { $_['name'] } | Sort-Object)
         $found -join ',' | Should Be ($expected -join ',')
+    }
+    It 'reports owners of generic processes only with admin rights' {
+        foreach ($c in @($data['clients'] | Where-Object { $_['generic'] })) {
+            foreach ($p in $c['processes']) {
+                if ($env['elevated']) { , $p['owners'] | Should BeOfType [object[]] }
+                else { $null -eq $p['owners'] | Should Be $true }
+            }
+        }
     }
     It 'never writes the user profile folder, command lines or process paths' {
         $profileDir = [regex]::Escape(($env:USERPROFILE -replace '\\', '\\'))

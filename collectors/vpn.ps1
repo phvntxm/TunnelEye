@@ -139,6 +139,75 @@ function Find-VpnClients {
     }
 }
 
+function Find-ProcessOwners {
+    # Links processes of generic signatures (proxy cores such as xray) to a
+    # specific client. Evidence, in order: an ancestor process (up to
+    # $MaxDepth levels) belongs to the client ('parentProcess'), or the
+    # executable lies in a folder of the client ('imagePath'). Instances:
+    # @{ processId; parentProcessId; name (without .exe); path; startTicks }.
+    # A parent started after its child is a reused PID, not the real parent.
+    # ClientProcessNames / ClientDirectories: hashtables clientId -> string[].
+    # Returns a hashtable: target process name -> array of @{ clientId; evidence }.
+    # Paths are used for matching only and never returned.
+    param(
+        [Parameter(Mandatory)][AllowEmptyCollection()][object[]] $Instances,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]] $TargetNames,
+        [Parameter(Mandatory)][hashtable] $ClientProcessNames,
+        [Parameter(Mandatory)][hashtable] $ClientDirectories,
+        [int] $MaxDepth = 3
+    )
+    $byPid = @{}
+    foreach ($i in $Instances) { $byPid[[int64]$i['processId']] = $i }
+    $clientOfName = @{}
+    foreach ($id in $ClientProcessNames.Keys) {
+        foreach ($n in $ClientProcessNames[$id]) { $clientOfName[([string]$n).ToLowerInvariant()] = $id }
+    }
+
+    $result = @{}
+    foreach ($target in $TargetNames) {
+        $owners = [System.Collections.Generic.List[object]]::new()
+        $seen = @{}
+        foreach ($i in $Instances) {
+            if ([string]$i['name'] -ne $target) { continue }
+            $owner = $null
+            $evidence = $null
+
+            $current = $i
+            $visited = @{ ([int64]$i['processId']) = $true }
+            for ($depth = 0; $depth -lt $MaxDepth -and $null -eq $owner; $depth++) {
+                $ppid = [int64]$current['parentProcessId']
+                if ($visited.ContainsKey($ppid) -or -not $byPid.ContainsKey($ppid)) { break }
+                $visited[$ppid] = $true
+                $parent = $byPid[$ppid]
+                if ($parent['startTicks'] -and $current['startTicks'] -and $parent['startTicks'] -gt $current['startTicks']) { break }
+                $current = $parent
+                $key = ([string]$current['name']).ToLowerInvariant()
+                if ($clientOfName.ContainsKey($key)) { $owner = $clientOfName[$key]; $evidence = 'parentProcess' }
+            }
+
+            if ($null -eq $owner -and $i['path']) {
+                foreach ($id in $ClientDirectories.Keys) {
+                    foreach ($dir in $ClientDirectories[$id]) {
+                        if (-not $dir) { continue }
+                        $prefix = ([string]$dir).TrimEnd('\') + '\'
+                        if (([string]$i['path']).StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
+                            $owner = $id; $evidence = 'imagePath'; break
+                        }
+                    }
+                    if ($null -ne $owner) { break }
+                }
+            }
+
+            if ($null -ne $owner -and -not $seen.ContainsKey("$owner|$evidence")) {
+                $seen["$owner|$evidence"] = $true
+                $owners.Add([ordered]@{ clientId = $owner; evidence = $evidence })
+            }
+        }
+        $result[$target] = $owners.ToArray()
+    }
+    $result
+}
+
 function ConvertTo-ServiceEntry {
     param($Service)
     $image = ConvertFrom-ServicePathName $Service.PathName
@@ -207,7 +276,7 @@ function ConvertTo-ProfileEntry {
 # Dot-sourcing (tests) loads the functions without collecting.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
-Invoke-Collector -Module 'vpn' -Version '1.0.0' -OutFile $OutFile -ScriptBlock {
+Invoke-Collector -Module 'vpn' -Version '1.1.0' -OutFile $OutFile -ScriptBlock {
     param($ctx)
 
     # --- Built-in VPN ------------------------------------------------------
@@ -297,9 +366,55 @@ Invoke-Collector -Module 'vpn' -Version '1.0.0' -OutFile $OutFile -ScriptBlock {
             processes = @($processes | Where-Object { $null -ne $_ })
             software  = @($software | Where-Object { $null -ne $_ })
         }
-        $clients = @(Find-VpnClients -Signatures $signatures -Inventory $inventory | ForEach-Object {
+        $matched = @(Find-VpnClients -Signatures $signatures -Inventory $inventory)
+
+        # Admin only: paths of other accounts' processes are hidden otherwise,
+        # so without rights the owners of generic processes stay unknown (null).
+        $owners = $null
+        $targets = @($matched | Where-Object { $_['generic'] } | ForEach-Object { $_['processes'] } | ForEach-Object { $_['name'] })
+        if ($ctx.Elevated -and $targets.Count) {
+            $instances = Invoke-Source -Context $ctx -Source 'Win32_Process' -AsList -ScriptBlock {
+                Get-CimInstance -ClassName Win32_Process -ErrorAction Stop | ForEach-Object {
+                    @{
+                        processId       = $_.ProcessId
+                        parentProcessId = $_.ParentProcessId
+                        name            = [IO.Path]::GetFileNameWithoutExtension([string]$_.Name)
+                        path            = $_.ExecutablePath
+                        startTicks      = if ($_.CreationDate) { $_.CreationDate.ToUniversalTime().Ticks } else { $null }
+                    }
+                }
+            }
+            if ($null -ne $instances) {
+                $names = @{}
+                $dirs = @{}
+                $systemRoot = $env:SystemRoot.TrimEnd('\') + '\'
+                foreach ($c in ($matched | Where-Object { -not $_['generic'] })) {
+                    $names[$c['id']] = @($c['processes'] | ForEach-Object { $_['name'] })
+                    $clientDirs = [System.Collections.Generic.List[string]]::new()
+                    foreach ($s in $c['services']) {
+                        $image = ConvertFrom-ServicePathName $s['raw'].PathName
+                        if ($null -ne $image) { $clientDirs.Add((Split-Path -Parent ([Environment]::ExpandEnvironmentVariables($image.path)))) }
+                    }
+                    foreach ($i in $instances) {
+                        if ($names[$c['id']] -contains $i['name'] -and $i['path']) { $clientDirs.Add((Split-Path -Parent $i['path'])) }
+                    }
+                    # Shared system folders would make every process there an owner match.
+                    $dirs[$c['id']] = @($clientDirs | Where-Object { $_ -and -not ($_ + '\').StartsWith($systemRoot, [StringComparison]::OrdinalIgnoreCase) } | Select-Object -Unique)
+                }
+                $owners = Find-ProcessOwners -Instances $instances -TargetNames $targets -ClientProcessNames $names -ClientDirectories $dirs
+            }
+        }
+
+        $clients = @($matched | ForEach-Object {
                 $_['services'] = @($_['services'] | ForEach-Object { ConvertTo-ServiceEntry $_['raw'] })
                 $_['drivers'] = @($_['drivers'] | ForEach-Object { ConvertTo-ServiceEntry $_['raw'] })
+                if ($_['generic']) {
+                    $_['processes'] = @($_['processes'] | ForEach-Object {
+                            $o = $null
+                            if ($null -ne $owners -and $owners.ContainsKey($_['name'])) { $o = $owners[$_['name']] }
+                            [ordered]@{ name = $_['name']; count = $_['count']; owners = $o }
+                        })
+                }
                 $_
             })
     }
