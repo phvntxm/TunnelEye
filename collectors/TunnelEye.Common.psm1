@@ -296,6 +296,16 @@ function Invoke-Source {
     return , $items.ToArray()
 }
 
+function Invoke-AllowNotFound {
+    # Many Net* cmdlets report "nothing to list" as an ObjectNotFound error
+    # (no connected network, empty persistent store, protocol not installed).
+    # Runs the script block and turns that case into empty output; any other
+    # error is rethrown for Invoke-Source to record.
+    param([Parameter(Mandatory)][scriptblock] $ScriptBlock)
+    try { & $ScriptBlock }
+    catch { if ([string]$_.CategoryInfo.Category -ne 'ObjectNotFound') { throw } }
+}
+
 function Get-LegacyEncodings {
     # System OEM and ANSI code pages (866 and 1251 on Russian Windows), OEM first.
     $nls = 'HKLM:\SYSTEM\CurrentControlSet\Control\Nls\CodePage'
@@ -527,6 +537,6 @@ Export-ModuleMember -Function @(
     'Get-TunnelEyeInfo', 'Test-Elevated', 'Format-Timestamp',
     'ConvertTo-CollectorData', 'ConvertTo-CollectorJson', 'ConvertFrom-CollectorJson', 'Write-JsonFile', 'Get-RegistryValue',
     'Get-ErrorKind', 'Add-CollectorError',
-    'New-CollectorContext', 'Invoke-Source', 'Invoke-NativeCommand', 'ConvertFrom-NativeBytes',
+    'New-CollectorContext', 'Invoke-Source', 'Invoke-AllowNotFound', 'Invoke-NativeCommand', 'ConvertFrom-NativeBytes',
     'Complete-Collector', 'Write-CollectorResult', 'Invoke-Collector', 'New-SkipResult'
 )
