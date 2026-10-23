@@ -152,6 +152,21 @@ function Write-JsonFile {
     [IO.File]::WriteAllText($Path, $Json, $script:Utf8NoBom)
 }
 
+# --- Registry ---------------------------------------------------------------
+
+function Get-RegistryValue {
+    # Returns the raw value, or $null if the key or value does not exist.
+    # Access errors are thrown so that Invoke-Source records them.
+    param(
+        [Parameter(Mandatory)][string] $Path,
+        [Parameter(Mandatory)][string] $Name
+    )
+    if (-not (Test-Path -LiteralPath $Path)) { return $null }
+    $key = Get-Item -LiteralPath $Path -ErrorAction Stop
+    try { return $key.GetValue($Name, $null) }
+    finally { $key.Close() }
+}
+
 # --- Errors -----------------------------------------------------------------
 
 function Get-ErrorKind {
@@ -487,7 +502,7 @@ function New-SkipResult {
 
 Export-ModuleMember -Function @(
     'Get-TunnelEyeInfo', 'Test-Elevated', 'Format-Timestamp',
-    'ConvertTo-CollectorData', 'ConvertTo-CollectorJson', 'ConvertFrom-CollectorJson', 'Write-JsonFile',
+    'ConvertTo-CollectorData', 'ConvertTo-CollectorJson', 'ConvertFrom-CollectorJson', 'Write-JsonFile', 'Get-RegistryValue',
     'Get-ErrorKind', 'Add-CollectorError',
     'New-CollectorContext', 'Invoke-Source', 'Invoke-NativeCommand', 'ConvertFrom-NativeBytes',
     'Complete-Collector', 'Write-CollectorResult', 'Invoke-Collector', 'New-SkipResult'
