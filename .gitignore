@@ -1,0 +1,19 @@
+# Visual Studio / .NET
+.vs/
+bin/
+obj/
+*.user
+*.suo
+packages/
+TestResults/
+
+# Captures and snapshots (may contain personal data)
+*.pcap
+*.pcapng
+*.etl
+snapshots/
+output/
+
+# OS
+Thumbs.db
+desktop.ini
