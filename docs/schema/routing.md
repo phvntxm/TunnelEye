@@ -1,6 +1,6 @@
 # Модуль `routing`
 
-Версия модуля 1.0.0. Файл: `collectors/routing.ps1`. Права администратора нужны только для списка подключений ICS; без них модуль `partial` с единственной ошибкой `HNetCfg.HNetShare = AccessDenied`.
+Версия модуля 1.1.0 (1.1.0: `routeSelection`, `interfaceMetric` и `effectiveMetric` в маршрутах). Файл: `collectors/routing.ps1`. Права администратора нужны только для списка подключений ICS; без них модуль `partial` с единственной ошибкой `HNetCfg.HNetShare = AccessDenied`.
 
 Модуль собирает факты, не делая выводов. Признаки «двух шлюзов», петель, ICS и мостов считает анализатор (этап 2), сопоставляя `routes`, `interfaces` и модуль `adapters` по `interfaceIndex`.
 
@@ -8,6 +8,7 @@
 | --- | --- |
 | `routes` | `Get-NetRoute` (активная таблица, compartment по умолчанию) |
 | `persistentRoutes` | `Get-NetRoute -PolicyStore PersistentStore` |
+| `routeSelection` | `Find-NetRoute <цель>` — отдельный источник на каждую цель |
 | `interfaces` | `Get-NetIPInterface` |
 | `addresses` | `Get-NetIPAddress` |
 | `ipEnableRouter` | `IPEnableRouter` (реестр `Tcpip\Parameters`) |
@@ -28,9 +29,34 @@
 | `nextHop` | string | `192.168.31.1`; `0.0.0.0` / `::` — on-link |
 | `interfaceIndex` | int | |
 | `interfaceAlias` | string | Локализовано |
-| `routeMetric` | int | Метрика маршрута. Итоговая метрика = `routeMetric` + `interfaces[].interfaceMetric` того же интерфейса и семейства |
+| `routeMetric` | int | Метрика маршрута |
+| `interfaceMetric` | int \| null | Метрика интерфейса того же индекса и семейства (из `interfaces`) |
+| `effectiveMetric` | int \| null | `routeMetric + interfaceMetric` — по ней Windows выбирает маршрут; `null`, если метрика интерфейса неизвестна |
 | `protocol` | string | `NetMgmt` (статический/VPN), `Dhcp`, `Local`, `RouterAdvertisement`, … |
 | `publish` | string | `No` \| `Age` \| `Yes` |
+
+## `routeSelection[]`
+
+Какой маршрут Windows реально выбирает для цели. `Find-NetRoute` — запрос к локальной таблице маршрутов, пакеты не отправляются (не нарушает правило «никаких запросов наружу»).
+
+Цели:
+
+| `kind` | `target` | Зачем |
+| --- | --- | --- |
+| `externalIPv4` | `192.0.2.1` | Путь произвольного адреса в интернете. Документационный префикс (RFC 5737) не встречается в реальных таблицах, поэтому побеждает маршрут по умолчанию или широкий маршрут VPN |
+| `externalIPv6` | `2001:db8::1` | То же для IPv6 (RFC 3849) |
+| `gateway` | next hop каждого маршрута `0.0.0.0/0` и `::/0` | Через какой интерфейс доступен сам шлюз |
+
+| Поле | Тип | Примечание |
+| --- | --- | --- |
+| `kind`, `target` | string | |
+| `reachable` | bool \| null | `false` — маршрута нет (Windows: «сеть недоступна», 1231); `null` — поиск упал, ошибка в `errors` |
+| `sourceAddress` | string \| null | Адрес источника, который Windows выберет |
+| `interfaceIndex`, `interfaceAlias` | | Выбранный интерфейс |
+| `destinationPrefix`, `nextHop` | string \| null | Выбранный маршрут |
+| `routeMetric`, `interfaceMetric`, `effectiveMetric` | int \| null | Как в `routes` |
+
+При неудачном поиске запись содержит только `kind`, `target` и `reachable = null`.
 
 ## `interfaces[]`
 
