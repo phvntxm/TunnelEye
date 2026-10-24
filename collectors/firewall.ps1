@@ -54,13 +54,16 @@ function Get-XmlTextList {
 function Read-WfpStateXml {
     # 'netsh wfp show state' writes several root elements in one file
     # (<wfpstate>, then <firewallState>, ...); returns the <wfpstate> element
-    # as an XmlDocument, or $null if it is not there.
+    # as an XmlDocument, or $null if it is not there. Throws if the file
+    # cannot be opened: a .NET method error does not stop a script under the
+    # default error preference, so it is rethrown explicitly.
     param([Parameter(Mandatory)][string] $Path)
     $settings = New-Object Xml.XmlReaderSettings
     $settings.ConformanceLevel = [Xml.ConformanceLevel]::Fragment
     $settings.DtdProcessing = [Xml.DtdProcessing]::Prohibit
     $settings.XmlResolver = $null
-    $reader = [Xml.XmlReader]::Create($Path, $settings)
+    try { $reader = [Xml.XmlReader]::Create($Path, $settings) }
+    catch { throw }
     try {
         [void]$reader.Read()
         while (-not $reader.EOF) {
