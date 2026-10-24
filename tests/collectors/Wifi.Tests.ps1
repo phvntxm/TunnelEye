@@ -31,6 +31,47 @@ Describe 'wifi helpers' {
         ConvertTo-Number '292,5' | Should Be 292.5
         $null -eq (ConvertTo-Number 'n/a') | Should Be $true
     }
+    It 'parses driver dates with the culture netsh used first' -TestCases @(
+        @{ value = '03/12/2026'; culture = 'en-GB'; out = '2026-12-03' }
+        @{ value = '3/12/2026'; culture = 'en-US'; out = '2026-03-12' }
+        @{ value = '03.03.2026'; culture = 'ru-RU'; out = '2026-03-03' }
+        @{ value = '2026-03-03'; culture = 'sv-SE'; out = '2026-03-03' }
+        @{ value = '03.03.2026'; culture = 'en-US'; out = '2026-03-03' }
+    ) {
+        param($value, $culture, $out)
+        ConvertFrom-NetshDate -Value $value -Culture ([Globalization.CultureInfo]$culture) | Should BeExactly $out
+    }
+    It 'returns null for an unparsable date' {
+        $null -eq (ConvertFrom-NetshDate -Value 'yesterday') | Should Be $true
+        $null -eq (ConvertFrom-NetshDate -Value $null) | Should Be $true
+    }
+}
+
+Describe 'Wi-Fi presence' {
+    . $collector
+
+    It 'skips only when there is no enabled Wi-Fi adapter' {
+        Get-WifiSkipReason @() | Should Match 'No Wi-Fi adapter'
+        Get-WifiSkipReason @(@{ name = 'Wi-Fi'; status = 'Disabled' }) | Should Match 'disabled'
+        $null -eq (Get-WifiSkipReason @(@{ name = 'Wi-Fi'; status = 'Disconnected' })) | Should Be $true
+        $null -eq (Get-WifiSkipReason @(@{ name = 'A'; status = 'Disabled' }, @{ name = 'B'; status = 'Up' })) | Should Be $true
+        $null -eq (Get-WifiSkipReason $null) | Should Be $true
+    }
+    It 'reports unrecognized netsh output as an error, not as "no Wi-Fi"' {
+        $ctx = New-CollectorContext -Module 'wifi' -Version '0'
+        $r = Read-WlanInterfaces -Context $ctx -Text "Some future netsh layout`r`n    Field one -> value`r`n"
+        $r.Interfaces.Count | Should Be 0
+        $ctx.Errors.Count | Should Be 1
+        $ctx.Errors[0]['source'] | Should Be 'netsh wlan show interfaces'
+        $ctx.Errors[0]['kind'] | Should Be 'Exception'
+        (Complete-Collector -Context $ctx -Data @{ interfaces = @() })['status'] | Should Be 'partial'
+    }
+    It 'records no error for recognized output' {
+        $ctx = New-CollectorContext -Module 'wifi' -Version '0'
+        $r = Read-WlanInterfaces -Context $ctx -Text (Read-Fixture 'wlan-interfaces-en.txt')
+        $r.Interfaces.Count | Should Be 1
+        $ctx.Errors.Count | Should Be 0
+    }
 }
 
 Describe 'netsh wlan show interfaces' {
@@ -88,7 +129,7 @@ Describe 'netsh wlan show drivers' {
         param($file)
         # The function returns the array itself (comma-wrapped): no @() here,
         # it would nest the array instead of copying it.
-        $d = ConvertFrom-WlanDrivers (Read-Fixture $file)
+        $d = ConvertFrom-WlanDrivers -Text (Read-Fixture $file) -Culture ([Globalization.CultureInfo]'ru-RU')
         , $d | Should BeOfType [object[]]
         $d.Count | Should Be 1
         $d[0]['version'] | Should Be '24.30.1.1'
@@ -101,7 +142,9 @@ Describe 'netsh wlan show drivers' {
 
 Describe 'netsh wlan show networks' {
     . $collector
-    $own = (ConvertFrom-WlanInterfaces (Read-Fixture 'wlan-interfaces-ru.txt')).Bssids
+    $parsedRu = ConvertFrom-WlanInterfaces (Read-Fixture 'wlan-interfaces-ru.txt')
+    $own = $parsedRu.Bssids
+    $ruName = $parsedRu.Interfaces[0]['name']
 
     It 'lists access points without names or addresses' {
         $n = ConvertFrom-WlanNetworks -Text (Read-Fixture 'wlan-networks-ru.txt') -ConnectedBssids $own
@@ -131,6 +174,21 @@ Describe 'netsh wlan show networks' {
         $n['bss'][0]['channelUtilizationPercent'] | Should Be 15
         $n['bss'][0]['channel'] | Should Be 44
     }
+    It 'keeps scans of two interfaces apart' {
+        # A second adapter: the same scan under another interface name.
+        $text = (Read-Fixture 'wlan-networks-ru.txt')
+        $second = $text.Replace($ruName, 'Wi-Fi 2')
+        $n = ConvertFrom-WlanNetworks -Text ($text + "`r`n" + $second) -ConnectedBssids $own -InterfaceNames @($ruName, 'Wi-Fi 2')
+        $n['bss'].Count | Should Be 4
+        @($n['bss'] | Where-Object { $_['interfaceName'] -eq 'Wi-Fi 2' }).Count | Should Be 2
+        @($n['bss'] | Where-Object { $_['interfaceName'] -eq $ruName }).Count | Should Be 2
+    }
+    It 'does not take other non-indented lines for an interface name' {
+        $n = ConvertFrom-WlanNetworks -Text (Read-Fixture 'wlan-networks-ru.txt') -ConnectedBssids $own -InterfaceNames @($ruName)
+        foreach ($b in $n['bss']) { $b['interfaceName'] | Should Be $ruName }
+        $n2 = ConvertFrom-WlanNetworks -Text (Read-Fixture 'wlan-networks-ru.txt') -ConnectedBssids $own
+        foreach ($b in $n2['bss']) { $null -eq $b['interfaceName'] | Should Be $true }
+    }
     It 'handles an empty scan' {
         $n = ConvertFrom-WlanNetworks -Text '' -ConnectedBssids @()
         $n['networkCount'] | Should Be 0
@@ -142,18 +200,14 @@ Describe 'Collector: wifi' {
     $env = Invoke-CollectorScript -Path $collector -OutFile (Join-Path $TestDrive 'wifi.json')
     $data = $env['data']
     $json = [IO.File]::ReadAllText((Join-Path $TestDrive 'wifi.json'), [Text.Encoding]::UTF8)
-    $hasWifi = $null -ne (Get-Service WlanSvc -ErrorAction SilentlyContinue | Where-Object Status -eq 'Running')
+    $hasWifi = @(Get-NetAdapter -Physical | Where-Object { $_.NdisPhysicalMedium -eq 9 -and $_.Status -ne 'Disabled' }).Count -gt 0
 
     It 'produces a valid envelope' {
         (Get-EnvelopeProblems -Envelope $env -Module 'wifi') -join '; ' | Should Be ''
     }
-    It 'is ok on a machine with Wi-Fi, skipped without it' {
-        if ($hasWifi -and $env['status'] -ne 'skipped') {
-            $env['status'] | Should Be 'ok'
-        }
-        else {
-            $env['status'] | Should Be 'skipped'
-        }
+    It 'is ok on a machine with an enabled Wi-Fi adapter, skipped without it' {
+        if ($hasWifi) { $env['status'] | Should Be 'ok' }
+        else { $env['status'] | Should Be 'skipped' }
     }
     It 'uses camelCase keys and no secret-like keys' {
         (Get-NonCamelCaseKeys -Node $data) -join '; ' | Should Be ''

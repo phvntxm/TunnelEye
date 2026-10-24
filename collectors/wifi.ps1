@@ -43,6 +43,27 @@ function ConvertTo-Number {
     [double]::Parse(([string]$Value -replace ',', '.'), [Globalization.CultureInfo]::InvariantCulture)
 }
 
+function ConvertFrom-NetshDate {
+    # netsh prints dates in the user's short date format, and the collector's
+    # powershell.exe inherits the same culture. The culture's own pattern goes
+    # first: a fixed list cannot tell 03/12/2026 in en-GB (3 December) from
+    # en-US (12 March). The fixed formats are a fallback. Returns yyyy-MM-dd.
+    param($Value, [Globalization.CultureInfo] $Culture = [Globalization.CultureInfo]::CurrentCulture)
+    if ($null -eq $Value -or [string]$Value -eq '') { return $null }
+    $parsed = [datetime]::MinValue
+    $inv = [Globalization.CultureInfo]::InvariantCulture
+    $own = $Culture.DateTimeFormat.ShortDatePattern
+    if ([datetime]::TryParseExact([string]$Value, $own, $Culture, 'None', [ref]$parsed)) {
+        return $parsed.ToString('yyyy-MM-dd', $inv)
+    }
+    # Day-first with dots (ru, de, ...), month-first with slashes (en-US),
+    # year-first (sv, ISO).
+    if ([datetime]::TryParseExact([string]$Value, [string[]]@('dd.MM.yyyy', 'd.M.yyyy', 'M/d/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'yyyy.MM.dd', 'yyyy/MM/dd'), $inv, 'None', [ref]$parsed)) {
+        return $parsed.ToString('yyyy-MM-dd', $inv)
+    }
+    $null
+}
+
 function ConvertFrom-WlanInterfaces {
     # Parses 'netsh wlan show interfaces'. Returns @{ Interfaces; Bssids }:
     # BSSIDs of the connected access points are returned separately, for
@@ -103,8 +124,9 @@ function ConvertFrom-WlanInterfaces {
 
 function ConvertFrom-WlanDrivers {
     # Parses 'netsh wlan show drivers': one block per interface, started by a
-    # non-indented "Interface name: <alias>" line.
-    param([AllowEmptyString()][string] $Text)
+    # non-indented "Interface name: <alias>" line. -Culture: the culture netsh
+    # formatted the date with (the collector's own; tests pass others).
+    param([AllowEmptyString()][string] $Text, [Globalization.CultureInfo] $Culture = [Globalization.CultureInfo]::CurrentCulture)
     $blocks = [System.Collections.Generic.List[object]]::new()
     $current = $null
     foreach ($line in ($Text -split '\r?\n')) {
@@ -124,18 +146,10 @@ function ConvertFrom-WlanDrivers {
             $versionValue = $null
             $dateValue = $null
             foreach ($p in $pairs) {
-                if ($null -eq $dateValue -and $p.value -match '^\d{1,2}[./]\d{1,2}[./]\d{4}$') { $dateValue = $p.value; continue }
+                if ($null -eq $dateValue -and $p.value -match '^(\d{1,2}[./-]\d{1,2}[./-]\d{4}|\d{4}[./-]\d{1,2}[./-]\d{1,2})$') { $dateValue = $p.value; continue }
                 if ($null -eq $versionValue -and $p.value -match '^\d+(\.\d+){1,3}$') { $versionValue = $p.value }
             }
-            $driverDate = $null
-            if ($null -ne $dateValue) {
-                $parsed = [datetime]::MinValue
-                $inv = [Globalization.CultureInfo]::InvariantCulture
-                # Day-first with dots (ru, de, ...), month-first with slashes (en-US).
-                if ([datetime]::TryParseExact($dateValue, [string[]]@('dd.MM.yyyy', 'd.M.yyyy', 'M/d/yyyy', 'MM/dd/yyyy'), $inv, 'None', [ref]$parsed)) {
-                    $driverDate = $parsed.ToString('yyyy-MM-dd', $inv)
-                }
-            }
+            $driverDate = ConvertFrom-NetshDate -Value $dateValue -Culture $Culture
             $radioTypes = $null
             foreach ($p in $pairs) {
                 if ($p.value -match '^802\.11\w+(\s+802\.11\w+)*$') { $radioTypes = @($p.value -split '\s+'); break }
@@ -163,8 +177,14 @@ function ConvertFrom-WlanNetworks {
     # Parses 'netsh wlan show networks mode=bssid' (the last scan, no new scan
     # is started). Returns @{ networkCount; bss[] } without SSIDs and BSSIDs:
     # names and addresses of neighbouring networks point to a place.
-    param([AllowEmptyString()][string] $Text, [string[]] $ConnectedBssids = @())
+    # With several Wi-Fi interfaces netsh prints one scan per interface after
+    # a non-indented "Interface name : <alias>" line. Other non-indented lines
+    # have a colon too ("... networks: 2." in Russian), so a line starts a scan
+    # only if its value is one of -InterfaceNames (from show interfaces);
+    # without them every access point gets interfaceName = $null.
+    param([AllowEmptyString()][string] $Text, [string[]] $ConnectedBssids = @(), [string[]] $InterfaceNames = @())
     $networkCount = 0
+    $interfaceName = $null
     $list = [System.Collections.Generic.List[object]]::new()
     $current = $null
     $pairs = $null
@@ -183,6 +203,7 @@ function ConvertFrom-WlanNetworks {
         $radio = @($pairs | Where-Object { $_.value -match '^802\.11\w+$' } | Select-Object -First 1)
         $band = @($pairs | ForEach-Object { ConvertTo-BandGHz $_.value } | Where-Object { $_ } | Select-Object -First 1)
         $list.Add([ordered]@{
+                interfaceName             = $interfaceName
                 connected                 = ($ConnectedBssids -contains $current)
                 bandGHz                   = if ($band.Count) { $band[0] } else { $null }
                 channel                   = $channel
@@ -193,6 +214,14 @@ function ConvertFrom-WlanNetworks {
             })
     }
     foreach ($line in ($Text -split '\r?\n')) {
+        if ($line -match '^\S[^:]*:\s*(.+?)\s*$' -and $InterfaceNames -contains $Matches[1]) {
+            # Saved before the flush: it runs -match and overwrites $Matches.
+            $next = $Matches[1]
+            . $flush
+            $current = $null
+            $interfaceName = $next
+            continue
+        }
         if ($line -match '^SSID \d+\s*:') {
             . $flush
             $current = $null
@@ -212,19 +241,58 @@ function ConvertFrom-WlanNetworks {
     . $flush
     [ordered]@{
         networkCount = $networkCount
-        bss          = @($list | Sort-Object { $_['bandGHz'] }, { $_['channel'] }, { - $_['signalPercent'] })
+        bss          = @($list | Sort-Object { $_['interfaceName'] }, { $_['bandGHz'] }, { $_['channel'] }, { - $_['signalPercent'] })
     }
+}
+
+function Get-WifiSkipReason {
+    # Whether Wi-Fi exists is decided by the adapters, not by netsh text: an
+    # unknown netsh layout must not look like "no Wi-Fi". Adapters: physical
+    # Native 802.11 adapters as @{ name; status }; $null = the adapter list
+    # could not be read (then nothing is skipped). Returns a reason or $null.
+    param([AllowNull()][object[]] $Adapters)
+    if ($null -eq $Adapters) { return $null }
+    if ($Adapters.Count -eq 0) { return 'No Wi-Fi adapter on this system.' }
+    if (@($Adapters | Where-Object { $_['status'] -ne 'Disabled' }).Count -eq 0) { return 'The Wi-Fi adapter is disabled.' }
+    $null
+}
+
+function Read-WlanInterfaces {
+    # Parses 'show interfaces' output and records an error if a Wi-Fi adapter
+    # is enabled but no interface was recognized (a new netsh layout): the
+    # module then goes on with drivers and neighbours and ends up partial.
+    param([Parameter(Mandatory)] $Context, [AllowEmptyString()][string] $Text)
+    $parsed = ConvertFrom-WlanInterfaces $Text
+    if ($parsed.Interfaces.Count -eq 0) {
+        Add-CollectorError -Context $Context -Source 'netsh wlan show interfaces' -Kind Exception `
+            -Message 'Unrecognized netsh output: no interface found although a Wi-Fi adapter is enabled.'
+    }
+    $parsed
 }
 
 # Dot-sourcing (tests) loads the functions without collecting.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
-Invoke-Collector -Module 'wifi' -Version '1.0.0' -OutFile $OutFile -ScriptBlock {
+Invoke-Collector -Module 'wifi' -Version '1.1.0' -OutFile $OutFile -ScriptBlock {
     param($ctx)
 
+    # NdisPhysicalMedium 9 = Native 802.11; -Physical leaves out the virtual
+    # Wi-Fi Direct adapters.
+    $adapters = Invoke-Source -Context $ctx -Source 'Get-NetAdapter' -AsList -ScriptBlock {
+        Get-NetAdapter -Physical -ErrorAction Stop | Where-Object { $_.NdisPhysicalMedium -eq 9 } | ForEach-Object {
+            @{ name = $_.Name; status = [string]$_.Status }
+        }
+    }
+    $skip = Get-WifiSkipReason $adapters
+    if ($null -ne $skip) { return (New-SkipResult $skip) }
+
+    # An enabled adapter without the WLAN service is a fault, not "no Wi-Fi".
     $service = Get-Service -Name WlanSvc -ErrorAction SilentlyContinue
-    if ($null -eq $service) { return (New-SkipResult 'The WLAN AutoConfig service (WlanSvc) is not installed: no Wi-Fi on this system.') }
-    if ($service.Status -ne 'Running') { return (New-SkipResult 'The WLAN AutoConfig service (WlanSvc) is not running: Wi-Fi is not in use.') }
+    if ($null -eq $service -or $service.Status -ne 'Running') {
+        $state = if ($null -eq $service) { 'not installed' } else { 'not running (' + $service.Status + ')' }
+        Add-CollectorError -Context $ctx -Source 'WlanSvc' -Kind Exception -Message "The WLAN AutoConfig service is $state although a Wi-Fi adapter is enabled."
+        return [ordered]@{ interfaces = $null; drivers = $null; neighbors = $null }
+    }
 
     $netsh = Join-Path $env:SystemRoot 'System32\netsh.exe'
     # Exit code 1 is checked here, not by Invoke-NativeCommand: without the
@@ -249,10 +317,7 @@ Invoke-Collector -Module 'wifi' -Version '1.0.0' -OutFile $OutFile -ScriptBlock 
     $interfacesRaw = & $run 'netsh wlan show interfaces' @('wlan', 'show', 'interfaces')
     $parsedInterfaces = $null
     if ($null -ne $interfacesRaw) {
-        $parsedInterfaces = ConvertFrom-WlanInterfaces $interfacesRaw.stdout
-        if ($parsedInterfaces.Interfaces.Count -eq 0) {
-            return (New-SkipResult 'No Wi-Fi interface on this system.')
-        }
+        $parsedInterfaces = Read-WlanInterfaces -Context $ctx -Text $interfacesRaw.stdout
     }
 
     $driversRaw = & $run 'netsh wlan show drivers' @('wlan', 'show', 'drivers')
@@ -262,8 +327,16 @@ Invoke-Collector -Module 'wifi' -Version '1.0.0' -OutFile $OutFile -ScriptBlock 
     $neighbors = $null
     $networksRaw = & $run 'netsh wlan show networks' @('wlan', 'show', 'networks', 'mode=bssid')
     if ($null -ne $networksRaw) {
-        $own = if ($null -ne $parsedInterfaces) { $parsedInterfaces.Bssids } else { @() }
-        $neighbors = ConvertFrom-WlanNetworks -Text $networksRaw.stdout -ConnectedBssids $own
+        $own = @()
+        $names = @()
+        if ($null -ne $parsedInterfaces) {
+            $own = @($parsedInterfaces.Bssids)
+            $names = @($parsedInterfaces.Interfaces | ForEach-Object { $_['name'] })
+        }
+        # Adapter names are the same aliases netsh prints; they cover the
+        # case when show interfaces was not recognized.
+        $names = @($names + @($adapters | ForEach-Object { $_['name'] }) | Where-Object { $_ } | Select-Object -Unique)
+        $neighbors = ConvertFrom-WlanNetworks -Text $networksRaw.stdout -ConnectedBssids $own -InterfaceNames $names
     }
 
     if ($null -eq $parsedInterfaces -and $null -eq $drivers -and $null -eq $neighbors) { return $null }
