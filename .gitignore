@@ -17,3 +17,6 @@ output/
 # OS
 Thumbs.db
 desktop.ini
+
+# Local results (admin test runs)
+.local/
