@@ -1,0 +1,44 @@
+
+Interface name: Беспроводная сеть
+
+    Driver                    : Intel(R) Wi-Fi 6E AX210 160MHz
+    Vendor                    : Intel Corporation
+    Provider                  : Intel
+    Date                      : 03.03.2026
+    Version                   : 24.30.1.1
+    INF file                  : oem101.inf
+    Type                      : Native Wi-Fi Driver
+    Radio types supported     : 802.11b 802.11g 802.11n 802.11a 802.11ac 802.11ax
+    FIPS 140 mode supported   : Yes
+    802.11w Management Frame Protection supported : Yes
+    Hosted network supported  : No
+    Authentication and cipher supported in infrastructure mode:
+                                Open             None
+                                Open             WEP-40bit
+                                Open             WEP-104bit
+                                Open             WEP
+                                WPA-Enterprise   TKIP
+                                WPA-Enterprise   CCMP
+                                WPA-Personal     TKIP
+                                WPA-Personal     CCMP
+                                WPA2-Enterprise  TKIP
+                                WPA2-Enterprise  CCMP
+                                WPA2-Personal    TKIP
+                                WPA2-Personal    CCMP
+                                Open             Vendor defined
+                                WPA3-Personal    CCMP
+                                Vendor defined   Vendor defined
+                                WPA3-Enterprise 192 Bits GCMP-256
+                                OWE              CCMP
+                                WPA3-Enterprise  CCMP
+    Number of supported bands : 3
+                                2.4 GHz [ 0 MHz - 0 MHz]
+                                5 GHz [ 0 MHz - 0 MHz]
+                                6 GHz [ 0 MHz - 0 MHz]
+    IHV service present       : Yes
+    IHV adapter OUI           : [00 00 00], type: [00]
+    IHV extensibility DLL path: C:\WINDOWS\System32\DriverStore\FileRepository\netwtw6e.inf_amd64_b0dac78beff3ae84\IntelIHVRouter14.dll
+    IHV UI extensibility ClSID: C:\WINDOWS\System32\DriverStore\FileRepository\example.inf_amd64\Example.dll
+    IHV diagnostics CLSID     : {00000000-0000-4000-8000-0000000000a1}
+    Wireless Display Supported: Yes (Graphics Driver: Yes, Wi-Fi Driver: Yes)
+

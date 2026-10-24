@@ -1,0 +1,22 @@
+ 
+Interface name : Беспроводная сеть 
+There are 1 networks currently visible. 
+
+SSID 1 : NeighborNet
+    Network type            : Infrastructure
+    Authentication          : WPA2-Personal
+    Encryption              : CCMP 
+    BSSID 1                 : 02:00:00:00:00:02
+         Signal             : 75%  
+         Radio type         : 802.11ac
+         Band               : 5 GHz
+         Channel            : 44 
+         Bss Load:
+             Connected Stations:         5
+             Channel Utilization:        39 (15 %)
+             Medium Available Capacity:  31250 (1000000 us/s)
+         QoS MSCS Supported    : 0
+         QoS Map Supported     : 0
+         Basic rates (Mbps) : 6 12 24
+         Other rates (Mbps) : 9 18 36 48 54
+

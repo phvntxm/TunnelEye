@@ -1,0 +1,22 @@
+
+There is 1 interface on the system:
+
+    Name                   : Wi-Fi
+    Description            : Example Wireless-AC 9560
+    GUID                   : 00000000-0000-4000-8000-0000000000b2
+    Physical address       : 02:00:00:00:00:20
+    State                  : connected
+    SSID                   : ExampleNet
+    BSSID                  : 02:00:00:00:00:21
+    Network type           : Infrastructure
+    Radio type             : 802.11n
+    Authentication         : WPA2-Personal
+    Cipher                 : CCMP
+    Connection mode        : Auto Connect
+    Channel                : 6
+    Receive rate (Mbps)    : 72
+    Transmit rate (Mbps)   : 72
+    Signal                 : 38%
+    Profile                : ExampleNet
+
+    Hosted network status  : Not available
