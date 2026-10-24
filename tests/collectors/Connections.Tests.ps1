@@ -17,7 +17,7 @@ Describe 'connections helpers' {
         @{ in = '172.16.0.1'; out = 'private' }
         @{ in = '172.31.255.1'; out = 'private' }
         @{ in = '172.32.0.1'; out = 'public' }
-        @{ in = '192.168.31.1'; out = 'private' }
+        @{ in = '192.168.0.1'; out = 'private' }
         @{ in = '100.64.0.1'; out = 'cgnat' }
         @{ in = '100.128.0.1'; out = 'public' }
         @{ in = '169.254.10.20'; out = 'linkLocal' }
