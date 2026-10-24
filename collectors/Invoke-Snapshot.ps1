@@ -13,7 +13,10 @@ param(
         'connections', 'tcp-stack', 'wifi', 'events', 'hardware', 'connectivity'
     ),
     [string] $CollectorPath = $PSScriptRoot,
-    [ValidateRange(1, 3600)][int] $TimeoutSec = 120
+    [ValidateRange(1, 3600)][int] $TimeoutSec = 120,
+    # Explicit consent to external connection tests (D-002), per run only:
+    # passed to the 'connectivity' module and recorded in snapshot.json.
+    [switch] $AllowExternal
 )
 
 Set-StrictMode -Version 2.0
@@ -56,7 +59,7 @@ function Test-Envelope {
 }
 
 function Invoke-ModuleProcess {
-    param([string] $Module, [string] $Script, [string] $OutFile, [int] $TimeoutSec, [bool] $Elevated)
+    param([string] $Module, [string] $Script, [string] $OutFile, [int] $TimeoutSec, [bool] $Elevated, [string] $ExtraArguments = '')
 
     $startedAt = [datetime]::UtcNow
     $watch = [Diagnostics.Stopwatch]::StartNew()
@@ -69,7 +72,7 @@ function Invoke-ModuleProcess {
     $psi = New-Object Diagnostics.ProcessStartInfo
     $psi.FileName = Join-Path $PSHOME 'powershell.exe'
     # Bypass applies to this child process only; the machine policy is untouched.
-    $psi.Arguments = '-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -OutFile "{1}"' -f $Script, $OutFile
+    $psi.Arguments = ('-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -OutFile "{1}" {2}' -f $Script, $OutFile, $ExtraArguments).TrimEnd()
     $psi.UseShellExecute = $false
     $psi.CreateNoWindow = $true
     $psi.RedirectStandardOutput = $true
@@ -146,10 +149,12 @@ $counts = [ordered]@{ ok = 0; partial = 0; failed = 0; skipped = 0 }
 for ($i = 0; $i -lt $Modules.Count; $i++) {
     $module = $Modules[$i]
     Write-Progress -Activity 'TunnelEye snapshot' -Status $module -PercentComplete ([int](100 * $i / $Modules.Count))
+    $extra = ''
+    if ($module -eq 'connectivity' -and $AllowExternal) { $extra = '-AllowExternal' }
     $envelope = Invoke-ModuleProcess -Module $module `
         -Script (Join-Path $CollectorPath "$module.ps1") `
         -OutFile (Join-Path $moduleDir "$module.json") `
-        -TimeoutSec $TimeoutSec -Elevated $elevated
+        -TimeoutSec $TimeoutSec -Elevated $elevated -ExtraArguments $extra
     $results[$module] = $envelope
     $counts[[string]$envelope['status']]++
 }
@@ -168,6 +173,7 @@ $snapshot = [ordered]@{
         uiCulture = (Get-UICulture).Name
         elevated  = $elevated
     }
+    externalAllowed = [bool]$AllowExternal
     summary    = [ordered]@{
         ok         = $counts.ok
         partial    = $counts.partial

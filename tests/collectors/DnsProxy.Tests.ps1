@@ -29,7 +29,7 @@ Describe 'dns-proxy helpers' {
         @{ in = 'http://user:secret@10.0.0.1:3128'; out = 'http://10.0.0.1:3128'; removed = $true }
         @{ in = 'http=bob:pw@proxy:80;https=proxy:443'; out = 'http=proxy:80;https=proxy:443'; removed = $true }
         @{ in = 'user@proxy.corp:8080'; out = 'proxy.corp:8080'; removed = $true }
-        @{ in = 'http://127.0.0.1:10809'; out = 'http://127.0.0.1:10809'; removed = $false }
+        @{ in = 'http://127.0.0.1:8118'; out = 'http://127.0.0.1:8118'; removed = $false }
     ) {
         param($in, $out, $removed)
         $r = Remove-UrlCredential $in

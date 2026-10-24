@@ -27,6 +27,7 @@ Describe 'Invoke-Snapshot' {
         $snapshot['createdAt'] | Should Match 'Z$'
         $snapshot['tool']['name'] | Should Be 'TunnelEye'
         $snapshot['host']['elevated'] -is [bool] | Should Be $true
+        $snapshot['externalAllowed'] | Should Be $false
     }
     It 'keeps all modules in the requested order' {
         (@($m.Keys) -join ',') | Should Be ($modules -join ',')
@@ -71,5 +72,27 @@ Describe 'Invoke-Snapshot' {
     It 'counts statuses in the summary' {
         $s = $snapshot['summary']
         "$($s['ok'])/$($s['partial'])/$($s['skipped'])/$($s['failed'])" | Should Be '1/1/1/7'
+    }
+}
+
+Describe 'Invoke-Snapshot: consent to external tests (D-002)' {
+    $orchestrator = Join-Path (Get-RepoRoot) 'collectors\Invoke-Snapshot.ps1'
+    $fixtures = Join-Path $PSScriptRoot 'fixtures'
+
+    It 'passes -AllowExternal to connectivity only and records it in the snapshot' {
+        $outDir = Join-Path $TestDrive 'external'
+        $result = & $orchestrator -OutputDirectory $outDir -Modules 'fixture-ok', 'connectivity' -CollectorPath $fixtures -TimeoutSec 30 -AllowExternal
+        $snapshot = ConvertFrom-CollectorJson ([IO.File]::ReadAllText($result.Path, [Text.Encoding]::UTF8))
+        $snapshot['externalAllowed'] | Should Be $true
+        # fixture-ok has no -AllowExternal parameter: it would fail if it got one.
+        $snapshot['modules']['fixture-ok']['status'] | Should Be 'ok'
+        $snapshot['modules']['connectivity']['data']['externalAllowed'] | Should Be $true
+    }
+    It 'does not enable external tests by default' {
+        $outDir = Join-Path $TestDrive 'local'
+        $result = & $orchestrator -OutputDirectory $outDir -Modules 'connectivity' -CollectorPath $fixtures -TimeoutSec 30
+        $snapshot = ConvertFrom-CollectorJson ([IO.File]::ReadAllText($result.Path, [Text.Encoding]::UTF8))
+        $snapshot['externalAllowed'] | Should Be $false
+        $snapshot['modules']['connectivity']['data']['externalAllowed'] | Should Be $false
     }
 }

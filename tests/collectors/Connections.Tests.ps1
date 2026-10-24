@@ -47,7 +47,7 @@ Describe 'connections helpers' {
         @{ state = 'Established'; localAddress = '192.0.2.10'; localPort = 50002; remoteAddress = '198.51.100.1'; remotePort = 443; processId = 10; process = 'browser' }
         @{ state = 'TimeWait'; localAddress = '192.0.2.10'; localPort = 50003; remoteAddress = '198.51.100.2'; remotePort = 443; processId = 10; process = 'browser' }
         @{ state = 'Established'; localAddress = '192.0.2.10'; localPort = 50004; remoteAddress = '203.0.113.9'; remotePort = 8443; processId = 20; process = 'xray' }
-        @{ state = 'Established'; localAddress = '127.0.0.1'; localPort = 50005; remoteAddress = '127.0.0.1'; remotePort = 10809; processId = 30; process = 'app' }
+        @{ state = 'Established'; localAddress = '127.0.0.1'; localPort = 50005; remoteAddress = '127.0.0.1'; remotePort = 8118; processId = 30; process = 'app' }
         @{ state = 'Established'; localAddress = '192.168.1.5'; localPort = 50006; remoteAddress = '192.168.1.1'; remotePort = 53; processId = 40; process = 'svchost' }
         @{ state = 'Bound'; localAddress = '0.0.0.0'; localPort = 50007; remoteAddress = '0.0.0.0'; remotePort = 0; processId = 50; process = $null }
     )
