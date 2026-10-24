@@ -1,0 +1,11 @@
+{
+  "schema": "tunneleye.connectivity-targets/1",
+  "comment": "Targets of the external connectivity tests (D-002), used only with explicit consent (-AllowExternal). Neutral large services only. Users add their own in %LOCALAPPDATA%\\TunnelEye\\connectivity-targets.json (same format); the lists are joined. ping, trace, mtu and dns.servers take IP addresses, dns.names take host names. See docs/schema/connectivity.md.",
+  "ping": [ "1.1.1.1", "8.8.8.8", "77.88.8.8" ],
+  "dns": {
+    "servers": [ "1.1.1.1", "8.8.8.8", "77.88.8.8" ],
+    "names": [ "www.microsoft.com", "ya.ru", "github.com" ]
+  },
+  "trace": [ "1.1.1.1" ],
+  "mtu": [ "1.1.1.1" ]
+}

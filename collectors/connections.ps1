@@ -9,39 +9,6 @@
 param([string] $OutFile)
 Import-Module (Join-Path $PSScriptRoot 'TunnelEye.Common.psm1') -Force
 
-function Get-AddressClass {
-    # Classifies an IP address: loopback, unspecified, private (RFC 1918),
-    # cgnat (100.64.0.0/10), linkLocal, uniqueLocal (fc00::/7), multicast,
-    # broadcast, public. IPv4-mapped IPv6 is classified by the IPv4 part.
-    # Unparsable input is $null.
-    param($Address)
-    if ($null -eq $Address -or [string]$Address -eq '') { return $null }
-    $ip = $null
-    if (-not [System.Net.IPAddress]::TryParse(([string]$Address -replace '%.*$', ''), [ref]$ip)) { return $null }
-    if ($ip.IsIPv4MappedToIPv6) { $ip = $ip.MapToIPv4() }
-
-    if ($ip.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork) {
-        $b = $ip.GetAddressBytes()
-        if ($b[0] -eq 0 -and $b[1] -eq 0 -and $b[2] -eq 0 -and $b[3] -eq 0) { return 'unspecified' }
-        if ($b[0] -eq 127) { return 'loopback' }
-        if ($b[0] -eq 10 -or ($b[0] -eq 172 -and $b[1] -ge 16 -and $b[1] -le 31) -or ($b[0] -eq 192 -and $b[1] -eq 168)) { return 'private' }
-        if ($b[0] -eq 100 -and $b[1] -ge 64 -and $b[1] -le 127) { return 'cgnat' }
-        if ($b[0] -eq 169 -and $b[1] -eq 254) { return 'linkLocal' }
-        if ($b[0] -ge 224 -and $b[0] -le 239) { return 'multicast' }
-        if ($b[0] -eq 255 -and $b[1] -eq 255 -and $b[2] -eq 255 -and $b[3] -eq 255) { return 'broadcast' }
-        return 'public'
-    }
-    if ($ip.Equals([System.Net.IPAddress]::IPv6None)) { return 'unspecified' }
-    if ($ip.Equals([System.Net.IPAddress]::IPv6Loopback)) { return 'loopback' }
-    if ($ip.IsIPv6LinkLocal) { return 'linkLocal' }
-    if ($ip.IsIPv6Multicast) { return 'multicast' }
-    $first = $ip.GetAddressBytes()[0]
-    if (($first -band 0xFE) -eq 0xFC) { return 'uniqueLocal' }
-    # fec0::/10 (deprecated site-local) is not routable on the internet either.
-    if ($ip.IsIPv6SiteLocal) { return 'private' }
-    'public'
-}
-
 function Split-TcpConnections {
     # Splits normalized connections (@{ state; localAddress; localPort;
     # remoteAddress; remotePort; processId; process }) into full entries

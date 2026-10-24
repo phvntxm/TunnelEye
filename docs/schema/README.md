@@ -73,10 +73,13 @@ snapshot-YYYYMMDD-HHMMSS/
   "createdAt": "…Z",
   "tool": { "name": "TunnelEye", "version": "0.1.0" },
   "host": { "osBuild": "26200.1234", "psVersion": "5.1…", "culture": "ru-RU", "uiCulture": "ru-RU", "elevated": false },
+  "externalAllowed": false,
   "summary": { "ok": 11, "partial": 1, "failed": 0, "skipped": 1, "durationMs": 95000 },
   "modules": { "system": { } }
 }
 ```
+
+`externalAllowed` — было ли на этот запуск дано явное согласие на внешние тесты связи (D-002, `Invoke-Snapshot.ps1 -AllowExternal`); подробности — в модуле `connectivity`. Совместимое добавление поля, версия схемы снимка прежняя.
 
 `modules` — объект в порядке запуска; ключ = имя модуля, значение — конверт. Модуль, который упал, завис (таймаут), не создал файл или выдал невалидный конверт, заменяется конвертом `failed` с ошибкой от `orchestrator`.
 

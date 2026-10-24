@@ -19,36 +19,6 @@ function Get-AddressFamilyName {
     switch ([int]$Value) { 2 { 'IPv4' } 23 { 'IPv6' } default { [string]$Value } }
 }
 
-function ConvertFrom-ConnectionSettingsBlob {
-    # Decodes DefaultConnectionSettings / WinHttpSettings: DWORD version,
-    # DWORD counter, DWORD flags, then length-prefixed ANSI strings: proxy,
-    # bypass list and (IE settings only) auto-config URL.
-    # Flags: 1 direct, 2 proxy, 4 auto-config URL, 8 auto-detect.
-    param([AllowNull()][byte[]] $Bytes)
-    if ($null -eq $Bytes -or $Bytes.Length -lt 12) { return $null }
-
-    $flags = [BitConverter]::ToUInt32($Bytes, 8)
-    $strings = New-Object System.Collections.Generic.List[string]
-    $pos = 12
-    while ($strings.Count -lt 3 -and $pos + 4 -le $Bytes.Length) {
-        $len = [BitConverter]::ToInt32($Bytes, $pos)
-        $pos += 4
-        if ($len -lt 0 -or $pos + $len -gt $Bytes.Length) { break }
-        $strings.Add([Text.Encoding]::Default.GetString($Bytes, $pos, $len))
-        $pos += $len
-    }
-    $at = { param($i) if ($strings.Count -gt $i -and $strings[$i] -ne '') { $strings[$i] } else { $null } }
-    [ordered]@{
-        flags             = [int64]$flags
-        proxyEnabled      = [bool]($flags -band 2)
-        autoConfigEnabled = [bool]($flags -band 4)
-        autoDetect        = [bool]($flags -band 8)
-        proxyServer       = & $at 0
-        bypassList        = & $at 1
-        autoConfigUrl     = & $at 2
-    }
-}
-
 function ConvertFrom-HostsFile {
     # Returns entries @{ address; names[] }; comments and blank lines skipped.
     param([AllowEmptyString()][string] $Text)
