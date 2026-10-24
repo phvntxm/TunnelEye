@@ -26,7 +26,7 @@
 | --- | --- | --- |
 | `addressFamily` | string | `IPv4` \| `IPv6` |
 | `destinationPrefix` | string | `0.0.0.0/0`, `::/0`, `10.0.0.0/8` |
-| `nextHop` | string | `192.168.31.1`; `0.0.0.0` / `::` — on-link |
+| `nextHop` | string | `192.168.1.1`; `0.0.0.0` / `::` — on-link |
 | `interfaceIndex` | int | |
 | `interfaceAlias` | string | Локализовано |
 | `routeMetric` | int | Метрика маршрута |

@@ -20,15 +20,15 @@
 | Поле | Тип | Пример / значения |
 | --- | --- | --- |
 | `name` | string | `Беспроводная сеть` (локализовано) |
-| `interfaceDescription` | string | `Intel(R) Wi-Fi 6E AX210 160MHz` |
+| `interfaceDescription` | string | `Intel(R) Ethernet Controller I225-V` |
 | `interfaceIndex` | int | Связь с `routing`, `dns-proxy`, `system.networkProfiles` |
-| `interfaceGuid` | string \| null | `{7e05e5a1-…}`, нижний регистр |
+| `interfaceGuid` | string \| null | `{3f2504e0-…}`, нижний регистр |
 | `macAddress` | string \| null | `E8-62-BE-F0-5E-97`. Личные данные: маскируется при экспорте |
 | `status` | string | `Up` \| `Disconnected` \| `Disabled` \| `Not Present` \| … |
 | `adminStatus` | string | `Up` \| `Down` |
 | `mediaConnectionState` | string | `Connected` \| `Disconnected` \| `Unknown` |
 | `virtual`, `hidden`, `hardwareInterface`, `connectorPresent`, `endpointInterface` | bool | |
-| `componentId` | string \| null | `Wintun`, `tap0901`, `root\ftvnic_a`, `PCI\VEN_8086&…` |
+| `componentId` | string \| null | `Wintun`, `tap0901`, `root\vendor_vnic`, `PCI\VEN_8086&…` |
 | `pnpDeviceId` | string \| null | Связь с `devices[].instanceId` |
 | `mediaType`, `physicalMediaType` | string \| null | `802.3`, `Native 802.11`, `IP`, … |
 | `ndisPhysicalMedium` | int \| null | Код NDIS_PHYSICAL_MEDIUM |
@@ -46,7 +46,7 @@
 | `version` | string \| null | |
 | `date` | date \| null | `yyyy-MM-dd`. Встроенные драйверы Microsoft датированы `2006-06-21` — правило «устаревший драйвер» должно их исключать |
 | `description` | string \| null | |
-| `fileName` | string \| null | `Netwtw14.sys` |
+| `fileName` | string \| null | `e2f68.sys` |
 | `ndisVersion` | string \| null | `6.60` |
 | `infName` | string \| null | `oem101.inf`; связь с `driverPackages[].publishedName` |
 | `isSigned` | bool \| null | `null` — подпись не найдена (нет записи в `Win32_PnPSignedDriver`) |
@@ -95,7 +95,7 @@
 | --- | --- | --- |
 | `publishedName` | string | `oem23.inf` |
 | `originalName` | string | `ftsvnic.inf` |
-| `provider` | string | `Fortinet Inc` |
+| `provider` | string | `Example Networks Inc` |
 | `className` | string | Локализовано |
 | `classGuid` | string | `{4d36e972-e325-11ce-bfc1-08002be10318}` |
 | `driverDate` | date \| null | `null`, если формат даты не распознан |
