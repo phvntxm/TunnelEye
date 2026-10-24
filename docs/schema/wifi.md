@@ -1,9 +1,9 @@
 # Модуль `wifi`
 
-Версия модуля 1.1.0 (1.1.0 — по ревью 001: наличие Wi-Fi по адаптерам, нераспознанный вывод — ошибка, дата по культуре, `bss[].interfaceName`). Файл: `collectors/wifi.ps1`. Права администратора не нужны.
+Версия модуля 1.1.1 (1.1.1 — извлечённый адаптер `Not Present` считается отсутствующим; 1.1.0 — по ревью 001: наличие Wi-Fi по адаптерам, нераспознанный вывод — ошибка, дата по культуре, `bss[].interfaceName`). Файл: `collectors/wifi.ps1`. Права администратора не нужны.
 
 **Статусы.** Есть ли Wi-Fi, решают адаптеры (`Get-NetAdapter -Physical`, `NdisPhysicalMedium = 9` — Native 802.11; виртуальные Wi-Fi Direct не считаются), а не текст `netsh`: новая раскладка `netsh` не должна выглядеть как «Wi-Fi нет».
-- `skipped` — нет Wi-Fi-адаптера («No Wi-Fi adapter…») или все Wi-Fi-адаптеры отключены («The Wi-Fi adapter is disabled.»). Причина — в `errors[]` (`source = collector`, `NotSupported`). Выключенный радиомодуль и режим «в самолёте» модуль не различает: для правила «Wi-Fi выключен» — `adapters` и эта причина.
+- `skipped` — нет Wi-Fi-адаптера («No Wi-Fi adapter…»), все Wi-Fi-адаптеры отключены («The Wi-Fi adapter is disabled.») или извлечены — USB-адаптер, который Windows ещё показывает как `Not Present` («…not present (removed).»). Причина — в `errors[]` (`source = collector`, `NotSupported`). Выключенный радиомодуль и режим «в самолёте» модуль не различает: для правила «Wi-Fi выключен» — `adapters` и эта причина.
 - `partial`:
   - адаптер включён, но `WlanSvc` нет или она не запущена — ошибка `WlanSvc`, все секции `null`;
   - `netsh wlan show interfaces` ответил, а интерфейс не распознан — ошибка `Exception` «Unrecognized netsh output», `interfaces = []`, `drivers` и `neighbors` собираются дальше;

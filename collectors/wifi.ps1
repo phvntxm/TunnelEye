@@ -253,8 +253,10 @@ function Get-WifiSkipReason {
     param([AllowNull()][object[]] $Adapters)
     if ($null -eq $Adapters) { return $null }
     if ($Adapters.Count -eq 0) { return 'No Wi-Fi adapter on this system.' }
-    if (@($Adapters | Where-Object { $_['status'] -ne 'Disabled' }).Count -eq 0) { return 'The Wi-Fi adapter is disabled.' }
-    $null
+    # 'Not Present': a removed USB adapter that Windows still lists.
+    if (@($Adapters | Where-Object { $_['status'] -notin 'Disabled', 'Not Present' }).Count -gt 0) { return $null }
+    if (@($Adapters | Where-Object { $_['status'] -eq 'Disabled' }).Count -gt 0) { return 'The Wi-Fi adapter is disabled.' }
+    'The Wi-Fi adapter is not present (removed).'
 }
 
 function Read-WlanInterfaces {
@@ -273,7 +275,7 @@ function Read-WlanInterfaces {
 # Dot-sourcing (tests) loads the functions without collecting.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
-Invoke-Collector -Module 'wifi' -Version '1.1.0' -OutFile $OutFile -ScriptBlock {
+Invoke-Collector -Module 'wifi' -Version '1.1.1' -OutFile $OutFile -ScriptBlock {
     param($ctx)
 
     # NdisPhysicalMedium 9 = Native 802.11; -Physical leaves out the virtual
