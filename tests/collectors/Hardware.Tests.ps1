@@ -33,6 +33,18 @@ Describe 'hardware helpers' {
         ConvertTo-CleanString '  Example 8-Core Processor   ' | Should BeExactly 'Example 8-Core Processor'
         ConvertTo-CleanString 'Rev 1.0' | Should BeExactly 'Rev 1.0'
     }
+    It 'reports firmware virtualization as enabled under a running hypervisor' {
+        $r = Resolve-Virtualization -CimValue $false -HypervisorPresent $true
+        $r.enabled | Should Be $true
+        $r.source | Should Be 'hypervisor'
+        $r = Resolve-Virtualization -CimValue $false -HypervisorPresent $false
+        $r.enabled | Should Be $false
+        $r.source | Should Be 'cim'
+        $r = Resolve-Virtualization -CimValue $true -HypervisorPresent $null
+        $r.enabled | Should Be $true
+        $r.source | Should Be 'cim'
+        $null -eq (Resolve-Virtualization -CimValue $null -HypervisorPresent $null).enabled | Should Be $true
+    }
     It 'takes vendor and device IDs without the machine-specific instance part' {
         $ids = Get-PciIds 'PCI\VEN_10de&DEV_1a2b&SUBSYS_00000000&REV_A1\4&1111111&0&0008'
         $ids.vendorId | Should BeExactly '10DE'
@@ -67,6 +79,16 @@ Describe 'Collector: hardware' {
         $data['cpus'][0]['cores'] -ge 1 | Should Be $true
         $data['memory']['modules'].Count | Should Be @(Get-CimInstance Win32_PhysicalMemory).Count
         $data['disks'].Count | Should Be @(Get-PhysicalDisk).Count
+    }
+    It 'follows the hypervisor for the virtualization flag' {
+        $data['system']['hypervisorPresent'] -is [bool] | Should Be $true
+        foreach ($c in $data['cpus']) {
+            if ($data['system']['hypervisorPresent']) {
+                $c['virtualizationFirmwareEnabled'] | Should Be $true
+                $c['virtualizationSource'] | Should Be 'hypervisor'
+            }
+            else { $c['virtualizationSource'] | Should Be 'cim' }
+        }
     }
     It 'marks exactly one system disk' {
         @($data['disks'] | Where-Object { $_['isSystem'] -eq $true }).Count | Should Be 1

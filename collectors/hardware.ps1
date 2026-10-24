@@ -47,14 +47,40 @@ function Get-PciIds {
     @{ vendorId = $Matches[1].ToUpperInvariant(); deviceId = $Matches[2].ToUpperInvariant() }
 }
 
+function Resolve-Virtualization {
+    # Under a running hypervisor (Hyper-V, VBS, WSL 2) Windows runs as a guest
+    # and the CPU virtualization flags of Win32_Processor may read False. A
+    # hypervisor cannot run without firmware virtualization, so it is then
+    # reported as enabled. Returns @{ enabled; source }.
+    param($CimValue, $HypervisorPresent)
+    if ($HypervisorPresent -eq $true) { return @{ enabled = $true; source = 'hypervisor' } }
+    if ($null -eq $CimValue) { return @{ enabled = $null; source = $null } }
+    @{ enabled = [bool]$CimValue; source = 'cim' }
+}
+
 # Dot-sourcing (tests) loads the functions without collecting.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
-Invoke-Collector -Module 'hardware' -Version '1.0.0' -OutFile $OutFile -ScriptBlock {
+Invoke-Collector -Module 'hardware' -Version '1.1.0' -OutFile $OutFile -ScriptBlock {
     param($ctx)
 
+    $system = Invoke-Source -Context $ctx -Source 'Win32_ComputerSystem' -ScriptBlock {
+        $c = Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction Stop
+        [ordered]@{
+            manufacturer             = ConvertTo-CleanString $c.Manufacturer
+            model                    = ConvertTo-CleanString $c.Model
+            pcSystemType             = Get-Name $PcSystemTypeNames $c.PCSystemType
+            systemType               = $c.SystemType
+            hypervisorPresent        = $c.HypervisorPresent
+            totalPhysicalMemoryBytes = $c.TotalPhysicalMemory
+        }
+    }
+
+    $hypervisor = $null
+    if ($null -ne $system) { $hypervisor = $system['hypervisorPresent'] }
     $cpus = Invoke-Source -Context $ctx -Source 'Win32_Processor' -AsList -ScriptBlock {
         Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop | ForEach-Object {
+            $virtualization = Resolve-Virtualization -CimValue $_.VirtualizationFirmwareEnabled -HypervisorPresent $hypervisor
             [ordered]@{
                 name                          = ConvertTo-CleanString $_.Name
                 manufacturer                  = ConvertTo-CleanString $_.Manufacturer
@@ -65,19 +91,9 @@ Invoke-Collector -Module 'hardware' -Version '1.0.0' -OutFile $OutFile -ScriptBl
                 l2CacheKb                     = $_.L2CacheSize
                 l3CacheKb                     = $_.L3CacheSize
                 architecture                  = Get-Name $ArchitectureNames $_.Architecture
-                virtualizationFirmwareEnabled = $_.VirtualizationFirmwareEnabled
+                virtualizationFirmwareEnabled = $virtualization.enabled
+                virtualizationSource          = $virtualization.source
             }
-        }
-    }
-
-    $system = Invoke-Source -Context $ctx -Source 'Win32_ComputerSystem' -ScriptBlock {
-        $c = Get-CimInstance -ClassName Win32_ComputerSystem -ErrorAction Stop
-        [ordered]@{
-            manufacturer             = ConvertTo-CleanString $c.Manufacturer
-            model                    = ConvertTo-CleanString $c.Model
-            pcSystemType             = Get-Name $PcSystemTypeNames $c.PCSystemType
-            systemType               = $c.SystemType
-            totalPhysicalMemoryBytes = $c.TotalPhysicalMemory
         }
     }
 
