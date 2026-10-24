@@ -1,6 +1,6 @@
 # Модуль `connectivity`
 
-Версия модуля 1.0.0. Файлы: `collectors/connectivity.ps1`, цели внешних тестов — `collectors/connectivity-targets.json`. Права администратора не нужны.
+Версия модуля 1.0.1 (1.0.1 — у промежуточных хопов трассировки `rttMs = null`). Файлы: `collectors/connectivity.ps1`, цели внешних тестов — `collectors/connectivity-targets.json`. Права администратора не нужны.
 
 Модуль собирает факты, не делая выводов. «Мёртвый прокси», «Проблемы MTU», «DNS-подмена», «трафик мимо туннеля» считает анализатор (этап 2).
 
@@ -68,7 +68,7 @@ ICMP, DNS-запросы и TCP-подключения **не идут чере�
   - `sinkholeServers` — ответили неуказанным или loopback-адресом.
   - `distinctAnswerSets` — сколько разных наборов адресов (CDN законно отдают разные — взвешивает анализатор).
   - Запрашиваются записи A.
-- `trace[]` — `{ target, viaInterfaceIndex, viaInterfaceAlias, status (reached|stoppedAfterTimeouts|maxHops|unreachable|budget), hops[{ ttl, address, rttMs, status }] }`; у молчащего хопа `address = null`;
+- `trace[]` — `{ target, viaInterfaceIndex, viaInterfaceAlias, status (reached|stoppedAfterTimeouts|maxHops|unreachable|budget), hops[{ ttl, address, rttMs, status }] }`; у молчащего хопа `address = null`; `rttMs` есть только у последнего хопа (`Success`): для `TtlExpired` .NET времени не сообщает (всегда 0), поэтому `null`;
 - `mtu[]` — `{ target, viaInterfaceIndex, viaInterfaceAlias, result }`, только IPv4.
 
 **Личные данные** (маскируются при экспорте, ТЗ): адреса шлюзов, DNS-серверов, прокси, адреса хопов трассировки (провайдер, город). Ответы DNS на имена из конфига — адреса публичных сервисов, не история пользователя.

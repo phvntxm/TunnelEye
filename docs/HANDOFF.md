@@ -1,6 +1,6 @@
 # Передача работы — где мы сейчас
 
-Состояние на 2026-10-24. Последний модуль: `connectivity` 1.0.0 — все 13 модулей этапа 1 написаны. Источник истины — `docs/TZ.md`, решения — `docs/DECISIONS.md`, схема данных — `docs/schema/`.
+Состояние на 2026-10-24. Последний модуль: `connectivity` 1.0.1 — все 13 модулей этапа 1 написаны. Источник истины — `docs/TZ.md`, решения — `docs/DECISIONS.md`, схема данных — `docs/schema/`.
 
 ## Договорённости с владельцем проекта
 
@@ -30,9 +30,9 @@
 | `wifi` (1.1.1) | `collectors/wifi.ps1` | ok (нет Wi-Fi-адаптера или он отключён — skipped; без разрешения на местоположение — partial, AccessDenied) | ~1 с |
 | `events` (1.1.0) | `collectors/events.ps1` | ok | ~3 с |
 | `hardware` (1.1.0) | `collectors/hardware.ps1` | partial (только SMART требует админа) | ~2,5 с |
-| `connectivity` | `collectors/connectivity.ps1`, цели `collectors/connectivity-targets.json` | ok (локальный режим; внешний — только `-AllowExternal`) | ~2,5 с локально |
+| `connectivity` (1.0.1) | `collectors/connectivity.ps1`, цели `collectors/connectivity-targets.json` | ok (локальный режим; внешний — только `-AllowExternal`) | ~2,5 с локально, ~4 с с внешними |
 
-Приняты: инфраструктура, `system`, `adapters`, `routing`, `dns-proxy`, `vpn`, `firewall`, `services`, `connections`, `tcp-stack`, `wifi` (ревью 001, правки — в 1.1.0, мелочь из ревью 002 — в 1.1.1), `events` (ревью 002, правки — в 1.1.0). `hardware` (ревью 003, правки — в 1.1.0). **`connectivity` — сделан по принятому плану, ждёт ревью кода** (`.local/review/004-connectivity.md`).
+Приняты: инфраструктура, `system`, `adapters`, `routing`, `dns-proxy`, `vpn`, `firewall`, `services`, `connections`, `tcp-stack`, `wifi` (ревью 001, правки — в 1.1.0, мелочь из ревью 002 — в 1.1.1), `events` (ревью 002, правки — в 1.1.0). `hardware` (ревью 003, правки — в 1.1.0). **`connectivity` — сделан по принятому плану, ждёт ревью кода** (`.local/review/004-connectivity.md`); внешний режим один раз проверен вживую с согласия владельца — `ok`, ~4 с.
 
 Полный снимок всех 13 модулей — около 40 с без прав администратора (локальный режим `connectivity`), около 0,8 МБ, `failed` нет; под админом (девять модулей до `wifi`) — 31 с. Ускорять `firewall` не нужно: `netsh wfp show state` ~0,25 с, разбор ~1,2 с.
 
@@ -44,7 +44,6 @@
 
 **Ждёт владельца:**
 - ревью `connectivity` — `.local/review/004-connectivity.md`;
-- внешний режим `connectivity` вживую (`-AllowExternal` или тесты с `TUNNELEYE_TEST_EXTERNAL=1`) — нужно согласие и запуск владельца;
 - админ-прогон 380 тестов (последний — до `wifi` 1.1.0, `events`, `hardware`; в нём же проверяется SMART под админом); перед сводкой этапа — обязательно;
 - по желанию удалить пустую папку `C:\Windows\System32\snapshots` (нужны права администратора).
 
@@ -179,7 +178,7 @@
 
 **Тесты связи**
 - `Resolve-DnsName` к молчащему серверу ждёт ~7 с даже с `-QuickTimeout`; ошибки локализованы — для проверок свой UDP-клиент (запрос и разбор ответа — небольшой код, тестируется на байтах).
-- `System.Net.NetworkInformation.Ping` с `PingOptions.DontFragment` даёт `PacketTooBig` на размере больше MTU без участия сети — точный поиск MTU; размер — данных (1472 = MTU 1500 − 28).
+- `PingReply.RoundtripTime` заполнен только для `Success`; для `TtlExpired` (промежуточные хопы трассировки) всегда 0 — не время, а «нет данных». даёт `PacketTooBig` на размере больше MTU без участия сети — точный поиск MTU; размер — данных (1472 = MTU 1500 − 28).
 - `Get-NetRoute -DestinationPrefix` с несколькими префиксами падает целиком, если одного маршрута нет (например, `::/0`) — запрашивать по одному.
 - PowerShell: в литерале массива запятая связывает сильнее `-band` (`$x -band 0xFF, 1` — `-band` ко всему массиву) — считать байты по одному. Имена переменных без учёта регистра: локальная `$context` затирает параметр `$Context`.
 - Многие домашние роутеры не слушают TCP 53 — живость DNS проверять UDP-запросом (PTR своего адреса: частные обратные зоны обычно отвечает сам сервер, RFC 6303).

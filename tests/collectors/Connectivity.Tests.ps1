@@ -175,6 +175,9 @@ Describe 'connectivity: probes' {
         $r.hops.Count | Should Be 4
         $null -eq $r.hops[1]['address'] | Should Be $true
         $r.hops[2]['address'] | Should Be '203.0.113.1'
+        # Intermediate hops have no RTT: .NET reports 0 for TtlExpired.
+        $null -eq $r.hops[0]['rttMs'] | Should Be $true
+        $r.hops[3]['rttMs'] | Should Be 1
     }
     It 'stops after five silent hops in a row' {
         $net = New-FakeNet -Ping { param($a, $s, $t, $df) if ($t -eq 1) { 'TtlExpired' } else { 'TimedOut' } }
