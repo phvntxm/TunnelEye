@@ -318,8 +318,10 @@ function Invoke-Trace {
         # Values first: inside .Add(...) a comma would split method arguments.
         $hopAddress = $null
         if ($s -ne 'TimedOut') { $hopAddress = $r.address }
+        # .NET reports RoundtripTime only for Success; for TtlExpired it is
+        # always 0, which would read as a 0 ms hop.
         $hopRtt = $null
-        if (@('Success', 'TtlExpired') -contains $s) { $hopRtt = $r.rttMs }
+        if ($s -eq 'Success') { $hopRtt = $r.rttMs }
         $hop = [ordered]@{ ttl = $ttl; address = $hopAddress; rttMs = $hopRtt; status = $s }
         $hops.Add($hop)
         if ($s -eq 'Success') { $status = 'reached'; break }
@@ -645,7 +647,7 @@ $RealNet = @{
 # Dot-sourcing (tests) loads the functions without collecting.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
-Invoke-Collector -Module 'connectivity' -Version '1.0.0' -OutFile $OutFile -ScriptBlock {
+Invoke-Collector -Module 'connectivity' -Version '1.0.1' -OutFile $OutFile -ScriptBlock {
     param($ctx)
     $budget = New-Budget -LimitMs $BudgetMs
 
