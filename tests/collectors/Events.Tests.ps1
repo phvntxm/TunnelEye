@@ -19,6 +19,25 @@ Describe 'events helpers' {
         $x = New-EventXPath -Days 1 -Providers @("bad' or 1=1 or @Name='x", 'Good-Name.1', 'Good-Name.1')
         $x | Should BeExactly "*[System[Provider[@Name='Good-Name.1'] and TimeCreated[timediff(@SystemTime) <= 86400000]]]"
     }
+    It 'takes both the driver file name and the service name as providers' {
+        $names = Get-DriverProviderNames -Adapters @(
+            @{ driverFileName = 'rt68cx21x64.sys'; serviceName = $null }
+            @{ driverFileName = $null; serviceName = 'rt68cx21' }
+            @{ driverFileName = 'Netwtw14.sys'; serviceName = 'Netwtw14' }
+            @{ driverFileName = ''; serviceName = '' }
+        )
+        , $names | Should BeOfType [object[]]
+        ($names -join ',') | Should Be 'Netwtw14,rt68cx21,rt68cx21x64'
+        (Get-DriverProviderNames -Adapters @()).Count | Should Be 0
+    }
+    It 'splits providers into chunks the event log accepts' {
+        $chunks = Split-IntoChunks -Items @(1..32) -Size 15
+        $chunks.Count | Should Be 3
+        ($chunks | ForEach-Object { $_.Count }) -join ',' | Should Be '15,15,2'
+        (Split-IntoChunks -Items @() -Size 15).Count | Should Be 0
+        $xpath = New-EventXPath -Days 1 -Providers @(1..15 | ForEach-Object { "NoSuchProvider$_" })
+        { Invoke-AllowNotFound { Get-WinEvent -LogName 'System' -FilterXPath $xpath -MaxEvents 1 -ErrorAction Stop } } | Should Not Throw
+    }
     It 'accepts an XPath with a provider that does not exist on this machine' {
         $xpath = New-EventXPath -Days 1 -Providers @('NoSuchProviderForTunnelEye')
         { Invoke-AllowNotFound { Get-WinEvent -LogName 'System' -FilterXPath $xpath -ErrorAction Stop } } | Should Not Throw
@@ -80,9 +99,16 @@ Describe 'Collector: events' {
         (Get-SensitiveKeys -Node $data) -join '; ' | Should Be ''
     }
     It 'reports the logs it read' {
-        $system = $data['logs'] | Where-Object { $_['logName'] -eq 'System' }
-        $system['exists'] | Should Be $true
-        $system['readOk'] | Should Be $true
+        foreach ($name in 'System', 'Application') {
+            $log = $data['logs'] | Where-Object { $_['logName'] -eq $name }
+            $log['exists'] | Should Be $true
+            $log['readOk'] | Should Be $true
+        }
+        ($data['applicationProviders'] -join ',') | Should Be 'RasClient'
+    }
+    It 'includes the service names of physical adapter drivers' {
+        $services = @(Get-CimInstance Win32_NetworkAdapter -Filter 'PhysicalAdapter = TRUE' | ForEach-Object { $_.ServiceName } | Where-Object { $_ })
+        foreach ($s in $services) { $data['providers'] -contains $s | Should Be $true }
     }
     It 'keeps every event inside the period and counts consistent' {
         $since = [datetime]::Parse($data['since'], [Globalization.CultureInfo]::InvariantCulture, 'AdjustToUniversal')
@@ -94,7 +120,8 @@ Describe 'Collector: events' {
         }
     }
     It 'never stores messages or event data' {
-        $json | Should Not Match '"(message|properties|eventData|userId|machineName)"'
+        # Only the data section: the envelope's errors[] have a 'message' key.
+        (ConvertTo-CollectorJson $data) | Should Not Match '"(message|properties|eventData|userId|machineName)"'
         $json | Should Not Match ([regex]::Escape($env:COMPUTERNAME))
         $json | Should Not Match ([regex]::Escape($env:USERNAME))
     }

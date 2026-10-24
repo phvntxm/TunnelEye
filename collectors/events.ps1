@@ -12,8 +12,8 @@ Import-Module (Join-Path $PSScriptRoot 'TunnelEye.Common.psm1') -Force
 
 $PeriodDays = 7
 $MaxTimesPerGroup = 200
-# Network components of Windows that log to System. Adapter drivers (by their
-# driver file name, e.g. Netwtw14, rt68cx21x64) are added at run time.
+# Network components of Windows that log to System. Adapter drivers are added
+# at run time (see Get-DriverProviderNames).
 $SystemProviders = @(
     'Tcpip', 'Tcpip6', 'NDIS', 'Microsoft-Windows-NDIS', 'NetBT',
     'Microsoft-Windows-Dhcp-Client', 'Microsoft-Windows-DHCPv6-Client', 'Microsoft-Windows-DNS-Client',
@@ -30,6 +30,38 @@ $OperationalLogs = @(
     @{ log = 'Microsoft-Windows-Dhcpv6-Client/Admin'; ids = $null }
 )
 $LevelNames = @{ 0 = 'Information'; 1 = 'Critical'; 2 = 'Error'; 3 = 'Warning'; 4 = 'Information'; 5 = 'Verbose' }
+
+# Built-in VPN (SSTP, L2TP, IKEv2) logs connection errors to Application as
+# RasClient, not to System.
+$ApplicationProviders = @('RasClient')
+
+function Get-DriverProviderNames {
+    # A driver logs under the name of its service. For many drivers it equals
+    # the driver file name (Netwtw14.sys / Netwtw14), for others it does not
+    # (rt68cx21x64.sys / rt68cx21), so both are taken: an extra name in the
+    # XPath costs nothing. Adapters: @{ driverFileName; serviceName }.
+    param([AllowEmptyCollection()][object[]] $Adapters)
+    $names = @(foreach ($a in $Adapters) {
+            if ($null -eq $a) { continue }
+            if ($a['driverFileName']) { [IO.Path]::GetFileNameWithoutExtension([string]$a['driverFileName']) }
+            if ($a['serviceName']) { [string]$a['serviceName'] }
+        })
+    , @($names | Where-Object { $_ } | Sort-Object -Unique)
+}
+
+# The event log rejects an XPath with more than about 21 provider conditions
+# ("The specified query is invalid"); providers are queried in chunks.
+$ProvidersPerQuery = 15
+
+function Split-IntoChunks {
+    # Returns an array of arrays of at most $Size items.
+    param([AllowEmptyCollection()][object[]] $Items, [int] $Size)
+    $chunks = [System.Collections.Generic.List[object]]::new()
+    for ($i = 0; $i -lt $Items.Count; $i += $Size) {
+        $chunks.Add(@($Items[$i..([Math]::Min($i + $Size, $Items.Count) - 1)]))
+    }
+    , $chunks.ToArray()
+}
 
 function New-EventXPath {
     # XPath for Get-WinEvent -FilterXPath: events of the last N days,
@@ -79,26 +111,38 @@ function Group-Events {
 # Dot-sourcing (tests) loads the functions without collecting.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
-Invoke-Collector -Module 'events' -Version '1.0.0' -OutFile $OutFile -ScriptBlock {
+Invoke-Collector -Module 'events' -Version '1.1.0' -OutFile $OutFile -ScriptBlock {
     param($ctx)
     $since = [datetime]::UtcNow.AddDays(-$PeriodDays)
 
-    # Drivers of physical adapters log under their driver name; virtual ones
-    # (Hyper-V switch, Wi-Fi Direct) are left out: the Hyper-V switch alone
-    # logs thousands of events a week.
-    $driverProviders = Invoke-Source -Context $ctx -Source 'Get-NetAdapter' -AsList -ScriptBlock {
-        Get-NetAdapter -Physical -ErrorAction Stop | Where-Object { $_.DriverFileName } |
-            ForEach-Object { [IO.Path]::GetFileNameWithoutExtension($_.DriverFileName) } | Sort-Object -Unique
+    # Drivers of physical adapters (including VPN miniports, which Windows
+    # counts as physical); virtual ones (Hyper-V switch, Wi-Fi Direct) are
+    # left out: the Hyper-V switch alone logs thousands of events a week.
+    $fromNetAdapter = Invoke-Source -Context $ctx -Source 'Get-NetAdapter' -AsList -ScriptBlock {
+        Get-NetAdapter -Physical -ErrorAction Stop | ForEach-Object { @{ driverFileName = $_.DriverFileName; serviceName = $null } }
     }
-    $providers = @(@($SystemProviders) + @($driverProviders | Where-Object { $_ }))
+    $fromCim = Invoke-Source -Context $ctx -Source 'Win32_NetworkAdapter' -AsList -ScriptBlock {
+        Get-CimInstance -ClassName Win32_NetworkAdapter -Filter 'PhysicalAdapter = TRUE' -ErrorAction Stop |
+            ForEach-Object { @{ driverFileName = $null; serviceName = $_.ServiceName } }
+    }
+    $driverProviders = Get-DriverProviderNames -Adapters @(@($fromNetAdapter) + @($fromCim))
+    $providers = @(@($SystemProviders) + @($driverProviders))
 
     $all = [System.Collections.Generic.List[object]]::new()
     $queried = [System.Collections.Generic.List[object]]::new()
     $system = Invoke-Source -Context $ctx -Source 'System' -AsList -ScriptBlock {
-        Invoke-AllowNotFound { Get-WinEvent -LogName 'System' -FilterXPath (New-EventXPath -Days $PeriodDays -Providers $providers) -ErrorAction Stop }
+        foreach ($chunk in (Split-IntoChunks -Items @($providers | Sort-Object -Unique) -Size $ProvidersPerQuery)) {
+            Invoke-AllowNotFound { Get-WinEvent -LogName 'System' -FilterXPath (New-EventXPath -Days $PeriodDays -Providers $chunk) -ErrorAction Stop }
+        }
     }
     $queried.Add(@{ logName = 'System'; ok = ($null -ne $system) })
     foreach ($e in @($system)) { if ($null -ne $e) { $all.Add($e) } }
+
+    $application = Invoke-Source -Context $ctx -Source 'Application' -AsList -ScriptBlock {
+        Invoke-AllowNotFound { Get-WinEvent -LogName 'Application' -FilterXPath (New-EventXPath -Days $PeriodDays -Providers $ApplicationProviders) -ErrorAction Stop }
+    }
+    $queried.Add(@{ logName = 'Application'; ok = ($null -ne $application) })
+    foreach ($e in @($application)) { if ($null -ne $e) { $all.Add($e) } }
 
     foreach ($o in $OperationalLogs) {
         $ids = @()
@@ -128,6 +172,7 @@ Invoke-Collector -Module 'events' -Version '1.0.0' -OutFile $OutFile -ScriptBloc
         periodDays = $PeriodDays
         since      = Format-Timestamp $since
         providers  = @($providers | Sort-Object -Unique)
+        applicationProviders = $ApplicationProviders
         logs       = $logs
         groups     = Group-Events -Events $all.ToArray() -MaxTimes $MaxTimesPerGroup
     }

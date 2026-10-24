@@ -56,6 +56,8 @@ Describe 'Wi-Fi presence' {
         $null -eq (Get-WifiSkipReason @(@{ name = 'Wi-Fi'; status = 'Disconnected' })) | Should Be $true
         $null -eq (Get-WifiSkipReason @(@{ name = 'A'; status = 'Disabled' }, @{ name = 'B'; status = 'Up' })) | Should Be $true
         $null -eq (Get-WifiSkipReason $null) | Should Be $true
+        Get-WifiSkipReason @(@{ name = 'Wi-Fi USB'; status = 'Not Present' }) | Should Match 'not present'
+        Get-WifiSkipReason @(@{ name = 'A'; status = 'Not Present' }, @{ name = 'B'; status = 'Disabled' }) | Should Match 'disabled'
     }
     It 'reports unrecognized netsh output as an error, not as "no Wi-Fi"' {
         $ctx = New-CollectorContext -Module 'wifi' -Version '0'
@@ -200,7 +202,7 @@ Describe 'Collector: wifi' {
     $env = Invoke-CollectorScript -Path $collector -OutFile (Join-Path $TestDrive 'wifi.json')
     $data = $env['data']
     $json = [IO.File]::ReadAllText((Join-Path $TestDrive 'wifi.json'), [Text.Encoding]::UTF8)
-    $hasWifi = @(Get-NetAdapter -Physical | Where-Object { $_.NdisPhysicalMedium -eq 9 -and $_.Status -ne 'Disabled' }).Count -gt 0
+    $hasWifi = @(Get-NetAdapter -Physical | Where-Object { $_.NdisPhysicalMedium -eq 9 -and [string]$_.Status -notin 'Disabled', 'Not Present' }).Count -gt 0
 
     It 'produces a valid envelope' {
         (Get-EnvelopeProblems -Envelope $env -Module 'wifi') -join '; ' | Should Be ''
