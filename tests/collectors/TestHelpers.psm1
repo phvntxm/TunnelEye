@@ -61,41 +61,47 @@ function Get-EnvelopeProblems {
     , $problems.ToArray()
 }
 
+function Find-KeyPaths {
+    # Walks the data tree without recursion (an explicit stack: recursive
+    # calls returning arrays took seconds on the ~1 MB firewall data) and
+    # returns the paths of dictionary keys for which $Test returns true.
+    param([AllowNull()] $Node, [string] $Path, [Parameter(Mandatory)][scriptblock] $Test)
+    $bad = [System.Collections.Generic.List[string]]::new()
+    $stack = [System.Collections.Generic.Stack[object]]::new()
+    $stack.Push(@($Node, $Path))
+    while ($stack.Count) {
+        $item = $stack.Pop()
+        $n = $item[0]
+        $p = $item[1]
+        if ($n -is [System.Collections.IDictionary]) {
+            foreach ($key in $n.Keys) {
+                if (& $Test $key) { $bad.Add("$p.$key") }
+                $child = $n[$key]
+                if ($child -is [System.Collections.IDictionary] -or $child -is [object[]]) { $stack.Push(@($child, "$p.$key")) }
+            }
+        }
+        elseif ($n -is [object[]]) {
+            for ($i = 0; $i -lt $n.Count; $i++) {
+                $child = $n[$i]
+                if ($child -is [System.Collections.IDictionary] -or $child -is [object[]]) { $stack.Push(@($child, "$p[$i]")) }
+            }
+        }
+    }
+    $bad.Sort()
+    , $bad.ToArray()
+}
+
 function Get-NonCamelCaseKeys {
     # Returns key paths in data that are not camelCase (data maps with
     # data-derived keys are not allowed; use arrays of objects instead).
     param([AllowNull()] $Node, [string] $Path = 'data')
-    $bad = New-Object System.Collections.Generic.List[string]
-    if ($Node -is [System.Collections.IDictionary]) {
-        foreach ($key in $Node.Keys) {
-            if ($key -cnotmatch '^[a-z][a-zA-Z0-9]*$') { $bad.Add("$Path.$key") }
-            foreach ($b in (Get-NonCamelCaseKeys -Node $Node[$key] -Path "$Path.$key")) { $bad.Add($b) }
-        }
-    }
-    elseif ($Node -is [object[]]) {
-        for ($i = 0; $i -lt $Node.Count; $i++) {
-            foreach ($b in (Get-NonCamelCaseKeys -Node $Node[$i] -Path "$Path[$i]")) { $bad.Add($b) }
-        }
-    }
-    , $bad.ToArray()
+    Find-KeyPaths -Node $Node -Path $Path -Test { param($k) $k -cnotmatch '^[a-z][a-zA-Z0-9]*$' }
 }
 
 function Get-SensitiveKeys {
     # Returns key paths whose names suggest secrets (must never be collected).
     param([AllowNull()] $Node, [string] $Path = 'data')
-    $bad = New-Object System.Collections.Generic.List[string]
-    if ($Node -is [System.Collections.IDictionary]) {
-        foreach ($key in $Node.Keys) {
-            if ($key -match 'password|passphrase|keyMaterial|secret|psk|credential|token') { $bad.Add("$Path.$key") }
-            foreach ($b in (Get-SensitiveKeys -Node $Node[$key] -Path "$Path.$key")) { $bad.Add($b) }
-        }
-    }
-    elseif ($Node -is [object[]]) {
-        for ($i = 0; $i -lt $Node.Count; $i++) {
-            foreach ($b in (Get-SensitiveKeys -Node $Node[$i] -Path "$Path[$i]")) { $bad.Add($b) }
-        }
-    }
-    , $bad.ToArray()
+    Find-KeyPaths -Node $Node -Path $Path -Test { param($k) $k -match 'password|passphrase|keyMaterial|secret|psk|credential|token' }
 }
 
 Export-ModuleMember -Function Get-RepoRoot, Invoke-CollectorScript, Get-EnvelopeProblems, Get-NonCamelCaseKeys, Get-SensitiveKeys

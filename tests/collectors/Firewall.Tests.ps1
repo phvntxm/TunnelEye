@@ -47,6 +47,9 @@ Describe 'WFP state parser' {
     It 'reads the <wfpstate> element of a multi-root file' {
         $doc.DocumentElement.Name | Should Be 'wfpstate'
     }
+    It 'throws instead of continuing when the file cannot be opened' {
+        { Read-WfpStateXml -Path (Join-Path $TestDrive 'missing.xml') } | Should Throw
+    }
     It 'lists providers, sublayers, callouts and filters' {
         $wfp['providers'].Count | Should Be 2
         $wfp['subLayers'].Count | Should Be 2
