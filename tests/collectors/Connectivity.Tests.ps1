@@ -11,16 +11,18 @@ $collector = Join-Path (Get-RepoRoot) 'collectors\connectivity.ps1'
 function New-FakeNet {
     # Fake network functions that record every probed address. $Ping:
     # param($Address, $Size, $Ttl, $DontFragment) -> status string.
-    param([scriptblock] $Ping, [scriptblock] $Dns, [scriptblock] $Tcp)
+    param([scriptblock] $Ping, [scriptblock] $Dns, [scriptblock] $Tcp, [scriptblock] $System)
     $calls = [System.Collections.Generic.List[string]]::new()
     if (-not $Ping) { $Ping = { param($a, $s, $t, $df) 'Success' } }
     if (-not $Dns) { $Dns = { param($srv, $n, $type) @{ status = 'answer'; rcode = 0; addresses = @('203.0.113.10'); rttMs = 5 } } }
     if (-not $Tcp) { $Tcp = { param($h, $p) @{ status = 'open' } } }
+    if (-not $System) { $System = { param($n) @{ status = 'answer'; addresses = @('203.0.113.10'); rttMs = 1 } } }
     $net = @{
         calls = $calls
         ping  = { param($Address, $Size, $Ttl, $DontFragment, $TimeoutMs) $calls.Add("ping:$Address"); @{ status = (& $Ping $Address $Size $Ttl $DontFragment); rttMs = 1; address = $Address } }.GetNewClosure()
         dns   = { param($Server, $Name, $Type, $TimeoutMs) $calls.Add("dns:$Server"); & $Dns $Server $Name $Type }.GetNewClosure()
         tcp   = { param($HostName, $Port, $TimeoutMs) $calls.Add("tcp:$HostName"); & $Tcp $HostName $Port }.GetNewClosure()
+        system = { param($Name, $TimeoutMs) $calls.Add("system:$Name"); & $System $Name }.GetNewClosure()
         route = { param($Address) @{ interfaceIndex = 7; interfaceAlias = 'Test' } }
     }
     $net
@@ -28,7 +30,7 @@ function New-FakeNet {
 
 function Get-ProbedAddresses {
     param($Net)
-    @($Net.calls | ForEach-Object { ($_ -split ':', 2)[1] -replace '%.*$', '' })
+    @($Net.calls | Where-Object { $_ -notlike 'system:*' } | ForEach-Object { ($_ -split ':', 2)[1] -replace '%.*$', '' })
 }
 
 Describe 'connectivity: target policy (D-002)' {
@@ -61,6 +63,21 @@ Describe 'connectivity: target policy (D-002)' {
 
 Describe 'connectivity: helpers' {
     . $collector
+
+    It 'keeps only active default routes on interfaces that are up' {
+        $routes = @(
+            [pscustomobject]@{ DestinationPrefix = '0.0.0.0/0'; NextHop = '192.168.1.1'; InterfaceIndex = 3; InterfaceAlias = 'Wi-Fi'; Store = 'ActiveStore' }
+            [pscustomobject]@{ DestinationPrefix = '0.0.0.0/0'; NextHop = '192.168.1.1'; InterfaceIndex = 3; InterfaceAlias = 'Wi-Fi'; Store = 'ActiveStore' }
+            [pscustomobject]@{ DestinationPrefix = '0.0.0.0/0'; NextHop = '10.8.0.1'; InterfaceIndex = 9; InterfaceAlias = 'Old VPN'; Store = 'PersistentStore' }
+            [pscustomobject]@{ DestinationPrefix = '0.0.0.0/0'; NextHop = '172.16.0.1'; InterfaceIndex = 5; InterfaceAlias = 'Down'; Store = 'ActiveStore' }
+            [pscustomobject]@{ DestinationPrefix = '0.0.0.0/0'; NextHop = '0.0.0.0'; InterfaceIndex = 3; InterfaceAlias = 'Tun'; Store = 'ActiveStore' }
+            [pscustomobject]@{ DestinationPrefix = '::/0'; NextHop = 'fe80::1'; InterfaceIndex = 3; InterfaceAlias = 'Wi-Fi'; Store = 'ActiveStore' }
+        )
+        $g = Select-ActiveGateways -Routes $routes -UpInterfaces @{ 3 = $true; 9 = $true }
+        , $g | Should BeOfType [object[]]
+        ($g | ForEach-Object { $_['address'] + '/' + $_['family'] }) -join ',' | Should Be '192.168.1.1/IPv4,fe80::1%3/IPv6'
+        (Select-ActiveGateways -Routes @() -UpInterfaces @{}).Count | Should Be 0
+    }
 
     It 'builds PTR names' {
         Get-ReverseName '192.168.1.1' | Should BeExactly '1.1.168.192.in-addr.arpa'
@@ -266,10 +283,30 @@ Describe 'connectivity: orchestration' {
         $e = $data['external']
         $e['ping'][0]['target'] | Should Be '198.51.100.1'
         $e['ping'][0]['viaInterfaceIndex'] | Should Be 7
-        ($e['dns'][0]['results'] | ForEach-Object { $_['server'] + '/' + $_['source'] }) -join ',' | Should Be '198.51.100.53/config,192.168.1.1/interface,8.8.8.8/interface'
+        ($e['dns'][0]['results'] | ForEach-Object { $_['server'] + '/' + $_['source'] }) -join ',' | Should Be '198.51.100.53/config,192.168.1.1/interface,8.8.8.8/interface,system/system'
         $e['trace'][0]['status'] | Should Be 'reached'
         ($e['mtu'] | ForEach-Object { $_['target'] }) -join ',' | Should Be '198.51.100.1'
         ($data['dnsServers'] | Where-Object { $_['address'] -eq '8.8.8.8' })['tested'] | Should Be $true
+    }
+    It 'retries a lost external DNS answer instead of reporting the server as failed' {
+        $state = @{ n = 0 }
+        $net = New-FakeNet -Dns {
+            param($s, $n, $t)
+            if ($t -eq 1 -and $s -eq '198.51.100.53') { $state.n++; if ($state.n -eq 1) { return @{ status = 'timeout' } } }
+            @{ status = 'answer'; rcode = 0; addresses = @('203.0.113.10'); rttMs = 5 }
+        }.GetNewClosure()
+        $data = Invoke-ConnectivityChecks -Inventory $inventory -Net $net -AllowExternal $true
+        $first = $data['external']['dns'][0]['results'][0]
+        $first['status'] | Should Be 'answer'
+        $state.n | Should Be 2
+        $data['external']['dns'][0]['failedServers'].Count | Should Be 0
+    }
+    It 'adds what the system resolver gives applications (hosts included)' {
+        $net = New-FakeNet -System { param($n) @{ status = 'answer'; addresses = @('127.0.0.1'); rttMs = 1 } }
+        $data = Invoke-ConnectivityChecks -Inventory $inventory -Net $net -AllowExternal $true
+        $c = $data['external']['dns'][0]
+        $c['results'][-1]['source'] | Should Be 'system'
+        ($c['sinkholeServers'] -join ',') | Should Be 'system'
     }
     It 'never probes invalid targets from a targets file' {
         $bad = $inventory.Clone()

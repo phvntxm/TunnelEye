@@ -1,11 +1,11 @@
 {
   "schema": "tunneleye.connectivity-targets/1",
-  "comment": "Targets of the external connectivity tests (D-002), used only with explicit consent (-AllowExternal). Neutral large services only. Users add their own in %LOCALAPPDATA%\\TunnelEye\\connectivity-targets.json (same format); the lists are joined. ping, trace, mtu and dns.servers take IP addresses, dns.names take host names. See docs/schema/connectivity.md.",
-  "ping": [ "1.1.1.1", "8.8.8.8", "77.88.8.8" ],
+  "comment": "Targets of the external connectivity tests (D-002), used only with explicit consent (-AllowExternal). Neutral large services only. Users add their own in %LOCALAPPDATA%\\TunnelEye\\connectivity-targets.json (same format); the lists are joined. IPv6 targets show traffic that bypasses a tunnel carrying IPv4 only; without an IPv6 default route they fail at once. ping, trace, mtu and dns.servers take IP addresses, dns.names take host names. See docs/schema/connectivity.md.",
+  "ping": [ "1.1.1.1", "8.8.8.8", "77.88.8.8", "2606:4700:4700::1111", "2001:4860:4860::8888", "2a02:6b8::feed:0ff" ],
   "dns": {
-    "servers": [ "1.1.1.1", "8.8.8.8", "77.88.8.8" ],
+    "servers": [ "1.1.1.1", "8.8.8.8", "77.88.8.8", "2606:4700:4700::1111", "2001:4860:4860::8888", "2a02:6b8::feed:0ff" ],
     "names": [ "www.microsoft.com", "ya.ru", "github.com" ]
   },
-  "trace": [ "1.1.1.1" ],
+  "trace": [ "1.1.1.1", "2606:4700:4700::1111" ],
   "mtu": [ "1.1.1.1" ]
 }

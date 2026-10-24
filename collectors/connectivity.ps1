@@ -62,6 +62,28 @@ function Test-TargetAllowed {
     @{ allowed = $AllowExternal; addressClass = $class; reason = if ($AllowExternal) { 'external' } else { 'externalNotAllowed' } }
 }
 
+function Select-ActiveGateways {
+    # Default gateways worth probing: routes of the active store only (the
+    # persistent store keeps static gateways of adapters that are down, e.g.
+    # leftovers of VPN clients) on interfaces that are up, without on-link
+    # routes (next hop 0.0.0.0 / ::, a tunnel). One entry per address;
+    # link-local IPv6 next hops get the interface as zone. Routes: objects
+    # with DestinationPrefix, NextHop, InterfaceIndex, InterfaceAlias, Store.
+    # UpInterfaces: interface index -> $true; empty means "unknown, keep all".
+    param([AllowEmptyCollection()][object[]] $Routes, [hashtable] $UpInterfaces = @{})
+    $seen = @{}
+    , @(foreach ($r in $Routes) {
+            if ($null -eq $r -or $r.NextHop -in '0.0.0.0', '::') { continue }
+            if ($r.Store -and [string]$r.Store -ne 'ActiveStore') { continue }
+            if ($UpInterfaces.Count -and -not $UpInterfaces.ContainsKey([int]$r.InterfaceIndex)) { continue }
+            $family = if ($r.DestinationPrefix -eq '0.0.0.0/0') { 'IPv4' } else { 'IPv6' }
+            $address = if ($family -eq 'IPv6' -and $r.NextHop -like 'fe80:*') { '{0}%{1}' -f $r.NextHop, $r.InterfaceIndex } else { [string]$r.NextHop }
+            if ($seen.ContainsKey($address)) { continue }
+            $seen[$address] = $true
+            @{ address = $address; family = $family; interfaceIndex = [int]$r.InterfaceIndex; interfaceAlias = $r.InterfaceAlias }
+        })
+}
+
 function Get-ReverseName {
     # PTR name of an address: 1.1.168.192.in-addr.arpa, or nibbles for IPv6.
     param([Parameter(Mandatory)][string] $Address)
@@ -222,9 +244,11 @@ function ConvertTo-DnsStatus {
 # $Net: @{ ping = { param($Address, $Size, $Ttl, $DontFragment, $TimeoutMs) }
 #          dns  = { param($Server, $Name, $Type, $TimeoutMs) }
 #          tcp  = { param($Host, $Port, $TimeoutMs) }
+#          system = { param($Name, $TimeoutMs) }
 #          route = { param($Address) } }
 # ping -> @{ status; rttMs; address }, dns -> @{ status; rcode; addresses;
-# rttMs }, tcp -> @{ status } (open | refused | timeout | error),
+# rttMs }, system -> @{ status; addresses; rttMs } (the system resolver),
+# tcp -> @{ status } (open | refused | timeout | error),
 # route -> @{ interfaceIndex; interfaceAlias } or $null.
 
 function New-Budget {
@@ -526,9 +550,21 @@ function Invoke-ConnectivityChecks {
         $dns = @(foreach ($name in @($t.dnsNames)) {
                 $results = @(foreach ($s in $servers) {
                         if (-not (Test-Budget $Budget)) { . $skippedBudget; [ordered]@{ server = $s.server; source = $s.source; status = 'skipped'; rcode = $null; addresses = @(); rttMs = $null }; continue }
-                        $r = & $Net.dns $s.server $name 1 $DnsTimeoutMs
+                        # A lost datagram is not a server failure: retry a timeout.
+                        $r = $null
+                        for ($a = 1; $a -le $DnsAttempts; $a++) {
+                            $r = & $Net.dns $s.server $name 1 $DnsTimeoutMs
+                            if ($r.status -ne 'timeout') { break }
+                        }
                         [ordered]@{ server = $s.server; source = $s.source; status = $r.status; rcode = $r.rcode; addresses = @($r.addresses); rttMs = $r.rttMs }
                     })
+                # What applications get: the system resolver, with hosts, the
+                # DNS cache and Windows DoH (the DNS client above bypasses them).
+                if (Test-Budget $Budget) {
+                    $sys = & $Net.system $name $DnsTimeoutMs
+                    $results += [ordered]@{ server = 'system'; source = 'system'; status = $sys.status; rcode = $null; addresses = @($sys.addresses); rttMs = $sys.rttMs }
+                }
+                else { . $skippedBudget }
                 Compare-DnsAnswers -Name $name -Results $results
             })
 
@@ -600,8 +636,15 @@ $RealNet = @{
             $endpoint = New-Object System.Net.IPEndPoint($ip, 53)
             [void]$client.Send($packet, $packet.Length, $endpoint)
             $from = New-Object System.Net.IPEndPoint($ip, 0)
+            $expected = [BitConverter]::ToString($ip.GetAddressBytes())
             while ($true) {
                 $bytes = $client.Receive([ref]$from)
+                # Only answers from the server asked (zone ignored); a packet
+                # from elsewhere with a matching ID is dropped.
+                if ([BitConverter]::ToString($from.Address.GetAddressBytes()) -ne $expected) {
+                    if ($watch.ElapsedMilliseconds -ge $TimeoutMs) { break }
+                    continue
+                }
                 $response = ConvertFrom-DnsResponse -Bytes $bytes -Id $id
                 if ($null -ne $response) {
                     return @{ status = ConvertTo-DnsStatus $response; rcode = $response.rcode; addresses = $response.addresses; rttMs = $watch.ElapsedMilliseconds }
@@ -616,6 +659,23 @@ $RealNet = @{
         }
         catch { @{ status = 'error'; rcode = $null; addresses = @(); rttMs = $null } }
         finally { if ($null -ne $client) { $client.Close() } }
+    }
+    system = {
+        # IPv4 answers only, to compare with the A queries.
+        param($Name, $TimeoutMs)
+        $watch = [Diagnostics.Stopwatch]::StartNew()
+        try {
+            $task = [System.Net.Dns]::GetHostAddressesAsync([string]$Name)
+            if (-not $task.Wait([int]$TimeoutMs)) { return @{ status = 'timeout'; addresses = @(); rttMs = $null } }
+            $v4 = @($task.Result | Where-Object { $_.AddressFamily -eq [System.Net.Sockets.AddressFamily]::InterNetwork } | ForEach-Object { $_.ToString() })
+            @{ status = 'answer'; addresses = $v4; rttMs = $watch.ElapsedMilliseconds }
+        }
+        catch {
+            $inner = $_.Exception
+            while ($null -ne $inner.InnerException) { $inner = $inner.InnerException }
+            if ($inner -is [System.Net.Sockets.SocketException] -and $inner.SocketErrorCode -eq [System.Net.Sockets.SocketError]::HostNotFound) { return @{ status = 'nxdomain'; addresses = @(); rttMs = $watch.ElapsedMilliseconds } }
+            @{ status = 'error'; addresses = @(); rttMs = $null }
+        }
     }
     tcp   = {
         param($HostName, $Port, $TimeoutMs)
@@ -647,7 +707,7 @@ $RealNet = @{
 # Dot-sourcing (tests) loads the functions without collecting.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
-Invoke-Collector -Module 'connectivity' -Version '1.0.1' -OutFile $OutFile -ScriptBlock {
+Invoke-Collector -Module 'connectivity' -Version '1.1.0' -OutFile $OutFile -ScriptBlock {
     param($ctx)
     $budget = New-Budget -LimitMs $BudgetMs
 
@@ -672,19 +732,12 @@ Invoke-Collector -Module 'connectivity' -Version '1.0.1' -OutFile $OutFile -Scri
     foreach ($i in @($adapters)) { if ($null -ne $i) { $up[$i] = $true } }
 
     $gateways = Invoke-Source -Context $ctx -Source 'Get-NetRoute' -AsList -ScriptBlock {
-        $seen = @{}
         # Each prefix on its own: a missing ::/0 is "not found", not an error,
-        # and must not drop the IPv4 gateways.
-        $routes = @(foreach ($prefix in '0.0.0.0/0', '::/0') { Invoke-AllowNotFound { Get-NetRoute -DestinationPrefix $prefix -ErrorAction Stop } })
-        foreach ($r in $routes) {
-            if ($r.NextHop -in '0.0.0.0', '::') { continue }
-            $family = if ($r.DestinationPrefix -eq '0.0.0.0/0') { 'IPv4' } else { 'IPv6' }
-            # Link-local next hops need the interface as zone.
-            $address = if ($family -eq 'IPv6' -and $r.NextHop -like 'fe80:*') { '{0}%{1}' -f $r.NextHop, $r.InterfaceIndex } else { $r.NextHop }
-            if ($seen.ContainsKey($address)) { continue }
-            $seen[$address] = $true
-            @{ address = $address; family = $family; interfaceIndex = [int]$r.InterfaceIndex; interfaceAlias = $r.InterfaceAlias }
-        }
+        # and must not drop the IPv4 gateways. Active store only.
+        $routes = @(foreach ($prefix in '0.0.0.0/0', '::/0') {
+                Invoke-AllowNotFound { Get-NetRoute -DestinationPrefix $prefix -PolicyStore ActiveStore -ErrorAction Stop }
+            })
+        Select-ActiveGateways -Routes $routes -UpInterfaces $up
     }
 
     $dnsServers = Invoke-Source -Context $ctx -Source 'Get-DnsClientServerAddress' -AsList -ScriptBlock {
