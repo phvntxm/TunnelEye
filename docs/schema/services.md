@@ -82,7 +82,7 @@ NDIS lightweight filters — драйверы, встающие между ад�
 
 | Поле | Тип | Примечание |
 | --- | --- | --- |
-| `componentId` | string | `ms_pacer`, `ms_wfplwf_lower`, `ft_fortifilter`, … |
+| `componentId` | string | `ms_pacer`, `ms_wfplwf_lower`, `<vendor>_lwf`, … |
 | `displayName` | string \| null | Из привязок адаптеров (локализовано), иначе из реестра, если это не ссылка на ресурс |
 | `service` | string \| null | Драйвер фильтра — связь с `drivers[].name` |
 | `filterClass` | string \| null | Порядок в стеке: `compression`, `encryption`, `scheduler`, `firewall`, `vpn`, `custom`, … |

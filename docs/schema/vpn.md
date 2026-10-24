@@ -48,7 +48,7 @@
 | Поле | Тип | Примечание |
 | --- | --- | --- |
 | `id`, `name` | string | Из сигнатуры |
-| `kind` | string | `vpn` \| `mesh` (Tailscale, ZeroTier, Radmin, Hamachi) \| `proxy-tunnel` (Happ, v2rayN, Hiddify, ядра xray/sing-box) \| `dpi-bypass` (zapret, GoodbyeDPI) \| `driver` (TAP-Windows, Wintun, WinDivert) |
+| `kind` | string | `vpn` \| `mesh` (Tailscale, ZeroTier, Radmin, Hamachi) \| `proxy-tunnel` (v2rayN, Hiddify, NekoRay, ядра xray/sing-box) \| `dpi-bypass` (GoodbyeDPI и аналоги) \| `driver` (TAP-Windows, Wintun, WinDivert) |
 | `generic` | bool | Общая сигнатура (драйвер или ядро без привязки к клиенту): получает только элементы, не совпавшие ни с одной конкретной |
 | `software[]` | `{ displayName, displayVersion, publisher, scope }` | Записи «Программы и компоненты»; `scope`: `machine` \| `user` (HKCU учётной записи, от которой запущен модуль) |
 | `services[]`, `drivers[]` | см. ниже | Службы и драйверы-службы |
