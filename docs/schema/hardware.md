@@ -1,6 +1,6 @@
 # Модуль `hardware`
 
-Версия модуля 1.0.0. Файл: `collectors/hardware.ps1`. Без прав администратора модуль `partial` с единственной ошибкой `Get-StorageReliabilityCounter = AccessDenied`: счётчики SMART дисков читаются только с правами админа. Всё остальное собирается полностью.
+Версия модуля 1.1.0 (1.1.0 — по ревью 003: `system.hypervisorPresent`, флаг виртуализации с учётом гипервизора). Файл: `collectors/hardware.ps1`. Без прав администратора модуль `partial` с единственной ошибкой `Get-StorageReliabilityCounter = AccessDenied`: счётчики SMART дисков читаются только с правами админа. Всё остальное собирается полностью.
 
 Модуль собирает факты, не делая выводов. Узкие места (мало RAM, одноканальная память, HDD как системный диск, слабый CPU) и варианты апгрейда считает анализатор (этап 5) по своей базе моделей. Сетевая карта — в модуле `adapters` (модель, драйвер, скорость линка), здесь не дублируется.
 
@@ -16,9 +16,9 @@
 | `disks` | `Get-PhysicalDisk`, `Get-Partition` (системный диск), `Get-StorageReliabilityCounter` (только с правами админа) |
 | `slots` | `Win32_SystemSlot` |
 
-## Приватность
+## Приватность (D-012)
 
-Серийные номера (BIOS, платы, дисков, модулей памяти), UUID системы и машинно-специфичная часть PnP-идентификаторов не собираются: они однозначно указывают на конкретное устройство. Модели и номера деталей (part number) — сведения о железе, а не о человеке; они нужны для подбора апгрейда.
+Серийные номера (BIOS, платы, дисков, модулей памяти), UUID системы и машинно-специфичная часть PnP-идентификаторов не собираются: они однозначно указывают на конкретное устройство. Модели и номера деталей (part number, модели дисков) — сведения о железе, а не о человеке; они нужны для подбора апгрейда и при экспорте не маскируются (решение владельца).
 
 Пустые значения и заглушки SMBIOS (`To Be Filled By O.E.M.`, `Default string`, `x.x`, `Unknown`, `0` и т. п.) записываются как `null`.
 
@@ -29,11 +29,15 @@
 | `manufacturer`, `model` | string \| null | Производитель и модель ПК (у самосборных — обычно плата) |
 | `pcSystemType` | string \| null | `Desktop` \| `Mobile` \| `Workstation` \| `Slate` \| … — десктоп или ноутбук важен для правил (энергосбережение адаптера, апгрейд) |
 | `systemType` | string | `x64-based PC`, … |
+| `hypervisorPresent` | bool \| null | Работает гипервизор (Hyper-V, VBS, WSL 2): Windows сама гость гипервизора |
 | `totalPhysicalMemoryBytes` | int64 | Видимая Windows память |
 
 ## `cpus[]`
 
-`{ name, manufacturer, cores, logicalProcessors, maxClockMhz, socket, l2CacheKb, l3CacheKb, architecture, virtualizationFirmwareEnabled }`. `architecture`: `x86` \| `x64` \| `ARM` \| `ARM64`. `socket` — как пишет SMBIOS (`AM4`, `LGA1700`, …), основа совместимости CPU.
+`{ name, manufacturer, cores, logicalProcessors, maxClockMhz, socket, l2CacheKb, l3CacheKb, architecture, virtualizationFirmwareEnabled, virtualizationSource }`. `architecture`: `x86` \| `x64` \| `ARM` \| `ARM64`.
+
+- `socket` — `SocketDesignation` из SMBIOS. **Ненадёжно:** часто это не сокет, а метка на плате (`U3E1`, `CPU 1`, `SOCKET 0`). Сокет для совместимости — по модели CPU в базе этапа 5.
+- `virtualizationFirmwareEnabled` — включена ли виртуализация (VT-x / AMD-V) в BIOS. Под работающим гипервизором Windows — гость, и флаги виртуализации `Win32_Processor` могут читаться как `False`; гипервизор без включённой виртуализации не работает, поэтому при `system.hypervisorPresent = true` пишется `true` и `virtualizationSource = 'hypervisor'`, иначе — значение CIM и `'cim'`.
 
 ## `memory`
 
@@ -64,7 +68,7 @@
 | `name` | string \| null | |
 | `vendorId`, `deviceId` | string \| null | Из PnP-идентификатора (`VEN_`, `DEV_`), без части экземпляра |
 | `memoryBytes` | int64 \| null | Видеопамять |
-| `memorySource` | string \| null | `registry` — `HardwareInformation.qwMemorySize` из ключа драйвера (точно); `cim` — `AdapterRAM` (32-битное поле: всё, что больше 4 ГБ, показывается как ~4 ГБ) |
+| `memorySource` | string \| null | `registry` — `HardwareInformation.qwMemorySize` из ключа драйвера (точно); `cim` — `AdapterRAM` (32-битное поле: всё, что больше 4 ГБ, показывается как ~4 ГБ). Ключ драйвера сопоставляется с картой по имени (`DriverDesc` = `name`): у двух одинаковых карт имя одно, размер верный, но привязка к конкретной карте неоднозначна |
 | `driverVersion`, `driverDate` | string \| null | |
 
 Ключ класса видеоадаптеров читается по подразделам: его подраздел `Properties` закрыт для обычного пользователя, и перечисление `Get-ChildItem` целиком падает.
