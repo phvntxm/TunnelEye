@@ -63,7 +63,7 @@ namespace Argus.Core.Facts
                     var a = adapters[j];
                     var status = JsonValue.AsString(JsonValue.Get(a, "status"));
                     var description = JsonValue.AsString(JsonValue.Get(a, "interfaceDescription"));
-                    if (status == "Not Present")
+                    if (string.Equals(status, "Not Present", StringComparison.OrdinalIgnoreCase))
                         Add(fact, "adapterNotPresent", id, name, description, status, path + ".adapters[" + j + "]");
                     else if (generic && id == "tap-windows" && !tapUserInstalled)
                         Add(fact, "tapAdapterWithoutClient", id, name, description, status, path + ".adapters[" + j + "]");

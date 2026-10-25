@@ -29,6 +29,9 @@ namespace Argus.Core.Facts
 
         public Snapshot Snapshot { get; }
 
+        /// <summary>Errors of fact providers: a failing fact is unavailable, the others still work.</summary>
+        public List<string> Errors { get; } = new List<string>();
+
         /// <summary>The fact, built on first use; an unknown name gives an unavailable fact.</summary>
         public FactSet Get(string name)
         {
@@ -38,6 +41,12 @@ namespace Argus.Core.Facts
             if (provider == null) return FactSet.Unavailable(name, "unknown-fact");
             if (!_building.Add(name)) throw new InvalidOperationException("Fact dependency cycle at '" + name + "'.");
             try { fact = provider.Build(this); }
+            catch (Exception e) when (!(e is InvalidOperationException && e.Message.StartsWith("Fact dependency cycle", StringComparison.Ordinal)))
+            {
+                // Like a failing collector in stage 1: this fact is lost, the analysis goes on.
+                Errors.Add("fact " + name + ": " + e.GetType().Name + ": " + e.Message);
+                fact = FactSet.Unavailable(name, "fact-error:" + e.GetType().Name);
+            }
             finally { _building.Remove(name); }
             _built[name] = fact;
             return fact;

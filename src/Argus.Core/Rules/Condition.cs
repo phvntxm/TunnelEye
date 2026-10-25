@@ -36,7 +36,8 @@ namespace Argus.Core.Rules
             var result = new List<FactItem>();
             foreach (var item in fact.Items)
             {
-                if (Where == null || Where.Test(item.Values, context)) result.Add(item);
+                // Only True matches: Unknown (a missing field somewhere) never does.
+                if (Where == null || Where.Test(item.Values, context) == Truth.True) result.Add(item);
             }
             return result;
         }
@@ -70,37 +71,78 @@ namespace Argus.Core.Rules
         }
     }
 
-    public abstract class Predicate
+    /// <summary>
+    /// Three-valued (Kleene) logic: a test of a missing field is Unknown, not
+    /// False, so "not" over it stays Unknown instead of matching (D-014:
+    /// "unknown" is never "no").
+    /// </summary>
+    public enum Truth
     {
-        public abstract bool Test(IDictionary<string, object> item, EvaluationContext context);
+        False,
+        True,
+        Unknown,
     }
 
+    public abstract class Predicate
+    {
+        public abstract Truth Test(IDictionary<string, object> item, EvaluationContext context);
+
+        internal static Truth Of(bool value) => value ? Truth.True : Truth.False;
+    }
+
+    /// <summary>Any False gives False; otherwise any Unknown gives Unknown; otherwise True.</summary>
     internal sealed class AllOf : Predicate
     {
         internal AllOf(IReadOnlyList<Predicate> items) { Items = items; }
         internal IReadOnlyList<Predicate> Items { get; }
-        public override bool Test(IDictionary<string, object> item, EvaluationContext context) => Items.All(p => p.Test(item, context));
+        public override Truth Test(IDictionary<string, object> item, EvaluationContext context)
+        {
+            var unknown = false;
+            foreach (var p in Items)
+            {
+                var t = p.Test(item, context);
+                if (t == Truth.False) return Truth.False;
+                if (t == Truth.Unknown) unknown = true;
+            }
+            return unknown ? Truth.Unknown : Truth.True;
+        }
     }
 
+    /// <summary>Any True gives True; otherwise any Unknown gives Unknown; otherwise False.</summary>
     internal sealed class AnyOf : Predicate
     {
         internal AnyOf(IReadOnlyList<Predicate> items) { Items = items; }
         internal IReadOnlyList<Predicate> Items { get; }
-        public override bool Test(IDictionary<string, object> item, EvaluationContext context) => Items.Any(p => p.Test(item, context));
+        public override Truth Test(IDictionary<string, object> item, EvaluationContext context)
+        {
+            var unknown = false;
+            foreach (var p in Items)
+            {
+                var t = p.Test(item, context);
+                if (t == Truth.True) return Truth.True;
+                if (t == Truth.Unknown) unknown = true;
+            }
+            return unknown ? Truth.Unknown : Truth.False;
+        }
     }
 
+    /// <summary>not Unknown is Unknown.</summary>
     internal sealed class Not : Predicate
     {
         internal Not(Predicate inner) { Inner = inner; }
         internal Predicate Inner { get; }
-        public override bool Test(IDictionary<string, object> item, EvaluationContext context) => !Inner.Test(item, context);
+        public override Truth Test(IDictionary<string, object> item, EvaluationContext context)
+        {
+            var t = Inner.Test(item, context);
+            return t == Truth.Unknown ? Truth.Unknown : (t == Truth.True ? Truth.False : Truth.True);
+        }
     }
 
     /// <summary>
     /// A test of one field. Semantics:
-    /// - a missing field or a null value fails every operator except
-    ///   "exists": false (the field is missing or null) - "missing" is not
-    ///   "false";
+    /// - a missing field or a null value makes every operator Unknown, except
+    ///   "exists", which is True or False - "missing" is not "false", and
+    ///   "not" over a missing field does not match;
     /// - numbers are compared as decimals (1 equals 1.0);
     /// - strings compare ordinally, ignoring case; "match" is a
     ///   case-insensitive regular expression;
@@ -132,13 +174,18 @@ namespace Argus.Core.Rules
         internal string Op { get; }
         internal object Operand { get; }
 
-        public override bool Test(IDictionary<string, object> item, EvaluationContext context)
+        public override Truth Test(IDictionary<string, object> item, EvaluationContext context)
         {
             object value;
             var present = JsonValue.TryGetPath(item, Path, out value) && value != null;
             var operand = context.Resolve(Operand);
-            if (Op == "exists") return JsonValue.AsBool(operand) == present;
-            if (!present) return false;
+            if (Op == "exists") return Of(JsonValue.AsBool(operand) == present);
+            if (!present) return Truth.Unknown;
+            return Of(TestPresent(value, operand, context));
+        }
+
+        private bool TestPresent(object value, object operand, EvaluationContext context)
+        {
             switch (Op)
             {
                 case "eq": return ValuesEqual(value, operand);

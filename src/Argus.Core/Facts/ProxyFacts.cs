@@ -62,13 +62,20 @@ namespace Argus.Core.Facts
                 {
                     var evidence = new List<string> { source.Item4 };
                     string tcpStatus = null;
+                    // Why the TCP check is missing, for the limitation: the module's
+                    // reason (externalNotAllowed, noPort, budget) or the module state.
+                    string notTestedReason = connectivity == null ? connectivityReason : "not-in-connectivity";
                     for (var i = 0; i < tested.Count; i++)
                     {
                         var t = tested[i];
                         if (JsonValue.AsString(JsonValue.Get(t, "source")) != source.Item1) continue;
                         if (!string.Equals(JsonValue.AsString(JsonValue.Get(t, "host")), entry.Host, StringComparison.OrdinalIgnoreCase)) continue;
                         if (JsonValue.AsInt(JsonValue.Get(t, "port")) != entry.Port) continue;
-                        if (JsonValue.AsBool(JsonValue.Get(t, "tested")) != true) continue;
+                        if (JsonValue.AsBool(JsonValue.Get(t, "tested")) != true)
+                        {
+                            notTestedReason = JsonValue.AsString(JsonValue.Get(t, "reason")) ?? "not-tested";
+                            continue;
+                        }
                         tcpStatus = JsonValue.AsString(JsonValue.Get(t, "status"));
                         evidence.Add("connectivity.proxies[" + i + "]");
                         break;
@@ -82,8 +89,7 @@ namespace Argus.Core.Facts
                         {
                             var l = listeners[i];
                             if (JsonValue.AsInt(JsonValue.Get(l, "localPort")) != entry.Port) continue;
-                            var address = JsonValue.AsString(JsonValue.Get(l, "localAddress"));
-                            if (address == "127.0.0.1" || address == "0.0.0.0" || address == "::" || address == "::1")
+                            if (ServesHost(JsonValue.AsString(JsonValue.Get(l, "localAddress")), entry.Host))
                             {
                                 listening = true;
                                 evidence.Add("connections.tcpListeners[" + i + "]");
@@ -91,6 +97,10 @@ namespace Argus.Core.Facts
                             }
                         }
                     }
+                    // An effective proxy whose reachability is unknown is not "fine":
+                    // the rule stays notFound, but the gap is reported.
+                    if (source.Item3 && tcpStatus == null && listening == null)
+                        fact.Limitations.Add("proxy-not-tested:" + source.Item1 + ":" + notTestedReason);
                     fact.Items.Add(new FactItem(new Dictionary<string, object>(StringComparer.Ordinal)
                     {
                         ["source"] = source.Item1,
@@ -105,6 +115,29 @@ namespace Argus.Core.Facts
                 }
             }
             return fact;
+        }
+
+        /// <summary>A port in 1-65535, or null: a registry value like "host:99999999999" must not throw.</summary>
+        internal static int? ParsePort(string text)
+        {
+            int port;
+            if (!int.TryParse(text, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out port)) return null;
+            return port >= 1 && port <= 65535 ? port : (int?)null;
+        }
+
+        /// <summary>
+        /// Whether a listener on localAddress accepts connections to host. A
+        /// socket on '::' is IPv6-only by default in Windows (IPV6_V6ONLY), so
+        /// it does not serve 127.0.0.1: an IPv4 host needs the same address or
+        /// 0.0.0.0, '::1' needs '::1' or '::', 'localhost' accepts either.
+        /// </summary>
+        internal static bool ServesHost(string localAddress, string host)
+        {
+            if (localAddress == null || host == null) return false;
+            if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase))
+                return localAddress == "0.0.0.0" || localAddress == "::" || localAddress == "::1" || localAddress.StartsWith("127.", StringComparison.Ordinal);
+            if (host.IndexOf(':') >= 0) return localAddress == "::" || string.Equals(localAddress, host, StringComparison.OrdinalIgnoreCase);
+            return localAddress == "0.0.0.0" || localAddress == host;
         }
 
         internal static bool IsLoopback(string host)
@@ -144,11 +177,11 @@ namespace Argus.Core.Facts
                 string host = null;
                 int? port = null;
                 m = Regex.Match(p, @"^\[([^\]]+)\](?::(\d+))?$");
-                if (m.Success) { host = m.Groups[1].Value; if (m.Groups[2].Success) port = int.Parse(m.Groups[2].Value); }
+                if (m.Success) { host = m.Groups[1].Value; if (m.Groups[2].Success) port = ParsePort(m.Groups[2].Value); }
                 else
                 {
                     m = Regex.Match(p, @"^([^:]+):(\d+)$");
-                    if (m.Success) { host = m.Groups[1].Value; port = int.Parse(m.Groups[2].Value); }
+                    if (m.Success) { host = m.Groups[1].Value; port = ParsePort(m.Groups[2].Value); }
                     else if (p.IndexOf(':') < 0) host = p;
                 }
                 if (!string.IsNullOrEmpty(host)) result.Add(new ProxyEntry { Scheme = scheme, Host = host, Port = port });
