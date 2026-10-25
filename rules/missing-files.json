@@ -1,0 +1,28 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "missing-files",
+  "level": "advice",
+  "facts": [ "missingFiles" ],
+  "condition": {
+    "from": "missingFiles",
+    "where": { "path": "clientId", "exists": false }
+  },
+  "text": {
+    "title": {
+      "ru": "Остатки удалённых программ",
+      "en": "Leftovers of removed programs"
+    },
+    "why": {
+      "ru": "Службы, драйверы, автозапуск или задачи планировщика ссылаются на файлы, которых больше нет. Обычно это следы удалённых программ: они не работают, но Windows каждый раз пытается их запустить, а в журналах копятся ошибки.",
+      "en": "Services, drivers, startup items or scheduled tasks point to files that no longer exist. Usually these are traces of removed programs: they do not work, but Windows tries to start them every time and errors pile up in the logs."
+    },
+    "details": {
+      "ru": "Файл программы не найден у службы, драйвера, включённого элемента автозапуска или включённой сторонней задачи. Пакетные приложения (папка WindowsApps) не учитываются. Остатки VPN — в отдельной находке.",
+      "en": "The program file is missing for a service, driver, enabled startup item or enabled third-party task. Packaged apps (WindowsApps folder) are not counted. VPN leftovers are a separate finding."
+    },
+    "fix": {
+      "ru": "Если программа удалена, уберите остатки: элементы автозапуска — в Диспетчере задач, задачи — в Планировщике заданий. Службу или драйвер удаляйте, только если уверены, что они не нужны.",
+      "en": "If the program is removed, clean up the leftovers: startup items in Task Manager, tasks in Task Scheduler. Remove a service or driver only if you are sure it is not needed."
+    }
+  }
+}

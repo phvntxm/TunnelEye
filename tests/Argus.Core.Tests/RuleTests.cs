@@ -39,6 +39,18 @@ namespace Argus.Core.Tests
         }
 
         [Fact]
+        public void A_match_pattern_may_be_a_threshold_and_is_checked_at_load()
+        {
+            var rule = Valid.Replace(@"""n"": 1", @"""p"": ""^(a|b)\\.example$""").Replace(@"""path"": ""port"", ""gte"": ""$threshold.n""", @"""path"": ""host"", ""match"": ""$threshold.p""");
+            var parsed = Parse(rule);
+            var context = new EvaluationContext(parsed.Thresholds, System.DateTime.UtcNow);
+            Assert.Equal(Truth.True, parsed.Condition.Where.Test(new System.Collections.Generic.Dictionary<string, object> { ["host"] = "B.example" }, context));
+            Assert.Equal(Truth.False, parsed.Condition.Where.Test(new System.Collections.Generic.Dictionary<string, object> { ["host"] = "$threshold.p" }, context));
+            Assert.Throws<RuleFormatException>(() => Parse(rule.Replace(@"^(a|b)\\.example$", "(")));
+            Assert.Throws<RuleFormatException>(() => Parse(rule.Replace(@"""^(a|b)\\.example$""", "5")));
+        }
+
+        [Fact]
         public void Rule_files_are_utf8_without_bom()
         {
             foreach (var path in Directory.GetFiles(TestData.RulesDir, "*.json"))

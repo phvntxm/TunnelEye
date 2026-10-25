@@ -1,0 +1,34 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "adapter-power-saving",
+  "level": "advice",
+  "facts": [ "adapterProperties" ],
+  "condition": {
+    "from": "adapterProperties",
+    "where": {
+      "allOf": [
+        { "path": "keyword", "in": [ "*EEE", "EEE", "AdvancedEEE", "EnableGreenEthernet", "GreenEthernet", "PowerSavingMode", "ULPMode" ] },
+        { "path": "value", "eq": "1" },
+        { "path": "isDesktop", "eq": true }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Энергосбережение сетевой карты на настольном ПК",
+      "en": "Network card power saving on a desktop PC"
+    },
+    "why": {
+      "ru": "Режимы энергосбережения Ethernet (Green Ethernet, Energy Efficient Ethernet) экономят доли ватта, но на некоторых роутерах и кабелях дают задержки, обрывы и падение скорости. Настольному компьютеру они не нужны.",
+      "en": "Ethernet power saving modes (Green Ethernet, Energy Efficient Ethernet) save a fraction of a watt, but with some routers and cables they cause delays, dropouts and lower speed. A desktop computer does not need them."
+    },
+    "details": {
+      "ru": "У работающего физического адаптера включено одно из свойств: *EEE, EEE, AdvancedEEE, EnableGreenEthernet, GreenEthernet, PowerSavingMode, ULPMode; тип компьютера — настольный.",
+      "en": "A physical adapter in use has one of these properties on: *EEE, EEE, AdvancedEEE, EnableGreenEthernet, GreenEthernet, PowerSavingMode, ULPMode; the computer is a desktop."
+    },
+    "fix": {
+      "ru": "Диспетчер устройств → Сетевые адаптеры → свойства адаптера → вкладка «Дополнительно»: выключите «Energy Efficient Ethernet», «Green Ethernet» и похожие пункты энергосбережения.",
+      "en": "Device Manager → Network adapters → adapter properties → Advanced tab: turn off Energy Efficient Ethernet, Green Ethernet and similar power saving items."
+    }
+  }
+}

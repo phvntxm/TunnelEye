@@ -1,0 +1,15 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "routing": { "data": { "interfaces": [
+        { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 25, "nlMtu": 1400 },
+        { "interfaceIndex": 5, "interfaceAlias": "Wi-Fi", "addressFamily": "IPv4", "connectionState": "Disconnected", "interfaceMetric": 30, "nlMtu": 1500 }
+      ] } },
+      "tcp-stack": { "data": { "registry": { "interfaces": [
+        { "interfaceGuid": "{00000000-0000-0000-0000-000000000003}", "addressFamily": "IPv4", "values": [ { "name": "MTU", "value": 1400 } ] }
+      ] } } }
+    }
+  }
+}

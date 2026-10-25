@@ -1,0 +1,15 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "dns-proxy": { "data": { "hosts": { "entries": [
+        { "address": "127.0.0.1", "names": [ "localhost" ] },
+        { "address": "192.168.1.20", "names": [ "nas.local" ] },
+        { "address": "0.0.0.0", "names": [ "ads.example" ] },
+        { "address": "203.0.113.7", "names": [ "chat.example.com" ] },
+        { "address": "2001:db8::7", "names": [ "chat.example.com" ] }
+      ] } } }
+    }
+  }
+}

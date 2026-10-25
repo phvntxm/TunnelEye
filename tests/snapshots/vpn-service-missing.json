@@ -1,0 +1,20 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "vpn": { "data": { "clients": [
+        { "id": "example-vpn", "name": "Example VPN", "kind": "vpn", "generic": false,
+          "software": [],
+          "services": [ { "name": "ExampleVpnSvc", "displayName": "Example VPN Service", "state": "Stopped", "startMode": "Auto", "imagePath": "C:\\Program Files\\Example VPN\\vpnsvc.exe", "imageExists": false, "hasArguments": false } ],
+          "drivers": [], "adapters": [], "processes": [] }
+      ] } },
+      "services": { "data": { "services": [
+        { "name": "BFE", "displayName": "Base Filtering Engine", "state": "Running", "startMode": "Auto", "serviceType": "Share Process", "account": "localService", "imagePath": "C:\\Windows\\system32\\svchost.exe", "imageExists": true, "hasArguments": true, "company": "Microsoft Corporation" },
+        { "name": "ExampleSecSvc", "displayName": "Example Security", "state": "Running", "startMode": "Auto", "serviceType": "Own Process", "account": "localSystem", "imagePath": "C:\\Program Files\\Example Security\\secsvc.exe", "imageExists": true, "hasArguments": false, "company": "Example" },
+        { "name": "ExampleVpnSvc", "displayName": "Example VPN Service", "state": "Stopped", "startMode": "Auto", "serviceType": "Own Process", "account": "localSystem", "imagePath": "C:\\Program Files\\Example VPN\\vpnsvc.exe", "imageExists": false, "hasArguments": false, "company": null },
+        { "name": "mpssvc", "displayName": "Windows Defender Firewall", "state": "Running", "startMode": "Auto", "serviceType": "Share Process", "account": "localService", "imagePath": "C:\\Windows\\system32\\svchost.exe", "imageExists": true, "hasArguments": true, "company": "Microsoft Corporation" }
+      ] } }
+    }
+  }
+}

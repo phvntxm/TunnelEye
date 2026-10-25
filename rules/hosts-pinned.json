@@ -1,0 +1,36 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "hosts-pinned",
+  "level": "advice",
+  "facts": [ "hostsEntries" ],
+  "thresholds": {
+    "sensitiveNames": "(^|\\.)(sberbank\\.ru|sber\\.ru|tbank\\.ru|tinkoff\\.ru|vtb\\.ru|alfabank\\.ru|gazprombank\\.ru|raiffeisen\\.ru|psbank\\.ru|sovcombank\\.ru|open\\.ru|pochtabank\\.ru|rshb\\.ru|mkb\\.ru|nspk\\.ru|mironline\\.ru|yoomoney\\.ru|qiwi\\.com|paypal\\.com|stripe\\.com|visa\\.com|mastercard\\.com|americanexpress\\.com|gosuslugi\\.ru|nalog\\.gov\\.ru|windowsupdate\\.com|update\\.microsoft\\.com|delivery\\.mp\\.microsoft\\.com|download\\.microsoft\\.com|login\\.microsoftonline\\.com|login\\.live\\.com|smartscreen\\.microsoft\\.com|wdcp\\.microsoft\\.com|kaspersky\\.com|kaspersky\\.ru|kaspersky-labs\\.com|drweb\\.com|drweb\\.ru|eset\\.com|esetnod32\\.ru|avast\\.com|avg\\.com|bitdefender\\.com|norton\\.com|mcafee\\.com|malwarebytes\\.com)$"
+  },
+  "condition": {
+    "from": "hostsEntries",
+    "where": {
+      "allOf": [
+        { "path": "addressClass", "eq": "public" },
+        { "not": { "path": "name", "match": "$threshold.sensitiveNames" } }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Адреса сайтов записаны в hosts вручную",
+      "en": "Site addresses are written into hosts by hand"
+    },
+    "why": {
+      "ru": "Для некоторых сайтов в файле hosts закреплён конкретный интернет-адрес. Сервисы меняют адреса, а запись в hosts устаревает: однажды сайт или приложение перестанет открываться, и причину будет трудно найти.",
+      "en": "Some sites have a fixed internet address in the hosts file. Services change their addresses, and a hosts entry goes stale: one day the site or app stops opening, and the cause is hard to find."
+    },
+    "details": {
+      "ru": "В hosts есть записи с публичными адресами для имён не из списка чувствительных. Записи блокировки (0.0.0.0, 127.0.0.1) и адреса локальной сети не учитываются.",
+      "en": "hosts has entries with public addresses for names not on the sensitive list. Blocking entries (0.0.0.0, 127.0.0.1) and local network addresses are not counted."
+    },
+    "fix": {
+      "ru": "Если записи нужны, время от времени проверяйте, что они актуальны. Если не нужны или вы не знаете, откуда они, удалите их из файла C:\\Windows\\System32\\drivers\\etc\\hosts (блокнот от имени администратора).",
+      "en": "If you need the entries, check from time to time that they are still current. If you do not need them or do not know where they came from, delete them from C:\\Windows\\System32\\drivers\\etc\\hosts (Notepad as administrator)."
+    }
+  }
+}

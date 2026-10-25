@@ -59,14 +59,22 @@ namespace Argus.Core.Facts
                 IDictionary<string, object> client = null;
                 if (index != null) claims.TryGetValue(index.Value, out client);
                 var looksLikeTunnel = (description != null && TunnelPattern.IsMatch(description)) || (componentId != null && TunnelPattern.IsMatch(componentId));
+                var driver = JsonValue.Get(a, "driver");
                 fact.Items.Add(new FactItem(new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     ["name"] = JsonValue.AsString(JsonValue.Get(a, "name")),
                     ["interfaceIndex"] = index,
+                    ["interfaceGuid"] = JsonValue.AsString(JsonValue.Get(a, "interfaceGuid")),
                     ["description"] = description,
                     ["componentId"] = componentId,
                     ["status"] = JsonValue.AsString(JsonValue.Get(a, "status")),
                     ["virtual"] = JsonValue.AsBool(JsonValue.Get(a, "virtual")),
+                    ["hardwareInterface"] = JsonValue.AsBool(JsonValue.Get(a, "hardwareInterface")),
+                    ["physicalMedium"] = JsonValue.AsInt(JsonValue.Get(a, "ndisPhysicalMedium")),
+                    ["mtu"] = JsonValue.AsInt(JsonValue.Get(a, "mtuSize")),
+                    ["driverProvider"] = JsonValue.AsString(JsonValue.Get(driver, "provider")),
+                    ["driverVersion"] = JsonValue.AsString(JsonValue.Get(driver, "version")),
+                    ["driverDate"] = JsonValue.AsString(JsonValue.Get(driver, "date")),
                     ["isTunnel"] = client != null || looksLikeTunnel,
                     ["clientId"] = client != null ? JsonValue.AsString(JsonValue.Get(client, "id")) : null,
                     ["clientKind"] = client != null ? JsonValue.AsString(JsonValue.Get(client, "kind")) : null,
@@ -78,12 +86,26 @@ namespace Argus.Core.Facts
         /// <summary>Tunnel flag by interface index from a built 'adapters' fact; null if unknown.</summary>
         internal static bool? IsTunnel(FactSet adapters, int? interfaceIndex)
         {
+            var item = Find(adapters, interfaceIndex);
+            return item == null ? (bool?)null : (bool)item.Values["isTunnel"];
+        }
+
+        /// <summary>The adapter item with this interface index from a built 'adapters' fact; null if unknown.</summary>
+        internal static FactItem Find(FactSet adapters, int? interfaceIndex)
+        {
             if (adapters == null || !adapters.Available || interfaceIndex == null) return null;
             foreach (var item in adapters.Items)
             {
-                if (JsonValue.AsInt(item.Values["interfaceIndex"]) == interfaceIndex) return (bool)item.Values["isTunnel"];
+                if (JsonValue.AsInt(item.Values["interfaceIndex"]) == interfaceIndex) return item;
             }
             return null;
+        }
+
+        /// <summary>Physical, present and up: a real network card in use, not a tunnel or a virtual switch.</summary>
+        internal static bool IsPhysicalUp(FactItem adapter)
+        {
+            return adapter != null && JsonValue.AsBool(adapter.Values["virtual"]) == false && !(bool)adapter.Values["isTunnel"]
+                && string.Equals(JsonValue.AsString(adapter.Values["status"]), "Up", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

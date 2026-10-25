@@ -1,0 +1,34 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "routing-loop",
+  "level": "advice",
+  "experimental": true,
+  "facts": [ "traces" ],
+  "condition": {
+    "from": "traces",
+    "where": {
+      "allOf": [
+        { "path": "reached", "eq": false },
+        { "path": "repeatedAddresses", "gte": 1 }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Похоже на петлю маршрутизации",
+      "en": "Looks like a routing loop"
+    },
+    "why": {
+      "ru": "Пакеты ходят по кругу между одними и теми же узлами и не доходят до цели. Сайты не открываются или открываются через раз.",
+      "en": "Packets go in a circle between the same nodes and never reach the target. Sites do not open or open only now and then."
+    },
+    "details": {
+      "ru": "В трассировке до внешней цели один и тот же адрес повторяется через другой узел (A, B, A), и цель не достигнута. Проверяется только по трассировке внешних тестов. Правило экспериментальное.",
+      "en": "In a trace to an external target the same address comes back after another node (A, B, A), and the target is not reached. Checked only by the trace of the external tests. The rule is experimental."
+    },
+    "fix": {
+      "ru": "Перезагрузите роутер. Если не поможет — отключите VPN и сравните; если петля остаётся без VPN, обратитесь к провайдеру и приложите отчёт.",
+      "en": "Restart the router. If that does not help, turn the VPN off and compare; if the loop stays without the VPN, contact your provider and attach the report."
+    }
+  }
+}

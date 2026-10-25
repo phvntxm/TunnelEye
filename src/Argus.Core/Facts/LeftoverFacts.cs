@@ -17,9 +17,15 @@ namespace Argus.Core.Facts
     /// - tapAdapterWithoutClient: a TAP-Windows adapter that no installed VPN
     ///   client claims (OpenVPN uses TAP, so its presence keeps TAP adapters);
     /// - adapterNotPresent: an adapter of a VPN client that Windows keeps as
-    ///   'Not Present' (removed device, driver still registered).
-    /// Stage 2.2 adds service files that no longer exist and WFP providers
-    /// without a client.
+    ///   'Not Present' (removed device, driver still registered);
+    /// - serviceWithoutFile: a service or driver of a VPN client whose file
+    ///   is gone (imageExists = false);
+    /// - wfpProviderWithoutService: a third-party WFP provider whose service
+    ///   (serviceName) no longer exists among services and drivers - an
+    ///   uninstalled VPN or firewall left it in the persistent WFP store;
+    ///   'filters' tells whether it still filters traffic. Needs firewall.wfp
+    ///   (administrator rights) and 'services'; without them - a limitation.
+    /// Requires 'vpn'.
     /// </summary>
     public sealed class LeftoverFacts : IFactProvider
     {
@@ -68,20 +74,62 @@ namespace Argus.Core.Facts
                     else if (generic && id == "tap-windows" && !tapUserInstalled)
                         Add(fact, "tapAdapterWithoutClient", id, name, description, status, path + ".adapters[" + j + "]");
                 }
+                foreach (var section in new[] { "services", "drivers" })
+                {
+                    var list = JsonValue.GetList(c, section);
+                    for (var j = 0; j < list.Count; j++)
+                    {
+                        if (JsonValue.AsBool(JsonValue.Get(list[j], "imageExists")) != false) continue;
+                        Add(fact, "serviceWithoutFile", id, name, JsonValue.AsString(JsonValue.Get(list[j], "name")), JsonValue.AsString(JsonValue.Get(list[j], "state")), path + "." + section + "[" + j + "]");
+                    }
+                }
             }
+            AddOrphanedWfpProviders(context, fact);
             return fact;
         }
 
-        private static void Add(FactSet fact, string kind, string clientId, string clientName, string detail, string status, string evidence)
+        private static void AddOrphanedWfpProviders(FactContext context, FactSet fact)
         {
-            fact.Items.Add(new FactItem(new Dictionary<string, object>(StringComparer.Ordinal)
+            string reason;
+            var firewall = context.ModuleData("firewall", out reason);
+            var wfp = JsonValue.Get(firewall, "wfp");
+            if (firewall != null && wfp == null) reason = "wfp-not-collected";
+            string servicesReason;
+            var services = context.ModuleData("services", out servicesReason);
+            if (wfp == null || services == null) { fact.Limitations.Add("wfp-providers-not-checked:" + (wfp == null ? reason : servicesReason)); return; }
+
+            var known = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var section in new[] { "services", "drivers" })
+                foreach (var s in JsonValue.GetList(services, section)) known.Add(JsonValue.AsString(JsonValue.Get(s, "name")) ?? "");
+            var filters = JsonValue.GetList(wfp, "filters");
+            var providers = JsonValue.GetList(wfp, "providers");
+            for (var i = 0; i < providers.Count; i++)
+            {
+                var p = providers[i];
+                var key = JsonValue.AsString(JsonValue.Get(p, "providerKey"));
+                var providerName = JsonValue.AsString(JsonValue.Get(p, "name"));
+                var service = JsonValue.AsString(JsonValue.Get(p, "serviceName"));
+                if (string.IsNullOrEmpty(service) || known.Contains(service) || WfpFacts.IsMicrosoftProvider(key, providerName)) continue;
+                var count = 0;
+                foreach (var f in filters) if (string.Equals(JsonValue.AsString(JsonValue.Get(f, "providerKey")), key, StringComparison.OrdinalIgnoreCase)) count++;
+                var item = Add(fact, "wfpProviderWithoutService", null, providerName, service, null, "firewall.wfp.providers[" + i + "]");
+                item.Values["filters"] = count;
+            }
+        }
+
+        private static FactItem Add(FactSet fact, string kind, string clientId, string clientName, string detail, string status, string evidence)
+        {
+            var item = new FactItem(new Dictionary<string, object>(StringComparer.Ordinal)
             {
                 ["kind"] = kind,
                 ["clientId"] = clientId,
                 ["clientName"] = clientName,
                 ["detail"] = detail,
                 ["status"] = status,
-            }, new[] { evidence }));
+                ["filters"] = null,
+            }, new[] { evidence });
+            fact.Items.Add(item);
+            return item;
         }
     }
 }

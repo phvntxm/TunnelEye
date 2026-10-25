@@ -3,17 +3,36 @@
   "snapshotId": "00000000-0000-4000-8000-000000000001",
   "createdAt": "2026-10-25T10:00:00.000Z",
   "tool": { "name": "TunnelEye", "version": "0.1.0" },
-  "host": { "osBuild": "26100.1", "psVersion": "5.1", "culture": "ru-RU", "uiCulture": "ru-RU", "elevated": true },
-  "externalAllowed": false,
-  "summary": { "ok": 6, "partial": 0, "failed": 0, "skipped": 0, "durationMs": 1000 },
+  "host": { "osBuild": "26100.1", "psVersion": "5.1", "culture": "ru-RU", "uiCulture": "ru-RU", "elevated": true, "elevatedAsOtherUser": false },
+  "externalAllowed": true,
+  "summary": { "ok": 13, "partial": 0, "failed": 0, "skipped": 0, "durationMs": 1000 },
   "modules": {
+    "system": {
+      "schema": "tunneleye.module/1", "module": "system", "version": "1.0.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": {
+        "os": { "family": "Windows 11", "build": 26100, "architecture": "x64" },
+        "computer": { "name": "PC-EXAMPLE", "partOfDomain": false, "domain": null, "workgroup": "WORKGROUP" },
+        "boot": { "uptimeSec": 3600, "fastStartupEnabled": false },
+        "pendingReboot": { "componentServicing": false, "windowsUpdate": false, "fileRenameOperations": false },
+        "hotfixes": [],
+        "networkProfiles": [
+          { "name": "Home", "interfaceAlias": "Ethernet", "interfaceIndex": 3, "category": "Private", "ipv4Connectivity": "Internet", "ipv6Connectivity": "NoTraffic", "domainAuthenticationKind": "None" }
+        ]
+      }
+    },
     "adapters": {
       "schema": "tunneleye.module/1", "module": "adapters", "version": "1.0.0", "status": "ok", "elevated": true,
       "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
       "data": {
         "adapters": [
-          { "name": "Ethernet", "interfaceDescription": "Example Gigabit Ethernet", "interfaceIndex": 3, "status": "Up", "virtual": false, "hidden": false, "componentId": "PCI\\VEN_0000&DEV_0001" },
-          { "name": "Wi-Fi", "interfaceDescription": "Example Wireless Adapter", "interfaceIndex": 5, "status": "Disconnected", "virtual": false, "hidden": false, "componentId": "PCI\\VEN_0000&DEV_0002" }
+          { "name": "Ethernet", "interfaceDescription": "Example Gigabit Ethernet", "interfaceIndex": 3, "interfaceGuid": "{00000000-0000-0000-0000-000000000003}", "status": "Up", "virtual": false, "hidden": false, "hardwareInterface": true, "componentId": "PCI\\VEN_0000&DEV_0001", "ndisPhysicalMedium": 14, "mtuSize": 1500,
+            "driver": { "provider": "Example", "version": "1.0.0", "date": "2025-06-01" },
+            "advancedProperties": [ { "keyword": "*EEE", "displayName": "Energy Efficient Ethernet", "displayValue": "Disabled", "registryValue": [ "0" ] }, { "keyword": "*JumboPacket", "displayName": "Jumbo Packet", "displayValue": "Disabled", "registryValue": [ "1514" ] } ] },
+          { "name": "Wi-Fi", "interfaceDescription": "Example Wireless Adapter", "interfaceIndex": 5, "interfaceGuid": "{00000000-0000-0000-0000-000000000005}", "status": "Disconnected", "virtual": false, "hidden": false, "hardwareInterface": true, "componentId": "PCI\\VEN_0000&DEV_0002", "ndisPhysicalMedium": 9, "mtuSize": 1500,
+            "driver": { "provider": "Example", "version": "2.0.0", "date": "2025-03-01" }, "advancedProperties": [] },
+          { "name": "WAN Miniport (IP)", "interfaceDescription": "WAN Miniport (IP)", "interfaceIndex": 11, "status": "Up", "virtual": true, "hidden": true, "hardwareInterface": false, "componentId": "ms_ndiswanip", "mtuSize": 1500,
+            "driver": { "provider": "Microsoft", "version": "10.0.26100.1", "date": "2006-06-21" }, "advancedProperties": [] }
         ],
         "devices": [], "driverPackages": [], "driverPackagesRaw": ""
       }
@@ -31,10 +50,15 @@
           { "kind": "externalIPv6", "target": "2001:db8::1", "reachable": false }
         ],
         "interfaces": [
-          { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 25 },
-          { "interfaceIndex": 5, "interfaceAlias": "Wi-Fi", "addressFamily": "IPv4", "connectionState": "Disconnected", "interfaceMetric": 30 }
+          { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 25, "nlMtu": 1500 },
+          { "interfaceIndex": 5, "interfaceAlias": "Wi-Fi", "addressFamily": "IPv4", "connectionState": "Disconnected", "interfaceMetric": 30, "nlMtu": 1500 }
         ],
-        "addresses": [], "ipEnableRouter": null, "bridge": { "adapters": [], "members": [] }, "ics": { "service": null, "connections": [] }
+        "addresses": [
+          { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv4", "ipAddress": "192.168.1.10", "prefixLength": 24, "prefixOrigin": "Dhcp", "suffixOrigin": "Dhcp", "addressState": "Preferred", "skipAsSource": false }
+        ],
+        "ipEnableRouter": null,
+        "bridge": { "adapters": [], "members": [] },
+        "ics": { "service": { "status": "Stopped", "startType": "Manual", "scopeAddress": "192.168.137.1" }, "connections": [] }
       }
     },
     "vpn": {
@@ -46,6 +70,21 @@
       "schema": "tunneleye.module/1", "module": "dns-proxy", "version": "1.0.0", "status": "ok", "elevated": true,
       "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
       "data": {
+        "dnsServers": [
+          { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv4", "serverAddresses": [ "192.168.1.1" ] },
+          { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv6", "serverAddresses": [ "fec0:0:0:ffff::1", "fec0:0:0:ffff::2", "fec0:0:0:ffff::3" ] },
+          { "interfaceIndex": 5, "interfaceAlias": "Wi-Fi", "addressFamily": "IPv4", "serverAddresses": [] }
+        ],
+        "dnsClients": [],
+        "nrpt": [],
+        "hosts": {
+          "path": "C:\\Windows\\System32\\drivers\\etc\\hosts", "exists": true, "sizeBytes": 900, "lastWriteTime": "2026-01-01T00:00:00.000Z",
+          "entries": [
+            { "address": "127.0.0.1", "names": [ "localhost" ] },
+            { "address": "192.168.1.20", "names": [ "nas.local" ] },
+            { "address": "0.0.0.0", "names": [ "ads.example" ] }
+          ]
+        },
         "proxy": {
           "user": { "proxyEnable": false, "proxyServer": null, "proxyOverride": null, "autoConfigUrl": null, "userInfoRemoved": false },
           "machine": { "proxyEnable": null, "proxyServer": null, "proxyOverride": null, "autoConfigUrl": null, "userInfoRemoved": false, "proxySettingsPerUser": null },
@@ -54,15 +93,144 @@
         }
       }
     },
-    "connectivity": {
-      "schema": "tunneleye.module/1", "module": "connectivity", "version": "1.1.0", "status": "ok", "elevated": true,
+    "firewall": {
+      "schema": "tunneleye.module/1", "module": "firewall", "version": "1.0.0", "status": "ok", "elevated": true,
       "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
-      "data": { "externalAllowed": false, "externalConsentSource": null, "windowsConnectivity": [], "context": {}, "gateways": [], "dnsServers": [], "proxies": [], "external": null }
+      "data": {
+        "profiles": [
+          { "name": "Domain", "enabled": true, "defaultInboundAction": "Block", "defaultOutboundAction": "Allow", "allowInboundRules": "True" },
+          { "name": "Private", "enabled": true, "defaultInboundAction": "Block", "defaultOutboundAction": "Allow", "allowInboundRules": "True" },
+          { "name": "Public", "enabled": true, "defaultInboundAction": "Block", "defaultOutboundAction": "Allow", "allowInboundRules": "True" }
+        ],
+        "rules": [
+          { "name": "Example-RPC-In", "displayName": "Example RPC", "displayGroup": null, "enabled": true, "direction": "Inbound", "action": "Allow", "profiles": [ "Private" ], "primaryStatus": "OK", "program": "C:\\Windows\\system32\\svchost.exe", "service": null, "protocol": "TCP", "localPorts": [ "135" ], "remotePorts": [ "Any" ], "localAddresses": [ "Any" ], "remoteAddresses": [ "Any" ] },
+          { "name": "Example-Updates-In", "displayName": "Example updates", "displayGroup": null, "enabled": true, "direction": "Inbound", "action": "Allow", "profiles": [ "Domain", "Private" ], "primaryStatus": "OK", "program": "C:\\Windows\\system32\\svchost.exe", "service": null, "protocol": "TCP", "localPorts": [ "7680" ], "remotePorts": [ "Any" ], "localAddresses": [ "Any" ], "remoteAddresses": [ "Any" ] }
+        ],
+        "products": [],
+        "services": [ { "name": "BFE", "state": "Running", "startMode": "Auto" }, { "name": "mpssvc", "state": "Running", "startMode": "Auto" } ],
+        "wfp": {
+          "providers": [
+            { "providerKey": "FWPM_PROVIDER_MPSSVC_WF", "name": "Microsoft Corporation", "serviceName": "mpssvc", "flags": [] },
+            { "providerKey": "{11111111-0000-0000-0000-000000000001}", "name": "Example Security Network Filter", "serviceName": "ExampleSecSvc", "flags": [ "FWPM_PROVIDER_FLAG_PERSISTENT" ] }
+          ],
+          "subLayers": [],
+          "callouts": [
+            { "calloutKey": "{22222222-0000-0000-0000-000000000001}", "calloutId": 300, "name": "Example Security connect callout", "providerKey": "{11111111-0000-0000-0000-000000000001}", "applicableLayer": "FWPM_LAYER_ALE_AUTH_CONNECT_V4", "flags": [ "FWPM_CALLOUT_FLAG_REGISTERED" ] }
+          ],
+          "filters": [
+            { "filterId": 1, "filterKey": "{33333333-0000-0000-0000-000000000001}", "name": "Example Security connect", "providerKey": "{11111111-0000-0000-0000-000000000001}", "layerKey": "FWPM_LAYER_ALE_AUTH_CONNECT_V4", "subLayerKey": "{44444444-0000-0000-0000-000000000001}", "action": "FWP_ACTION_CALLOUT_TERMINATING", "calloutKey": "{22222222-0000-0000-0000-000000000001}", "weight": null, "effectiveWeight": "1", "flags": [], "conditions": [] },
+            { "filterId": 2, "filterKey": "{33333333-0000-0000-0000-000000000002}", "name": "Example RPC", "providerKey": "FWPM_PROVIDER_MPSSVC_WF", "layerKey": "FWPM_LAYER_ALE_AUTH_RECV_ACCEPT_V4", "subLayerKey": "FWPM_SUBLAYER_MPSSVC_WF", "action": "FWP_ACTION_PERMIT", "calloutKey": null, "weight": null, "effectiveWeight": "2", "flags": [], "conditions": [] }
+          ],
+          "providerContextCount": 0
+        }
+      }
+    },
+    "services": {
+      "schema": "tunneleye.module/1", "module": "services", "version": "1.0.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": {
+        "services": [
+          { "name": "BFE", "displayName": "Base Filtering Engine", "state": "Running", "startMode": "Auto", "serviceType": "Share Process", "account": "localService", "imagePath": "C:\\Windows\\system32\\svchost.exe", "imageExists": true, "hasArguments": true, "company": "Microsoft Corporation" },
+          { "name": "ExampleSecSvc", "displayName": "Example Security", "state": "Running", "startMode": "Auto", "serviceType": "Own Process", "account": "localSystem", "imagePath": "C:\\Program Files\\Example Security\\secsvc.exe", "imageExists": true, "hasArguments": false, "company": "Example" },
+          { "name": "mpssvc", "displayName": "Windows Defender Firewall", "state": "Running", "startMode": "Auto", "serviceType": "Share Process", "account": "localService", "imagePath": "C:\\Windows\\system32\\svchost.exe", "imageExists": true, "hasArguments": true, "company": "Microsoft Corporation" }
+        ],
+        "drivers": [
+          { "name": "tcpip", "displayName": "TCP/IP Protocol Driver", "state": "Running", "startMode": "Boot", "serviceType": "Kernel Driver", "imagePath": "C:\\Windows\\System32\\drivers\\tcpip.sys", "imageExists": true, "company": "Microsoft Corporation" }
+        ],
+        "autostart": [
+          { "name": "ExampleTray", "location": "HKCU\\Run", "enabled": true, "imagePath": "C:\\Program Files\\Example Security\\tray.exe", "imageExists": true, "hasArguments": false, "company": "Example" },
+          { "name": "StoreApp", "location": "HKCU\\Run", "enabled": true, "imagePath": "%USERPROFILE%\\AppData\\Local\\Microsoft\\WindowsApps\\Example_8wekyb3d8bbwe\\app.exe", "imageExists": false, "hasArguments": false, "company": null },
+          { "name": "OldTool", "location": "HKCU\\Run", "enabled": false, "imagePath": "D:\\Old Tool\\tool.exe", "imageExists": false, "hasArguments": false, "company": null }
+        ],
+        "scheduledTasks": {
+          "thirdParty": [
+            { "taskPath": "\\", "taskName": "ExampleUpdate", "state": "Ready", "principal": { "account": "localSystem", "runLevel": "Highest" }, "triggers": [ { "kind": "daily", "enabled": true } ], "actions": [ { "type": "exec", "imagePath": "C:\\Program Files\\Example Security\\update.exe", "imageExists": true, "hasArguments": false, "company": "Example", "classId": null } ] },
+            { "taskPath": "\\", "taskName": "OldToolUpdate", "state": "Disabled", "principal": null, "triggers": [], "actions": [ { "type": "exec", "imagePath": "D:\\Old Tool\\update.exe", "imageExists": false, "hasArguments": false, "company": null, "classId": null } ] }
+          ],
+          "microsoft": { "total": 0, "byState": [] }
+        },
+        "ndisFilters": []
+      }
     },
     "connections": {
       "schema": "tunneleye.module/1", "module": "connections", "version": "1.0.0", "status": "ok", "elevated": true,
       "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
-      "data": { "tcpListeners": [ { "localAddress": "0.0.0.0", "localPort": 135, "localClass": "unspecified", "processId": 1000, "process": "svchost" } ], "udpEndpoints": [], "tcpConnections": [], "publicConnections": [] }
+      "data": {
+        "tcpListeners": [
+          { "localAddress": "0.0.0.0", "localPort": 135, "localClass": "unspecified", "processId": 1000, "process": "svchost" },
+          { "localAddress": "0.0.0.0", "localPort": 7680, "localClass": "unspecified", "processId": 1001, "process": "svchost" },
+          { "localAddress": "::", "localPort": 7680, "localClass": "unspecified", "processId": 1001, "process": "svchost" }
+        ],
+        "udpEndpoints": [], "tcpConnections": [], "publicConnections": []
+      }
+    },
+    "tcp-stack": {
+      "schema": "tunneleye.module/1", "module": "tcp-stack", "version": "1.0.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": {
+        "settings": [], "transportFilters": [], "offload": null, "netshGlobal": null,
+        "registry": { "global": [], "interfaces": [ { "interfaceGuid": "{00000000-0000-0000-0000-000000000003}", "addressFamily": "IPv4", "values": [ { "name": "MTU", "value": 0 } ] } ] }
+      }
+    },
+    "wifi": {
+      "schema": "tunneleye.module/1", "module": "wifi", "version": "1.1.1", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": {
+        "interfaces": [ { "name": "Wi-Fi", "description": "Example Wireless Adapter", "interfaceGuid": "{00000000-0000-0000-0000-000000000005}", "connected": false, "ssid": null, "bandGHz": null, "channel": null, "radioType": null, "signalPercent": null } ],
+        "drivers": [ { "interfaceName": "Wi-Fi", "driver": "Example Wireless Adapter", "vendor": "Example", "provider": "Example", "version": "2.0.0", "date": "2025-03-01", "radioTypesSupported": [ "802.11b", "802.11g", "802.11n", "802.11a", "802.11ac", "802.11ax" ], "bandsSupportedGHz": [ "2.4", "5" ], "wpa3Supported": true } ],
+        "neighbors": { "networkCount": 0, "bss": [] }
+      }
+    },
+    "events": {
+      "schema": "tunneleye.module/1", "module": "events", "version": "1.1.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": { "periodDays": 7, "logs": [], "counters": [], "times": [] }
+    },
+    "hardware": {
+      "schema": "tunneleye.module/1", "module": "hardware", "version": "1.1.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": { "system": { "manufacturer": null, "model": null, "pcSystemType": "Desktop", "systemType": "x64-based PC", "hypervisorPresent": false, "totalPhysicalMemoryBytes": 17179869184 } }
+    },
+    "connectivity": {
+      "schema": "tunneleye.module/1", "module": "connectivity", "version": "1.1.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": {
+        "externalAllowed": true, "externalConsentSource": "cli", "windowsConnectivity": [], "context": {},
+        "gateways": [
+          { "address": "192.168.1.1", "family": "IPv4", "interfaceIndex": 3, "interfaceAlias": "Ethernet", "viaInterfaceIndex": 3, "viaInterfaceAlias": "Ethernet",
+            "ping": { "sent": 4, "received": 4, "lossPercent": 0, "rttMinMs": 1, "rttAvgMs": 1, "rttMaxMs": 2, "status": "Success" },
+            "mtu": { "maxPayload": 1472, "mtu": 1500, "status": "ok", "probes": 2, "timeoutsCountedAsFail": 0 } }
+        ],
+        "dnsServers": [
+          { "address": "192.168.1.1", "interfaceIndex": 3, "addressClass": "private", "tested": true, "reason": "local", "responds": true, "status": "nxdomain", "rcode": 3, "rttMs": 2, "viaInterfaceIndex": 3, "viaInterfaceAlias": "Ethernet" }
+        ],
+        "proxies": [],
+        "external": {
+          "userTargetsFile": false,
+          "ping": [
+            { "target": "1.1.1.1", "viaInterfaceIndex": 3, "viaInterfaceAlias": "Ethernet", "result": { "sent": 4, "received": 4, "lossPercent": 0, "rttMinMs": 10, "rttAvgMs": 11, "rttMaxMs": 12, "status": "Success" } },
+            { "target": "2606:4700:4700::1111", "viaInterfaceIndex": null, "viaInterfaceAlias": null, "result": { "sent": 4, "received": 0, "lossPercent": 100, "rttMinMs": null, "rttAvgMs": null, "rttMaxMs": null, "status": "DestinationUnreachable" } }
+          ],
+          "dns": [
+            { "name": "one.one.one.one", "results": [
+                { "server": "1.1.1.1", "source": "config", "status": "answer", "rcode": 0, "addresses": [ "1.1.1.1", "1.0.0.1" ], "rttMs": 10 },
+                { "server": "8.8.8.8", "source": "config", "status": "answer", "rcode": 0, "addresses": [ "1.0.0.1", "1.1.1.1" ], "rttMs": 12 },
+                { "server": "192.168.1.1", "source": "interface", "status": "answer", "rcode": 0, "addresses": [ "1.1.1.1", "1.0.0.1" ], "rttMs": 3 },
+                { "server": "system", "source": "system", "status": "answer", "rcode": null, "addresses": [ "1.1.1.1", "1.0.0.1" ], "rttMs": 3 }
+              ], "distinctAnswerSets": 1, "sinkholeServers": [], "nxdomainServers": [], "failedServers": [] }
+          ],
+          "trace": [
+            { "target": "1.1.1.1", "viaInterfaceIndex": 3, "viaInterfaceAlias": "Ethernet", "status": "reached", "hops": [
+                { "ttl": 1, "address": "192.168.1.1", "rttMs": null, "status": "TtlExpired" },
+                { "ttl": 2, "address": null, "rttMs": null, "status": "TimedOut" },
+                { "ttl": 3, "address": "203.0.113.1", "rttMs": null, "status": "TtlExpired" },
+                { "ttl": 4, "address": "203.0.113.1", "rttMs": null, "status": "TtlExpired" },
+                { "ttl": 5, "address": "1.1.1.1", "rttMs": 11, "status": "Success" }
+              ] }
+          ],
+          "mtu": [ { "target": "1.1.1.1", "viaInterfaceIndex": 3, "viaInterfaceAlias": "Ethernet", "result": { "maxPayload": 1472, "mtu": 1500, "status": "ok", "probes": 2, "timeoutsCountedAsFail": 0 } } ]
+        }
+      }
     }
   }
 }

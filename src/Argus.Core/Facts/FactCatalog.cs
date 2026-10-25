@@ -86,6 +86,21 @@ namespace Argus.Core.Facts
                 new RouteSummaryFacts(),
                 new ProxyFacts(),
                 new LeftoverFacts(),
+                new TunnelFacts(),
+                new TunnelCoverageFacts(),
+                new DnsServerFacts(),
+                new HostsFacts(),
+                new BridgeFacts(),
+                new ConnectionSharingFacts(),
+                new TraceFacts(),
+                new DnsAnswerFacts(),
+                new SnapshotInfoFacts(),
+                new WifiFacts(),
+                new ExposedPortFacts(),
+                new WfpFacts(),
+                new InterfaceMtuFacts(),
+                new AdapterPropertyFacts(),
+                new MissingFileFacts(),
             });
         }
 

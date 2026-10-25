@@ -1,0 +1,29 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "full-tunnel",
+  "patch": {
+    "modules": {
+      "adapters": { "data": { "adapters": [
+        { "name": "Ethernet", "interfaceDescription": "Example Gigabit Ethernet", "interfaceIndex": 3, "status": "Up", "virtual": false, "hidden": false, "componentId": "PCI\\VEN_0000&DEV_0001" },
+        { "name": "Wi-Fi", "interfaceDescription": "Example Wireless Adapter", "interfaceIndex": 5, "status": "Up", "virtual": false, "hidden": false, "componentId": "PCI\\VEN_0000&DEV_0002" },
+        { "name": "tun0", "interfaceDescription": "Wintun Userspace Tunnel", "interfaceIndex": 9, "status": "Up", "virtual": true, "hidden": false, "componentId": "wintun" },
+        { "name": "wg0", "interfaceDescription": "WireGuard Tunnel", "interfaceIndex": 10, "status": "Up", "virtual": true, "hidden": false, "componentId": "wireguard" }
+      ] } },
+      "routing": { "data": {
+        "routes": [
+          { "addressFamily": "IPv4", "destinationPrefix": "0.0.0.0/0", "nextHop": "192.168.1.1", "interfaceIndex": 3, "interfaceAlias": "Ethernet", "routeMetric": 0, "interfaceMetric": 25, "effectiveMetric": 25, "protocol": "NetMgmt", "publish": "No" },
+          { "addressFamily": "IPv4", "destinationPrefix": "0.0.0.0/0", "nextHop": "192.168.0.1", "interfaceIndex": 5, "interfaceAlias": "Wi-Fi", "routeMetric": 0, "interfaceMetric": 30, "effectiveMetric": 30, "protocol": "Dhcp", "publish": "No" },
+          { "addressFamily": "IPv4", "destinationPrefix": "0.0.0.0/0", "nextHop": "0.0.0.0", "interfaceIndex": 9, "interfaceAlias": "tun0", "routeMetric": 0, "interfaceMetric": 5, "effectiveMetric": 5, "protocol": "NetMgmt", "publish": "No" },
+          { "addressFamily": "IPv4", "destinationPrefix": "0.0.0.0/1", "nextHop": "0.0.0.0", "interfaceIndex": 10, "interfaceAlias": "wg0", "routeMetric": 0, "interfaceMetric": 5, "effectiveMetric": 5, "protocol": "NetMgmt", "publish": "No" },
+          { "addressFamily": "IPv4", "destinationPrefix": "128.0.0.0/1", "nextHop": "0.0.0.0", "interfaceIndex": 10, "interfaceAlias": "wg0", "routeMetric": 0, "interfaceMetric": 5, "effectiveMetric": 5, "protocol": "NetMgmt", "publish": "No" }
+        ],
+        "interfaces": [
+          { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 25 },
+          { "interfaceIndex": 5, "interfaceAlias": "Wi-Fi", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 30 },
+          { "interfaceIndex": 9, "interfaceAlias": "tun0", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 5 },
+          { "interfaceIndex": 10, "interfaceAlias": "wg0", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 5 }
+        ]
+      } }
+    }
+  }
+}

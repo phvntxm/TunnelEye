@@ -1,0 +1,24 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "not-elevated",
+  "level": "info",
+  "facts": [ "snapshotInfo" ],
+  "condition": {
+    "from": "snapshotInfo",
+    "where": { "path": "elevated", "eq": false }
+  },
+  "text": {
+    "title": {
+      "ru": "Диагностика без прав администратора",
+      "en": "Diagnostics without administrator rights"
+    },
+    "why": {
+      "ru": "Без прав администратора часть проверок не выполнена: фильтры брандмауэра и сетевого стека, общий доступ к подключению, здоровье дисков и некоторые настройки TCP.",
+      "en": "Without administrator rights some checks were not run: firewall and network stack filters, connection sharing, disk health and some TCP settings."
+    },
+    "fix": {
+      "ru": "Чтобы проверить всё, запустите диагностику снова и подтвердите запрос прав администратора.",
+      "en": "To check everything, run the diagnostics again and accept the administrator rights prompt."
+    }
+  }
+}

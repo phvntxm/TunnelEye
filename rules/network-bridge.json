@@ -1,0 +1,28 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "network-bridge",
+  "level": "important",
+  "facts": [ "bridges" ],
+  "condition": {
+    "from": "bridges",
+    "where": { "path": "members", "gte": 1 }
+  },
+  "text": {
+    "title": {
+      "ru": "Сетевой мост между адаптерами",
+      "en": "Network bridge between adapters"
+    },
+    "why": {
+      "ru": "Адаптеры объединены в сетевой мост Windows. Через мост трафик одной сети попадает в другую: возможны петли, «шторм» пакетов, чужие устройства в вашей сети и неожиданные адреса.",
+      "en": "Adapters are joined into a Windows network bridge. Traffic of one network passes into the other through it: loops, packet storms, foreign devices in your network and unexpected addresses are possible."
+    },
+    "details": {
+      "ru": "Есть адаптер «Сетевой мост» (MAC Bridge) с участниками — адаптерами с привязкой ms_bridge. Мосты виртуальных машин (Hyper-V, VMware, VirtualBox) сюда не относятся.",
+      "en": "There is a Network Bridge (MAC Bridge) adapter with members, adapters with the ms_bridge binding. Virtual machine bridges (Hyper-V, VMware, VirtualBox) are not counted."
+    },
+    "fix": {
+      "ru": "Если мост создан не намеренно, удалите его: Панель управления → Сетевые подключения → правой кнопкой по «Сетевой мост» → Удалить.",
+      "en": "If the bridge was not created on purpose, delete it: Control Panel → Network Connections → right-click Network Bridge → Delete."
+    }
+  }
+}

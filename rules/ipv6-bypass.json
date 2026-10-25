@@ -1,0 +1,33 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "ipv6-bypass",
+  "level": "important",
+  "facts": [ "tunnelCoverage" ],
+  "condition": {
+    "from": "tunnelCoverage",
+    "where": {
+      "allOf": [
+        { "path": "ipv4ViaTunnel", "eq": true },
+        { "path": "ipv6ExternalReached", "eq": true }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "IPv6 идёт мимо VPN",
+      "en": "IPv6 bypasses the VPN"
+    },
+    "why": {
+      "ru": "VPN пропускает через себя только IPv4. Сайты, которые доступны по IPv6, открываются напрямую через провайдера: ваш настоящий адрес виден, а VPN как будто не включён.",
+      "en": "The VPN carries IPv4 only. Sites reachable over IPv6 are opened directly through the provider: your real address is visible as if the VPN were off."
+    },
+    "details": {
+      "ru": "Внешний IPv4 идёт через туннель, а проверка связи с внешним IPv6-адресом прошла через физический интерфейс.",
+      "en": "External IPv4 goes through a tunnel, while a connectivity check to an external IPv6 address went through a physical interface."
+    },
+    "fix": {
+      "ru": "Включите в VPN-клиенте поддержку или блокировку IPv6 (часто называется «IPv6 leak protection»). Если клиент так не умеет, отключите IPv6 у физического адаптера на время работы VPN.",
+      "en": "Turn on IPv6 support or IPv6 blocking in the VPN client (often called 'IPv6 leak protection'). If the client cannot do that, turn off IPv6 on the physical adapter while the VPN is in use."
+    }
+  }
+}

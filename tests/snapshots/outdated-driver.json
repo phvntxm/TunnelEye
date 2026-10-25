@@ -1,0 +1,16 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "adapters": { "data": { "adapters": [
+        { "name": "Ethernet", "interfaceDescription": "Example Gigabit Ethernet", "interfaceIndex": 3, "interfaceGuid": "{00000000-0000-0000-0000-000000000003}", "status": "Up", "virtual": false, "hidden": false, "hardwareInterface": true, "componentId": "PCI\\VEN_0000&DEV_0001", "ndisPhysicalMedium": 14, "mtuSize": 1500,
+          "driver": { "provider": "Example", "version": "0.9.0", "date": "2019-05-01" }, "advancedProperties": [] },
+        { "name": "Bluetooth Network", "interfaceDescription": "Bluetooth Device (Personal Area Network)", "interfaceIndex": 21, "status": "Disconnected", "virtual": true, "hidden": false, "hardwareInterface": false, "componentId": "BTH\\MS_BTHPAN", "mtuSize": 1500,
+          "driver": { "provider": "Microsoft", "version": "10.0.26100.1", "date": "2006-06-21" }, "advancedProperties": [] },
+        { "name": "Old VPN", "interfaceDescription": "Example VPN Virtual Adapter", "interfaceIndex": 22, "status": "Not Present", "virtual": true, "hidden": false, "hardwareInterface": false, "componentId": "example_vnic", "mtuSize": 0,
+          "driver": { "provider": "Example VPN", "version": "1.0", "date": "2018-01-01" }, "advancedProperties": [] }
+      ] } }
+    }
+  }
+}

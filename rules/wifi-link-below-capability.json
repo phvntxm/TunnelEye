@@ -1,0 +1,29 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "wifi-link-below-capability",
+  "level": "advice",
+  "experimental": true,
+  "facts": [ "wifiLinks" ],
+  "condition": {
+    "from": "wifiLinks",
+    "where": { "path": "linkBelowAccessPoint", "eq": true }
+  },
+  "text": {
+    "title": {
+      "ru": "Wi-Fi работает в более старом режиме, чем могут роутер и карта",
+      "en": "Wi-Fi runs in an older mode than the router and card support"
+    },
+    "why": {
+      "ru": "И роутер, и Wi-Fi-карта поддерживают более новый стандарт, но подключение установлено по старому. Причина обычно на стороне компьютера: драйвер или настройки адаптера. Скорость ниже, чем могла бы быть.",
+      "en": "Both the router and the Wi-Fi card support a newer standard, but the connection uses an older one. The cause is usually on the computer: the driver or adapter settings. Speed is lower than it could be."
+    },
+    "details": {
+      "ru": "Поколение Wi-Fi текущего подключения ниже, чем у точки доступа и у карты.",
+      "en": "The Wi-Fi generation of the current connection is below that of both the access point and the card."
+    },
+    "fix": {
+      "ru": "Обновите драйвер Wi-Fi с сайта производителя. В свойствах адаптера (вкладка «Дополнительно») проверьте, что режим нового стандарта (например, 802.11ax) включён.",
+      "en": "Update the Wi-Fi driver from the maker's website. In the adapter properties (Advanced tab) check that the newer standard mode (for example 802.11ax) is on."
+    }
+  }
+}

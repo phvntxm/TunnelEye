@@ -1,0 +1,34 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "mtu-low",
+  "level": "important",
+  "facts": [ "interfaceMtu" ],
+  "thresholds": { "minMtu": 1500 },
+  "condition": {
+    "from": "interfaceMtu",
+    "where": {
+      "anyOf": [
+        { "path": "nlMtu", "lt": "$threshold.minMtu" },
+        { "path": "gatewayMtu", "lt": "$threshold.minMtu" }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Уменьшенный MTU на обычном подключении",
+      "en": "Reduced MTU on a regular connection"
+    },
+    "why": {
+      "ru": "Размер пакета (MTU) у обычного подключения меньше стандартных 1500 байт. Пакеты дробятся или теряются: часть сайтов грузится медленно или зависает, особенно через VPN.",
+      "en": "The packet size (MTU) of a regular connection is below the standard 1500 bytes. Packets get split or lost: some sites load slowly or hang, especially over a VPN."
+    },
+    "details": {
+      "ru": "У физического адаптера (не туннеля) MTU интерфейса или проверенный MTU до шлюза меньше 1500. Уменьшенный MTU у VPN-туннелей и PPPoE — норма и не учитывается.",
+      "en": "A physical adapter (not a tunnel) has an interface MTU or a tested MTU to the gateway below 1500. A reduced MTU on VPN tunnels and PPPoE is normal and not counted."
+    },
+    "fix": {
+      "ru": "Если MTU меняли вручную («твикеры», советы для игр), верните значение по умолчанию: команда netsh interface ipv4 set subinterface \"<имя>\" mtu=1500 store=persistent от имени администратора. Если меньше только MTU до шлюза — проверьте настройки роутера.",
+      "en": "If the MTU was changed by hand (tweakers, gaming tips), restore the default: run netsh interface ipv4 set subinterface \"<name>\" mtu=1500 store=persistent as administrator. If only the MTU to the gateway is lower, check the router settings."
+    }
+  }
+}

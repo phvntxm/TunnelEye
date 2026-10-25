@@ -1,0 +1,18 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "connectivity": { "data": { "external": { "trace": [
+        { "target": "1.1.1.1", "viaInterfaceIndex": 3, "viaInterfaceAlias": "Ethernet", "status": "maxHops", "hops": [
+          { "ttl": 1, "address": "192.168.1.1", "rttMs": null, "status": "TtlExpired" },
+          { "ttl": 2, "address": "203.0.113.1", "rttMs": null, "status": "TtlExpired" },
+          { "ttl": 3, "address": "203.0.113.2", "rttMs": null, "status": "TtlExpired" },
+          { "ttl": 4, "address": "203.0.113.1", "rttMs": null, "status": "TtlExpired" },
+          { "ttl": 5, "address": "203.0.113.2", "rttMs": null, "status": "TtlExpired" },
+          { "ttl": 6, "address": "203.0.113.1", "rttMs": null, "status": "TtlExpired" }
+        ] }
+      ] } } }
+    }
+  }
+}

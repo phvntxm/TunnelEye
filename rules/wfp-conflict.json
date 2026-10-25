@@ -1,0 +1,29 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "wfp-conflict",
+  "level": "advice",
+  "experimental": true,
+  "facts": [ "wfpLayers" ],
+  "condition": {
+    "from": "wfpLayers",
+    "where": { "path": "thirdPartyOwners", "gte": 2 }
+  },
+  "text": {
+    "title": {
+      "ru": "Несколько программ фильтруют трафик на одном уровне",
+      "en": "Several programs filter traffic at the same level"
+    },
+    "why": {
+      "ru": "Две или больше сторонних программ (VPN, антивирус, брандмауэр, средство обхода DPI) встроились в сетевой фильтр Windows в одном и том же месте. Их решения могут противоречить друг другу: соединения то проходят, то блокируются.",
+      "en": "Two or more third-party programs (VPN, antivirus, firewall, DPI bypass tool) hooked into the Windows network filter at the same place. Their decisions may contradict each other, so connections pass or get blocked unpredictably."
+    },
+    "details": {
+      "ru": "На одном слое WFP есть фильтры с завершающими callout-действиями от разных сторонних владельцев (провайдеров или callout-драйверов). Фильтры Windows и Defender не учитываются. Правило экспериментальное: такое соседство бывает и штатным.",
+      "en": "One WFP layer has filters with terminating callout actions from different third-party owners (providers or callout drivers). Windows and Defender filters are not counted. The rule is experimental: such neighbours can be normal."
+    },
+    "fix": {
+      "ru": "Если есть проблемы со связью, по очереди отключайте эти программы и смотрите, пропадёт ли проблема. Не держите одновременно два VPN или два антивируса с сетевым экраном.",
+      "en": "If connections misbehave, turn these programs off one at a time and see whether the problem goes away. Do not run two VPNs or two antiviruses with a network firewall at once."
+    }
+  }
+}

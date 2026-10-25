@@ -1,0 +1,15 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "system": { "data": { "networkProfiles": [
+        { "name": "Cafe", "interfaceAlias": "Ethernet", "interfaceIndex": 3, "category": "Public", "ipv4Connectivity": "Internet", "ipv6Connectivity": "NoTraffic", "domainAuthenticationKind": "None" }
+      ] } },
+      "firewall": { "data": { "rules": [
+        { "name": "Example-RPC-In", "displayName": "Example RPC", "displayGroup": null, "enabled": true, "direction": "Inbound", "action": "Allow", "profiles": [ "Private" ], "primaryStatus": "OK", "program": "C:\\Windows\\system32\\svchost.exe", "service": null, "protocol": "TCP", "localPorts": [ "135" ], "remotePorts": [ "Any" ], "localAddresses": [ "Any" ], "remoteAddresses": [ "Any" ] },
+        { "name": "Example-Updates-In", "displayName": "Example updates", "displayGroup": null, "enabled": true, "direction": "Inbound", "action": "Allow", "profiles": [ "Any" ], "primaryStatus": "OK", "program": "C:\\Windows\\system32\\svchost.exe", "service": null, "protocol": "TCP", "localPorts": [ "7680" ], "remotePorts": [ "Any" ], "localAddresses": [ "Any" ], "remoteAddresses": [ "Any" ] }
+      ] } }
+    }
+  }
+}

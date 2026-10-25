@@ -1,0 +1,39 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "wifi-crowded-channel",
+  "level": "advice",
+  "facts": [ "wifiLinks" ],
+  "thresholds": { "crowdedNetworks": 6, "busyChannelPercent": 60 },
+  "condition": {
+    "from": "wifiLinks",
+    "where": {
+      "allOf": [
+        { "path": "bandGHz", "eq": "2.4" },
+        {
+          "anyOf": [
+            { "path": "overlappingNetworks", "gte": "$threshold.crowdedNetworks" },
+            { "path": "channelUtilizationPercent", "gte": "$threshold.busyChannelPercent" }
+          ]
+        }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Загруженный канал Wi-Fi 2,4 ГГц",
+      "en": "Busy 2.4 GHz Wi-Fi channel"
+    },
+    "why": {
+      "ru": "Компьютер подключён к Wi-Fi на 2,4 ГГц, а рядом много других сетей на тех же каналах. Они делят эфир: скорость падает, задержка скачет.",
+      "en": "The computer is on 2.4 GHz Wi-Fi, and many other networks nearby use the same channels. They share the air: speed drops and delays jump."
+    },
+    "details": {
+      "ru": "На 2,4 ГГц в пределах 4 каналов от вашего видно много точек доступа или точка сообщает высокую загрузку канала.",
+      "en": "On 2.4 GHz many access points are seen within 4 channels of yours, or the access point reports a high channel load."
+    },
+    "fix": {
+      "ru": "Подключитесь к сети 5 ГГц, если роутер её раздаёт. Иначе выберите в роутере канал 1, 6 или 11 — наименее занятый.",
+      "en": "Connect to the 5 GHz network if the router has one. Otherwise choose channel 1, 6 or 11, whichever is least busy, in the router."
+    }
+  }
+}

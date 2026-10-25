@@ -1,0 +1,11 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "full-tunnel",
+  "patch": {
+    "modules": {
+      "connectivity": { "data": { "dnsServers": [
+        { "address": "192.168.1.1", "interfaceIndex": 3, "addressClass": "private", "tested": true, "reason": "local", "responds": true, "status": "nxdomain", "rcode": 3, "rttMs": 2, "viaInterfaceIndex": 3, "viaInterfaceAlias": "Ethernet" }
+      ] } }
+    }
+  }
+}

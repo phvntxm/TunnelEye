@@ -1,0 +1,19 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "snapshotId": "00000000-0000-4000-8000-000000000008",
+    "modules": {
+      "wifi": { "data": {
+        "interfaces": [
+          { "name": "Wi-Fi", "description": "Example Wireless Adapter", "interfaceGuid": "{00000000-0000-0000-0000-000000000005}", "connected": true, "ssid": "Example", "bandGHz": "5", "channel": 36, "radioType": "802.11ax", "authentication": "WPA3-Personal", "cipher": "GCMP", "receiveRateMbps": 1201, "transmitRateMbps": 1201, "signalPercent": 82, "rssiDbm": -55 }
+        ],
+        "neighbors": { "networkCount": 3, "bss": [
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": "2.4", "channel": 1, "signalPercent": 40, "radioType": "802.11n", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": "2.4", "channel": 6, "signalPercent": 30, "radioType": "802.11n", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": true, "bandGHz": "5", "channel": 36, "signalPercent": 82, "radioType": "802.11ax", "channelUtilizationPercent": 12, "connectedStations": 3 }
+        ] }
+      } }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "dns-spoofing",
+  "level": "important",
+  "facts": [ "dnsAnswers" ],
+  "condition": {
+    "from": "dnsAnswers",
+    "where": {
+      "anyOf": [
+        { "path": "sinkholeServers", "gte": 1 },
+        { "allOf": [ { "path": "nxdomainServers", "gte": 1 }, { "path": "answeredServers", "gte": 1 } ] }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Подмена DNS",
+      "en": "DNS spoofing"
+    },
+    "why": {
+      "ru": "Некоторые DNS-серверы отвечают на запросы иначе, чем остальные: говорят, что сайта нет, или отдают пустой адрес. Из-за этого сайты не открываются или открываются не те.",
+      "en": "Some DNS servers answer differently from the others: they say a site does not exist or return an empty address. Because of this, sites do not open or the wrong ones open."
+    },
+    "details": {
+      "ru": "При внешней проверке DNS сервер ответил адресом-«пустышкой» (0.0.0.0, 127.0.0.1, ::) для обычного имени или сказал «имени нет», когда другие серверы дали адрес. Разные адреса у разных серверов признаком не считаются.",
+      "en": "In the external DNS check a server answered with a dummy address (0.0.0.0, 127.0.0.1, ::) for an ordinary name, or said the name does not exist while other servers gave an address. Different addresses from different servers are not counted as a sign."
+    },
+    "fix": {
+      "ru": "Укажите в настройках подключения или роутера другой DNS-сервер либо включите DNS поверх HTTPS (Параметры → Сеть и Интернет → свойства подключения → DNS).",
+      "en": "Set another DNS server in the connection or router settings, or turn on DNS over HTTPS (Settings → Network & internet → connection properties → DNS)."
+    }
+  }
+}

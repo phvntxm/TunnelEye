@@ -1,0 +1,29 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "wifi-weak-signal",
+  "level": "advice",
+  "facts": [ "wifiLinks" ],
+  "thresholds": { "minSignalPercent": 50 },
+  "condition": {
+    "from": "wifiLinks",
+    "where": { "path": "signalPercent", "lt": "$threshold.minSignalPercent" }
+  },
+  "text": {
+    "title": {
+      "ru": "Слабый сигнал Wi-Fi",
+      "en": "Weak Wi-Fi signal"
+    },
+    "why": {
+      "ru": "Сигнал Wi-Fi слабый. Скорость падает, растёт задержка, соединение может рваться.",
+      "en": "The Wi-Fi signal is weak. Speed drops, delays grow, and the connection may drop."
+    },
+    "details": {
+      "ru": "Качество сигнала по оценке Windows ниже порога.",
+      "en": "Signal quality as reported by Windows is below the threshold."
+    },
+    "fix": {
+      "ru": "Перенесите роутер ближе или выше, уберите преграды между ним и компьютером. Если возможно — подключитесь кабелем или поставьте усилитель (mesh).",
+      "en": "Move the router closer or higher and remove obstacles between it and the computer. If possible, use a cable or add a range extender (mesh)."
+    }
+  }
+}

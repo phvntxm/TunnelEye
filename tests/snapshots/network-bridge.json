@@ -1,0 +1,12 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "routing": { "data": { "bridge": {
+        "adapters": [ { "name": "Network Bridge", "interfaceIndex": 20, "status": "Up" } ],
+        "members": [ { "name": "Ethernet", "interfaceIndex": 3 }, { "name": "VirtualBox Host-Only Network", "interfaceIndex": 21 } ]
+      } } }
+    }
+  }
+}
