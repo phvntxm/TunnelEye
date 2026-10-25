@@ -72,12 +72,22 @@ snapshot-YYYYMMDD-HHMMSS/
   "snapshotId": "guid",
   "createdAt": "…Z",
   "tool": { "name": "TunnelEye", "version": "0.1.0" },
-  "host": { "osBuild": "26200.1234", "psVersion": "5.1…", "culture": "ru-RU", "uiCulture": "ru-RU", "elevated": false },
+  "host": { "osBuild": "26200.1234", "psVersion": "5.1…", "culture": "ru-RU", "uiCulture": "ru-RU", "elevated": false, "elevatedAsOtherUser": null },
   "externalAllowed": false,
   "summary": { "ok": 11, "partial": 1, "failed": 0, "skipped": 1, "durationMs": 95000 },
   "modules": { "system": { } }
 }
 ```
+
+`host.elevatedAsOtherUser` — сбор шёл под учётной записью другого администратора (UAC, D-015): `HKCU` и `%LOCALAPPDATA%` не пользователя. GUI передаёт `Invoke-Snapshot.ps1 -LaunchingUserSid <SID>`; в снимок пишется только результат сравнения с SID процесса, сам SID — нет. `null` — SID не передан (запуск не из GUI).
+
+`progress.jsonl` в каталоге снимка — ход запуска, по JSON-объекту на строку, дописывается по мере работы (процесс под UAC не отдаёт stdout окну):
+- `{"event":"start","modules":[…],"elevated":…,"elevatedAsOtherUser":…,"externalAllowed":…,"time":…}`;
+- `{"event":"moduleStart","module":"…","index":0,"total":13,"time":…}`;
+- `{"event":"moduleEnd","module":"…","index":0,"total":13,"status":"ok","durationMs":…,"time":…}`;
+- `{"event":"end","snapshot":"snapshot.json","ok":…,"partial":…,"failed":…,"skipped":…,"durationMs":…,"time":…}`.
+
+Оркестратор можно запускать и через `powershell.exe -File`: каталог сборщиков (`-CollectorPath`) по умолчанию определяется в теле скрипта — в Windows PowerShell 5.1 `$PSScriptRoot` в умолчаниях параметров при `-File` пуст.
 
 `externalAllowed` — было ли на этот запуск дано явное согласие на внешние тесты связи (D-002, `Invoke-Snapshot.ps1 -AllowExternal`); подробности — в модуле `connectivity`. Совместимое добавление поля, версия схемы снимка прежняя.
 
