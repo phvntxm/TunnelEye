@@ -12,6 +12,8 @@ TestResults/
 *.pcapng
 *.etl
 snapshots/
+# Synthetic test snapshots are part of the repository (D-014).
+!tests/snapshots/
 output/
 
 # OS

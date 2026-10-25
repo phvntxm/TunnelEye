@@ -1,0 +1,35 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "two-gateways",
+  "level": "important",
+  "facts": [ "routeSummary", "adapters" ],
+  "thresholds": { "maxMetricSpread": 20 },
+  "condition": {
+    "from": "routeSummary",
+    "where": {
+      "allOf": [
+        { "path": "gateways", "gte": 2 },
+        { "anyOf": [ { "path": "selectedIsTunnel", "exists": false }, { "path": "selectedIsTunnel", "eq": false } ] },
+        { "anyOf": [ { "path": "metricSpread", "exists": false }, { "path": "metricSpread", "lte": "$threshold.maxMetricSpread" } ] }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Два шлюза по умолчанию",
+      "en": "Two default gateways"
+    },
+    "why": {
+      "ru": "Компьютер подключён к интернету сразу через два адаптера с похожим приоритетом. Windows может переключаться между ними, и соединения рвутся или идут не тем путём.",
+      "en": "The computer reaches the internet through two adapters with a similar priority. Windows may switch between them, so connections drop or take the wrong path."
+    },
+    "details": {
+      "ru": "Есть маршруты 0.0.0.0/0 (или ::/0) через разные физические интерфейсы с близкими эффективными метриками, и внешний трафик не уходит в VPN-туннель.",
+      "en": "There are 0.0.0.0/0 (or ::/0) routes through different physical interfaces with close effective metrics, and external traffic is not sent into a VPN tunnel."
+    },
+    "fix": {
+      "ru": "Отключите лишнее подключение (например, Wi-Fi при подключённом кабеле) или задайте у одного из адаптеров явно большую метрику интерфейса.",
+      "en": "Turn off the extra connection (for example Wi-Fi while the cable is plugged in) or give one of the adapters a clearly higher interface metric."
+    }
+  }
+}
