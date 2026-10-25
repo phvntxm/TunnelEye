@@ -55,16 +55,20 @@ namespace Argus.Core.Engine
     {
         public const string Schema = "tunneleye.analysis/1";
 
-        public AnalysisResult(string snapshotId, IReadOnlyList<RuleResult> results, IReadOnlyList<string> ruleErrors)
+        public AnalysisResult(string snapshotId, IReadOnlyList<RuleResult> results, IReadOnlyList<string> ruleErrors, IReadOnlyList<string> evaluationErrors)
         {
             SnapshotId = snapshotId;
             Results = results;
             RuleErrors = ruleErrors;
+            EvaluationErrors = evaluationErrors;
         }
 
         public string SnapshotId { get; }
         public IReadOnlyList<RuleResult> Results { get; }
+        /// <summary>Rules that did not load.</summary>
         public IReadOnlyList<string> RuleErrors { get; }
+        /// <summary>Facts and rules that failed while evaluating; their rules are "not checked".</summary>
+        public IReadOnlyList<string> EvaluationErrors { get; }
     }
 
     /// <summary>Evaluates rules over the facts of one snapshot.</summary>
@@ -81,8 +85,19 @@ namespace Argus.Core.Engine
         {
             var context = _catalog.CreateContext(snapshot);
             var results = new List<RuleResult>();
-            foreach (var rule in rules) results.Add(Evaluate(context, rule, snapshot.CreatedAtUtc));
-            return new AnalysisResult(snapshot.SnapshotId, results, (ruleErrors ?? new string[0]).ToList());
+            var errors = new List<string>();
+            foreach (var rule in rules)
+            {
+                try { results.Add(Evaluate(context, rule, snapshot.CreatedAtUtc)); }
+                catch (Exception e)
+                {
+                    // One broken rule (a regex timeout, unexpected data) must not cost the others.
+                    errors.Add("rule " + rule.Id + ": " + e.GetType().Name + ": " + e.Message);
+                    results.Add(new RuleResult(rule, RuleStatus.NotChecked, "rule-error:" + e.GetType().Name, new Evidence[0], new string[0]));
+                }
+            }
+            errors.InsertRange(0, context.Errors);
+            return new AnalysisResult(snapshot.SnapshotId, results, (ruleErrors ?? new string[0]).ToList(), errors);
         }
 
         private static RuleResult Evaluate(FactContext context, Rule rule, DateTime nowUtc)
@@ -124,6 +139,7 @@ namespace Argus.Core.Engine
                 ["facts"] = FactCatalog.Version,
                 ["snapshotId"] = analysis.SnapshotId,
                 ["ruleErrors"] = analysis.RuleErrors.ToArray(),
+                ["evaluationErrors"] = analysis.EvaluationErrors.ToArray(),
                 ["results"] = results,
             });
         }

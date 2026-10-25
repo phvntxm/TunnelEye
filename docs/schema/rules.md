@@ -65,8 +65,11 @@
 | `exists` | `true` \| `false` | Поле есть и не `null` / поля нет или `null` |
 | `olderThanDays`, `newerThanDays` | число | Дата ISO в поле старше / новее N дней **относительно времени снимка** (`createdAt`), а не времени анализа |
 
-**Семантика:**
-- Отсутствующее поле и `null` проваливают **любой** оператор, кроме `exists: false`: «нет поля» ≠ `false`, и `ne`/`notIn` на отсутствующем поле — тоже ложь.
+**Семантика — трёхзначная логика (Клини):** результат проверки — `True`, `False` или `Unknown`; элемент совпадает только при `True`.
+- Отсутствующее поле и `null` дают `Unknown` для **любого** оператора, кроме `exists` (он всегда `True`/`False`): «нет поля» ≠ `false`. `ne`/`notIn` на отсутствующем поле тоже `Unknown`.
+- `not Unknown = Unknown` — `{"not": {"path": "enabled", "eq": true}}` у элемента без `enabled` **не совпадает**.
+- `allOf`: есть `False` → `False`, иначе есть `Unknown` → `Unknown`, иначе `True`. `anyOf`: есть `True` → `True`, иначе есть `Unknown` → `Unknown`, иначе `False`.
+- Сказать «нет поля — тоже подходит» можно только явно: `{"anyOf": [{"path": "x", "exists": false}, ...]}`.
 - Числа сравниваются как decimal: `1` = `1.0` (JSON-ридер отдаёт `int`, `long` и `decimal` вперемешку).
 - Строки сравниваются порядково, без учёта регистра.
 - Значения разных типов никогда не равны (`1` ≠ `"1"`).
@@ -76,16 +79,22 @@
 
 `tunneleye analyze <snapshot.json> [--rules <каталог>] [--json <файл>]` (`src/TunnelEye.Cli`). JSON:
 - `schema`, `facts` (версия набора фактов), `snapshotId`;
-- `ruleErrors[]`;
+- `ruleErrors[]` — правила, которые не загрузились;
+- `evaluationErrors[]` — факты и правила, упавшие при вычислении (исключение провайдера факта, таймаут регулярного выражения, неожиданные данные): упавший факт — только его правила «не проверено», остальные работают;
 - `results[]`: `{ ruleId, level, experimental, status, reason, limitations[], evidence[{ values, sources[] }] }`.
 
 | `status` | Смысл |
 | --- | --- |
 | `found` | Найдено, есть доказательства |
 | `notFound` | Проверено, не найдено |
-| `notChecked` | Нужный факт недоступен; `reason`: `module-missing:<модуль>`, `module-failed:<модуль>`, `module-skipped:<модуль>`, `unknown-fact` |
+| `notChecked` | Нужный факт недоступен или правило упало; `reason`: `module-missing:<модуль>`, `module-failed:<модуль>`, `module-skipped:<модуль>`, `unknown-fact`, `fact-error:<тип исключения>`, `rule-error:<тип исключения>` |
 
-`limitations[]` — что внутри доступных фактов проверить не удалось. Например, `elevated-as-other-user:user-proxy-not-checked` (D-015) или `reachability-unknown:…`.
+`limitations[]` — что внутри доступных фактов проверить не удалось. Например:
+- `elevated-as-other-user:user-proxy-not-checked` (D-015);
+- `reachability-unknown:…`;
+- `proxy-not-tested:<source>:<причина>` — действующий прокси, доступность которого не проверялась (`externalNotAllowed`, `module-failed:connectivity`, …).
+
+`notFound` с непустыми `limitations` у правила «Критично» — это «проверено не всё», а не зелёный (светофор, часть 2.3).
 
 Модель отчёта (светофор, «проверено не всё», тексты для пользователя) — этап 2.3, `tunneleye.report/1`.
 
@@ -125,12 +134,12 @@
 | --- | --- | --- |
 | `source` | string | `user` \| `machine` \| `winhttp` |
 | `effective` | bool | Настройка действует. `user`: `ProxyEnable`. `machine`: `ProxyEnable` **и** политика `ProxySettingsPerUser = 0` (иначе HKLM не используется). `winhttp`: не «прямой доступ» |
-| `scheme`, `host`, `port` | | Разбор `ProxyServer` |
+| `scheme`, `host`, `port` | | Разбор `ProxyServer`; порт вне 1–65535 — `null` |
 | `isLoopback` | bool | `127.x`, `::1`, `localhost` |
 | `tcpStatus` | string \| null | TCP-проверка из `connectivity.proxies` (`open` \| `refused` \| `timeout` \| `error`); `null` — не проверялся |
-| `listening` | bool \| null | Для loopback — есть ли в `connections.tcpListeners` слушатель на этом порту (`127.0.0.1`, `0.0.0.0`, `::`, `::1`); `null` — неизвестно |
+| `listening` | bool \| null | Для loopback — есть ли в `connections.tcpListeners` слушатель на этом порту, **который обслуживает хост**: для IPv4-хоста — тот же адрес или `0.0.0.0`; для `::1` — `::1` или `::`; для `localhost` — любой из них. Сокет на `::` в Windows по умолчанию только IPv6 (`IPV6_V6ONLY`) и `127.0.0.1` не обслуживает. `null` — неизвестно |
 
-При `host.elevatedAsOtherUser = true` записи `user` не строятся — ограничение `elevated-as-other-user:user-proxy-not-checked` (D-015).
+При `host.elevatedAsOtherUser = true` записи `user` не строятся — ограничение `elevated-as-other-user:user-proxy-not-checked` (D-015). Действующий прокси без TCP-проверки и без данных о слушателе — ограничение `proxy-not-tested:<source>:<причина>`.
 
 ### `leftovers`
 

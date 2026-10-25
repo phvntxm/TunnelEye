@@ -13,11 +13,43 @@ namespace Argus.Core.Tests
     {
         private static readonly DateTime Now = new DateTime(2026, 10, 25, 0, 0, 0, DateTimeKind.Utc);
 
-        private static bool Test(string predicateJson, string itemJson, string thresholdsJson = "{}")
+        private static Truth Eval(string predicateJson, string itemJson, string thresholdsJson = "{}")
         {
             var predicate = RuleLoader.ParsePredicate(JsonValue.Parse(predicateJson));
             var thresholds = new Dictionary<string, object>(JsonValue.AsObject(JsonValue.Parse(thresholdsJson)));
             return predicate.Test(JsonValue.AsObject(JsonValue.Parse(itemJson)), new EvaluationContext(thresholds, Now));
+        }
+
+        /// <summary>Whether the item matches: only True does.</summary>
+        private static bool Test(string predicateJson, string itemJson, string thresholdsJson = "{}")
+        {
+            return Eval(predicateJson, itemJson, thresholdsJson) == Truth.True;
+        }
+
+        [Fact]
+        public void Not_over_a_missing_field_does_not_match()
+        {
+            Assert.Equal(Truth.Unknown, Eval("{\"not\":{\"path\":\"enabled\",\"eq\":true}}", "{}"));
+            Assert.False(Test("{\"not\":{\"path\":\"enabled\",\"eq\":true}}", "{}"));
+            Assert.True(Test("{\"not\":{\"path\":\"enabled\",\"eq\":true}}", "{\"enabled\":false}"));
+            Assert.Equal(Truth.Unknown, Eval("{\"path\":\"x\",\"eq\":1}", "{\"x\":null}"));
+        }
+
+        // T = {"path":"t","eq":true} with t = true; F = with f = false; U = missing field.
+        [Theory]
+        [InlineData("allOf", "T", "T", Truth.True)]
+        [InlineData("allOf", "T", "U", Truth.Unknown)]
+        [InlineData("allOf", "F", "U", Truth.False)]
+        [InlineData("allOf", "U", "U", Truth.Unknown)]
+        [InlineData("anyOf", "F", "F", Truth.False)]
+        [InlineData("anyOf", "F", "U", Truth.Unknown)]
+        [InlineData("anyOf", "T", "U", Truth.True)]
+        [InlineData("anyOf", "U", "U", Truth.Unknown)]
+        public void Kleene_truth_table(string combinator, string a, string b, Truth expected)
+        {
+            System.Func<string, string> p = v => v == "T" ? "{\"path\":\"t\",\"eq\":true}" : v == "F" ? "{\"path\":\"t\",\"eq\":false}" : "{\"path\":\"missing\",\"eq\":true}";
+            var json = "{\"" + combinator + "\":[" + p(a) + "," + p(b) + "]}";
+            Assert.Equal(expected, Eval(json, "{\"t\":true}"));
         }
 
         [Theory]
@@ -48,8 +80,8 @@ namespace Argus.Core.Tests
         [InlineData("{\"path\":\"x\",\"match\":\".*\"}")]
         public void A_missing_field_fails_every_operator(string predicate)
         {
-            Assert.False(Test(predicate, "{}"));
-            Assert.False(Test(predicate, "{\"x\":null}"));
+            Assert.Equal(Truth.Unknown, Eval(predicate, "{}"));
+            Assert.Equal(Truth.Unknown, Eval(predicate, "{\"x\":null}"));
         }
 
         [Fact]
