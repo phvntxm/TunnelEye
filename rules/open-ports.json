@@ -1,0 +1,34 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "open-ports",
+  "level": "advice",
+  "experimental": true,
+  "facts": [ "exposedPorts" ],
+  "condition": {
+    "from": "exposedPorts",
+    "where": {
+      "allOf": [
+        { "path": "publicNetwork", "eq": true },
+        { "path": "inboundAllowed", "eq": true }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Открытые порты в общественной сети",
+      "en": "Open ports on a public network"
+    },
+    "why": {
+      "ru": "Компьютер подключён к сети с профилем «Общественная», а некоторые программы принимают входящие подключения на всех адаптерах, и брандмауэр их пропускает. В кафе, гостинице или общежитии к ним могут подключиться посторонние.",
+      "en": "The computer is on a network with the Public profile, and some programs accept incoming connections on all adapters while the firewall lets them in. In a café, hotel or dorm, strangers may connect to them."
+    },
+    "details": {
+      "ru": "TCP-порт слушается на 0.0.0.0 или ::, и входящие для него в профиле «Общественная» разрешены: включённым правилом брандмауэра или потому, что профиль выключен. Правило экспериментальное: часть таких портов открывает сама Windows.",
+      "en": "A TCP port listens on 0.0.0.0 or ::, and inbound connections to it on the Public profile are allowed, by an enabled firewall rule or because the profile is off. The rule is experimental: Windows itself opens some of these ports."
+    },
+    "fix": {
+      "ru": "Если сеть домашняя, сделайте её «Частной» (Параметры → Сеть и Интернет → свойства сети). Если сеть чужая, закройте ненужные программы или отключите для них входящие правила брандмауэра в профиле «Общественная».",
+      "en": "If the network is your home one, make it Private (Settings → Network & internet → network properties). If it is someone else's, close programs you do not need or turn off their inbound firewall rules for the Public profile."
+    }
+  }
+}

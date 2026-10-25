@@ -1,0 +1,37 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "outdated-driver",
+  "level": "advice",
+  "facts": [ "adapters" ],
+  "thresholds": { "maxAgeDays": 1095 },
+  "condition": {
+    "from": "adapters",
+    "where": {
+      "allOf": [
+        { "path": "virtual", "eq": false },
+        { "path": "isTunnel", "eq": false },
+        { "path": "status", "notIn": [ "Not Present", "Disabled" ] },
+        { "path": "driverDate", "olderThanDays": "$threshold.maxAgeDays" },
+        { "path": "driverDate", "ne": "2006-06-21" }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Старый драйвер сетевой карты",
+      "en": "Old network card driver"
+    },
+    "why": {
+      "ru": "Драйверу сетевой карты больше трёх лет. В новых версиях производители исправляют обрывы связи, низкую скорость и проблемы после сна.",
+      "en": "The network card driver is more than three years old. Newer versions from the maker fix dropouts, low speed and problems after sleep."
+    },
+    "details": {
+      "ru": "Дата драйвера физического адаптера старше порога. Встроенные драйверы Microsoft с датой 2006-06-21 не учитываются: это условная дата, а не возраст.",
+      "en": "The driver date of a physical adapter is older than the threshold. Built-in Microsoft drivers dated 2006-06-21 are not counted: it is a placeholder date, not the age."
+    },
+    "fix": {
+      "ru": "Скачайте свежий драйвер с сайта производителя сетевой карты или материнской платы (ноутбука) и установите его.",
+      "en": "Download a current driver from the website of the network card or motherboard (laptop) maker and install it."
+    }
+  }
+}

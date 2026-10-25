@@ -1,0 +1,12 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "services": { "data": { "autostart": [
+        { "name": "ExampleTray", "location": "HKCU\\Run", "enabled": true, "imagePath": "C:\\Program Files\\Example Security\\tray.exe", "imageExists": true, "hasArguments": false, "company": "Example" },
+        { "name": "RemovedTool", "location": "HKLM\\Run", "enabled": true, "imagePath": "C:\\Program Files\\Removed Tool\\tool.exe", "imageExists": false, "hasArguments": false, "company": null }
+      ] } }
+    }
+  }
+}

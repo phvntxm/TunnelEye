@@ -68,9 +68,9 @@ namespace Argus.Core.Tests
             var snapshot = TestData.LoadSnapshot("routing-failed");
             Assert.False(snapshot.Module("routing").IsUsable);
             Assert.True(snapshot.Module("adapters").IsUsable);
-            Assert.Null(snapshot.Module("hardware"));
+            Assert.Null(snapshot.Module("no-such-module"));
             Assert.Contains(snapshot.Modules, m => m.Name == "vpn");
-            Assert.Equal(6, snapshot.Modules.Count());
+            Assert.Equal(13, snapshot.Modules.Count());
         }
     }
 }

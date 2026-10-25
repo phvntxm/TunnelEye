@@ -131,6 +131,17 @@ Describe 'Invoke-Snapshot: progress.jsonl' {
         $events[-1]['failed'] | Should Be 1
         foreach ($e in $events) { $e['time'] | Should Match 'Z$' }
     }
+    It 'does not stop the snapshot when the progress file is locked' {
+        # Review 007: progress is not data - a reader or antivirus holding the file must not cost the snapshot.
+        $lockedDir = Join-Path $TestDrive 'progress-locked'
+        $null = New-Item -ItemType Directory -Path $lockedDir
+        $lock = [IO.File]::Open((Join-Path $lockedDir 'progress.jsonl'), 'Create', 'ReadWrite', 'None')
+        try { $result = & $orchestrator -OutputDirectory $lockedDir -Modules 'fixture-ok' -CollectorPath $fixtures -TimeoutSec 30 }
+        finally { $lock.Dispose() }
+        Test-Path (Join-Path $lockedDir 'snapshot.json') | Should Be $true
+        $snapshot = ConvertFrom-CollectorJson ([IO.File]::ReadAllText((Join-Path $lockedDir 'snapshot.json'), [Text.Encoding]::UTF8))
+        $snapshot['modules']['fixture-ok']['status'] | Should Be 'ok'
+    }
 }
 
 Describe 'Invoke-Snapshot: elevatedAsOtherUser (D-015)' {

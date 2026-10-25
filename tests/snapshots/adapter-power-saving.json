@@ -1,0 +1,15 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "adapters": { "data": { "adapters": [
+        { "name": "Ethernet", "interfaceDescription": "Example Gigabit Ethernet", "interfaceIndex": 3, "interfaceGuid": "{00000000-0000-0000-0000-000000000003}", "status": "Up", "virtual": false, "hidden": false, "hardwareInterface": true, "componentId": "PCI\\VEN_0000&DEV_0001", "ndisPhysicalMedium": 14, "mtuSize": 1500,
+          "driver": { "provider": "Example", "version": "1.0.0", "date": "2025-06-01" },
+          "advancedProperties": [ { "keyword": "*EEE", "displayName": "Energy Efficient Ethernet", "displayValue": "Enabled", "registryValue": [ "1" ] }, { "keyword": "EnableGreenEthernet", "displayName": "Green Ethernet", "displayValue": "Enabled", "registryValue": [ "1" ] } ] },
+        { "name": "Wi-Fi", "interfaceDescription": "Example Wireless Adapter", "interfaceIndex": 5, "interfaceGuid": "{00000000-0000-0000-0000-000000000005}", "status": "Disconnected", "virtual": false, "hidden": false, "hardwareInterface": true, "componentId": "PCI\\VEN_0000&DEV_0002", "ndisPhysicalMedium": 9, "mtuSize": 1500,
+          "driver": { "provider": "Example", "version": "2.0.0", "date": "2025-03-01" }, "advancedProperties": [ { "keyword": "MIMOPowerSaveMode", "displayName": "MIMO Power Save Mode", "displayValue": "On", "registryValue": [ "1" ] } ] }
+      ] } }
+    }
+  }
+}

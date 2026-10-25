@@ -5,7 +5,7 @@
   "facts": [ "leftovers" ],
   "condition": {
     "from": "leftovers",
-    "where": { "path": "kind", "in": [ "tunnelDriverWithoutAdapter", "tapAdapterWithoutClient", "adapterNotPresent" ] }
+    "where": { "path": "kind", "in": [ "tunnelDriverWithoutAdapter", "tapAdapterWithoutClient", "adapterNotPresent", "serviceWithoutFile", "wfpProviderWithoutService" ] }
   },
   "text": {
     "title": {
@@ -17,8 +17,8 @@
       "en": "Removed VPN programs left drivers or network adapters behind. They are not needed and sometimes interfere with new VPNs by taking over routes or conflicting drivers."
     },
     "details": {
-      "ru": "Найдено: драйвер TAP-Windows без адаптера, адаптер TAP-Windows без установленного VPN-клиента или адаптер VPN-клиента в состоянии «Not Present».",
-      "en": "Found: a TAP-Windows driver without an adapter, a TAP-Windows adapter without an installed VPN client, or a VPN client adapter that is 'Not Present'."
+      "ru": "Найдено: драйвер TAP-Windows без адаптера, адаптер TAP-Windows без установленного VPN-клиента, адаптер VPN-клиента в состоянии «Not Present», служба VPN-клиента без файла программы или провайдер сетевого фильтра Windows (WFP), служба которого удалена.",
+      "en": "Found: a TAP-Windows driver without an adapter, a TAP-Windows adapter without an installed VPN client, a VPN client adapter that is 'Not Present', a VPN client service whose program file is gone, or a Windows network filter (WFP) provider whose service was removed."
     },
     "fix": {
       "ru": "Удалите ненужный адаптер в Диспетчере устройств (Вид → Показать скрытые устройства → Сетевые адаптеры), а драйвер — вместе с ним. Если VPN-программа ещё нужна, оставьте как есть.",

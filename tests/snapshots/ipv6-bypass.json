@@ -1,0 +1,28 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "full-tunnel",
+  "patch": {
+    "modules": {
+      "routing": { "data": {
+        "routes": [
+          { "addressFamily": "IPv4", "destinationPrefix": "0.0.0.0/0", "nextHop": "192.168.1.1", "interfaceIndex": 3, "interfaceAlias": "Ethernet", "routeMetric": 0, "interfaceMetric": 25, "effectiveMetric": 25, "protocol": "NetMgmt", "publish": "No" },
+          { "addressFamily": "IPv4", "destinationPrefix": "0.0.0.0/0", "nextHop": "0.0.0.0", "interfaceIndex": 9, "interfaceAlias": "tun0", "routeMetric": 0, "interfaceMetric": 5, "effectiveMetric": 5, "protocol": "NetMgmt", "publish": "No" },
+          { "addressFamily": "IPv6", "destinationPrefix": "::/0", "nextHop": "fe80::1", "interfaceIndex": 3, "interfaceAlias": "Ethernet", "routeMetric": 256, "interfaceMetric": 25, "effectiveMetric": 281, "protocol": "RouterAdvertisement", "publish": "No" }
+        ],
+        "routeSelection": [
+          { "kind": "externalIPv4", "target": "192.0.2.1", "reachable": true, "interfaceIndex": 9, "interfaceAlias": "tun0" },
+          { "kind": "externalIPv6", "target": "2001:db8::1", "reachable": true, "interfaceIndex": 3, "interfaceAlias": "Ethernet" }
+        ],
+        "interfaces": [
+          { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 25 },
+          { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv6", "connectionState": "Connected", "interfaceMetric": 25 },
+          { "interfaceIndex": 9, "interfaceAlias": "tun0", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 5 }
+        ]
+      } },
+      "connectivity": { "data": { "external": { "ping": [
+        { "target": "1.1.1.1", "viaInterfaceIndex": 9, "viaInterfaceAlias": "tun0", "result": { "sent": 4, "received": 4, "lossPercent": 0, "rttMinMs": 40, "rttAvgMs": 41, "rttMaxMs": 42, "status": "Success" } },
+        { "target": "2606:4700:4700::1111", "viaInterfaceIndex": 3, "viaInterfaceAlias": "Ethernet", "result": { "sent": 4, "received": 4, "lossPercent": 0, "rttMinMs": 12, "rttAvgMs": 13, "rttMaxMs": 14, "status": "Success" } }
+      ] } } }
+    }
+  }
+}

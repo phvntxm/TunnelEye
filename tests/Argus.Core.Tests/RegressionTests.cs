@@ -28,18 +28,60 @@ namespace Argus.Core.Tests
             return TestData.Analyze(TestData.LoadSnapshot(snapshot)).Results.Single(r => r.Rule.Id == ruleId);
         }
 
-        [Fact]
-        public void Nothing_is_found_on_the_clean_snapshot()
+        /// <summary>Problem snapshot -> the one rule it must trigger.</summary>
+        private static readonly Dictionary<string, string> Problems = new Dictionary<string, string>
         {
-            var analysis = TestData.Analyze(TestData.LoadSnapshot("clean"));
+            ["two-gateways"] = "two-gateways",
+            ["dead-proxy"] = "dead-proxy",
+            ["vpn-leftovers"] = "vpn-leftovers",
+            ["orphaned-wfp-provider"] = "vpn-leftovers",
+            ["vpn-service-missing"] = "vpn-leftovers",
+            ["vpn-conflict"] = "vpn-conflict",
+            ["dns-leak"] = "dns-leak",
+            ["ipv6-bypass"] = "ipv6-bypass",
+            ["wfp-conflict"] = "wfp-conflict",
+            ["hosts-sensitive"] = "hosts-sensitive",
+            ["hosts-pinned"] = "hosts-pinned",
+            ["network-bridge"] = "network-bridge",
+            ["connection-sharing"] = "connection-sharing",
+            ["routing-loop"] = "routing-loop",
+            ["outdated-driver"] = "outdated-driver",
+            ["adapter-power-saving"] = "adapter-power-saving",
+            ["mtu-low"] = "mtu-low",
+            ["missing-files"] = "missing-files",
+            ["wifi-weak-signal"] = "wifi-weak-signal",
+            ["wifi-crowded-channel"] = "wifi-crowded-channel",
+            ["wifi-router-limits"] = "wifi-router-limits",
+            ["wifi-link-below-capability"] = "wifi-link-below-capability",
+            ["open-ports"] = "open-ports",
+            ["dns-spoofing"] = "dns-spoofing",
+            ["not-elevated"] = "not-elevated",
+            ["external-not-run"] = "external-not-run",
+        };
+
+        /// <summary>Snapshots on which nothing may be found.</summary>
+        private static readonly string[] Silent = { "clean", "clean-wifi", "full-tunnel", "routing-failed", "dead-proxy-other-user" };
+
+        public static IEnumerable<object[]> ProblemCases() => Problems.Select(p => new object[] { p.Key, p.Value });
+
+        /// <summary>
+        /// On a clean base every rule is really checked - not "not checked":
+        /// the bases carry all 13 modules, external tests and WFP, so silence
+        /// there means the rule looked and found nothing.
+        /// </summary>
+        [Theory]
+        [InlineData("clean")]
+        [InlineData("clean-wifi")]
+        public void Nothing_is_found_on_a_clean_snapshot(string snapshot)
+        {
+            var analysis = TestData.Analyze(TestData.LoadSnapshot(snapshot));
             Assert.Empty(analysis.RuleErrors);
-            foreach (var r in analysis.Results) Assert.True(r.Status == RuleStatus.NotFound, r.Rule.Id + " is " + r.Status + " on the clean snapshot");
+            Assert.Empty(analysis.EvaluationErrors);
+            foreach (var r in analysis.Results) Assert.True(r.Status == RuleStatus.NotFound, r.Rule.Id + " is " + r.Status + " (" + r.Reason + ") on " + snapshot);
         }
 
         [Theory]
-        [InlineData("two-gateways", "two-gateways")]
-        [InlineData("dead-proxy", "dead-proxy")]
-        [InlineData("vpn-leftovers", "vpn-leftovers")]
+        [MemberData(nameof(ProblemCases))]
         public void Each_rule_finds_its_problem(string snapshot, string ruleId)
         {
             var r = Result(snapshot, ruleId);
@@ -49,13 +91,31 @@ namespace Argus.Core.Tests
         }
 
         [Theory]
-        [InlineData("two-gateways")]
-        [InlineData("dead-proxy")]
-        [InlineData("vpn-leftovers")]
-        public void A_problem_snapshot_triggers_only_its_rule(string snapshot)
+        [MemberData(nameof(ProblemCases))]
+        public void A_problem_snapshot_triggers_only_its_rule(string snapshot, string ruleId)
         {
-            var found = TestData.Analyze(TestData.LoadSnapshot(snapshot)).Results.Where(r => r.Status == RuleStatus.Found).Select(r => r.Rule.Id).ToList();
-            Assert.Equal(new[] { snapshot }, found);
+            var analysis = TestData.Analyze(TestData.LoadSnapshot(snapshot));
+            Assert.Empty(analysis.EvaluationErrors);
+            var found = analysis.Results.Where(r => r.Status == RuleStatus.Found).Select(r => r.Rule.Id).ToList();
+            Assert.Equal(new[] { ruleId }, found);
+        }
+
+        [Fact]
+        public void Every_rule_has_a_problem_snapshot_and_every_snapshot_a_role()
+        {
+            var rules = TestData.LoadRules();
+            Assert.Empty(rules.Errors);
+            Assert.Empty(rules.Rules.Select(r => r.Id).Except(Problems.Values));
+            Assert.Empty(TestData.SnapshotNames().Except(Problems.Keys).Except(Silent));
+        }
+
+        [Theory]
+        [InlineData("full-tunnel")]
+        [InlineData("routing-failed")]
+        [InlineData("dead-proxy-other-user")]
+        public void Nothing_is_found_on_a_silent_snapshot(string snapshot)
+        {
+            Assert.Empty(TestData.Analyze(TestData.LoadSnapshot(snapshot)).Results.Where(r => r.Status == RuleStatus.Found).Select(r => r.Rule.Id));
         }
 
         [Fact]

@@ -1,0 +1,7 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "host": { "elevated": false }
+  }
+}

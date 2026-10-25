@@ -177,7 +177,12 @@ namespace Argus.Core.Rules
             var any = p as AnyOf; if (any != null) { foreach (var i in any.Items) Visit(i, context); return; }
             var not = p as Not; if (not != null) { Visit(not.Inner, context); return; }
             var test = (FieldTest)p;
-            context.Resolve(test.Operand);
+            var resolved = context.Resolve(test.Operand);
+            if (test.Op == "match")
+            {
+                if (!(resolved is string)) throw new RuleFormatException("'match' threshold must be a string pattern.");
+                FieldTest.Compile((string)resolved);
+            }
             var list = JsonValue.AsList(test.Operand);
             if (list != null) foreach (var o in list) context.Resolve(o);
         }

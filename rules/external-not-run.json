@@ -1,0 +1,24 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "external-not-run",
+  "level": "info",
+  "facts": [ "snapshotInfo" ],
+  "condition": {
+    "from": "snapshotInfo",
+    "where": { "path": "externalAllowed", "eq": false }
+  },
+  "text": {
+    "title": {
+      "ru": "Внешние тесты связи не запускались",
+      "en": "External connectivity tests were not run"
+    },
+    "why": {
+      "ru": "Проверялась только локальная сеть. Подмена DNS, петли маршрутизации, IPv6 мимо VPN и доступность внешних прокси без внешних тестов не проверяются.",
+      "en": "Only the local network was checked. DNS spoofing, routing loops, IPv6 bypassing the VPN and reachability of external proxies are not checked without the external tests."
+    },
+    "fix": {
+      "ru": "Чтобы проверить и это, запустите диагностику снова и разрешите внешние тесты связи. Они обращаются только к крупным общедоступным сервисам.",
+      "en": "To check these too, run the diagnostics again and allow the external connectivity tests. They contact only large public services."
+    }
+  }
+}

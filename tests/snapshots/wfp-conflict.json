@@ -1,0 +1,18 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "firewall": { "data": { "wfp": {
+        "callouts": [
+          { "calloutKey": "{22222222-0000-0000-0000-000000000001}", "calloutId": 300, "name": "Example Security connect callout", "providerKey": "{11111111-0000-0000-0000-000000000001}", "applicableLayer": "FWPM_LAYER_ALE_AUTH_CONNECT_V4", "flags": [ "FWPM_CALLOUT_FLAG_REGISTERED" ] },
+          { "calloutKey": "{22222222-0000-0000-0000-000000000002}", "calloutId": 301, "name": "WinDivert callout", "providerKey": null, "applicableLayer": "FWPM_LAYER_ALE_AUTH_CONNECT_V4", "flags": [ "FWPM_CALLOUT_FLAG_REGISTERED" ] }
+        ],
+        "filters": [
+          { "filterId": 1, "filterKey": "{33333333-0000-0000-0000-000000000001}", "name": "Example Security connect", "providerKey": "{11111111-0000-0000-0000-000000000001}", "layerKey": "FWPM_LAYER_ALE_AUTH_CONNECT_V4", "subLayerKey": "{44444444-0000-0000-0000-000000000001}", "action": "FWP_ACTION_CALLOUT_TERMINATING", "calloutKey": "{22222222-0000-0000-0000-000000000001}", "weight": null, "effectiveWeight": "1", "flags": [], "conditions": [] },
+          { "filterId": 3, "filterKey": "{33333333-0000-0000-0000-000000000003}", "name": null, "providerKey": null, "layerKey": "FWPM_LAYER_ALE_AUTH_CONNECT_V4", "subLayerKey": "{44444444-0000-0000-0000-000000000002}", "action": "FWP_ACTION_CALLOUT_TERMINATING", "calloutKey": "{22222222-0000-0000-0000-000000000002}", "weight": null, "effectiveWeight": "3", "flags": [], "conditions": [] }
+        ]
+      } } }
+    }
+  }
+}

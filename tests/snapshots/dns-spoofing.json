@@ -1,0 +1,16 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "connectivity": { "data": { "external": { "dns": [
+        { "name": "one.one.one.one", "results": [
+            { "server": "1.1.1.1", "source": "config", "status": "answer", "rcode": 0, "addresses": [ "1.1.1.1", "1.0.0.1" ], "rttMs": 10 },
+            { "server": "8.8.8.8", "source": "config", "status": "answer", "rcode": 0, "addresses": [ "1.0.0.1", "1.1.1.1" ], "rttMs": 12 },
+            { "server": "192.168.1.1", "source": "interface", "status": "answer", "rcode": 0, "addresses": [ "0.0.0.0" ], "rttMs": 3 },
+            { "server": "system", "source": "system", "status": "answer", "rcode": null, "addresses": [ "0.0.0.0" ], "rttMs": 3 }
+          ], "distinctAnswerSets": 2, "sinkholeServers": [ "192.168.1.1", "system" ], "nxdomainServers": [], "failedServers": [] }
+      ] } } }
+    }
+  }
+}

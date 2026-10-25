@@ -1,0 +1,28 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "connection-sharing",
+  "level": "advice",
+  "experimental": true,
+  "facts": [ "connectionSharing" ],
+  "condition": {
+    "from": "connectionSharing"
+  },
+  "text": {
+    "title": {
+      "ru": "Включён общий доступ к подключению",
+      "en": "Connection sharing is on"
+    },
+    "why": {
+      "ru": "Компьютер раздаёт интернет другим устройствам через второй адаптер (общий доступ к подключению, ICS). Это меняет адреса и маршруты: VPN, игры и локальная сеть могут работать неправильно.",
+      "en": "The computer shares its internet with other devices through a second adapter (Internet Connection Sharing, ICS). This changes addresses and routes, so VPNs, games and the local network may misbehave."
+    },
+    "details": {
+      "ru": "Есть подключение с включённым общим доступом (с правами администратора) или интерфейс с адресом ICS (обычно 192.168.137.1). Так же работает «Мобильный хот-спот» Windows — правило экспериментальное.",
+      "en": "There is a connection with sharing on (with administrator rights) or an interface with the ICS address (usually 192.168.137.1). The Windows Mobile hotspot works the same way, so the rule is experimental."
+    },
+    "fix": {
+      "ru": "Если вы не раздаёте интернет специально, выключите общий доступ: свойства подключения → вкладка «Доступ», или выключите «Мобильный хот-спот» в параметрах.",
+      "en": "If you are not sharing on purpose, turn sharing off: connection properties → Sharing tab, or turn off Mobile hotspot in Settings."
+    }
+  }
+}

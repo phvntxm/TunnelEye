@@ -1,0 +1,29 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "vpn-conflict",
+  "level": "critical",
+  "facts": [ "tunnels" ],
+  "condition": {
+    "from": "tunnels",
+    "where": { "anyOf": [ { "path": "capturesDefaultIPv4", "eq": true }, { "path": "capturesDefaultIPv6", "eq": true } ] },
+    "having": { "count": { "gte": 2 } }
+  },
+  "text": {
+    "title": {
+      "ru": "Два VPN одновременно",
+      "en": "Two VPNs at once"
+    },
+    "why": {
+      "ru": "Сразу несколько VPN или прокси-туннелей пытаются пропустить через себя весь трафик. Они мешают друг другу: сайты не открываются, соединения рвутся, трафик идёт не через тот VPN.",
+      "en": "Several VPNs or proxy tunnels try to carry all traffic at the same time. They get in each other's way: sites do not open, connections drop, traffic goes through the wrong VPN."
+    },
+    "details": {
+      "ru": "У двух и более туннельных адаптеров есть маршрут по умолчанию (0.0.0.0/0, ::/0 или его половины 0.0.0.0/1 и 128.0.0.0/1).",
+      "en": "Two or more tunnel adapters have a default route (0.0.0.0/0, ::/0 or its halves 0.0.0.0/1 and 128.0.0.0/1)."
+    },
+    "fix": {
+      "ru": "Оставьте включённым один VPN, остальные отключите. Если второй нужен для отдельных адресов (работа, игры), включите в нём раздельное туннелирование.",
+      "en": "Keep one VPN on and turn the others off. If the second one is needed for specific addresses (work, games), turn on split tunneling in it."
+    }
+  }
+}

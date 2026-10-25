@@ -137,9 +137,14 @@ function Test-ElevatedAsOtherUser {
 function Add-ProgressEvent {
     # progress.jsonl: one JSON object per line, appended as the run goes, so a
     # GUI can follow an elevated run (UAC gives no access to its stdout).
+    # Progress is not data: a failed write (file held by a reader, antivirus)
+    # must not stop the snapshot, so errors are swallowed.
     param([string] $Path, [System.Collections.IDictionary] $Event)
-    $Event['time'] = Format-Timestamp ([datetime]::UtcNow)
-    [IO.File]::AppendAllText($Path, (ConvertTo-CollectorJson -InputObject $Event) + "`n", (New-Object Text.UTF8Encoding($false)))
+    try {
+        $Event['time'] = Format-Timestamp ([datetime]::UtcNow)
+        [IO.File]::AppendAllText($Path, (ConvertTo-CollectorJson -InputObject $Event) + "`n", (New-Object Text.UTF8Encoding($false)))
+    }
+    catch { }
 }
 
 function Get-OsBuild {
@@ -165,7 +170,7 @@ $moduleDir = Join-Path $OutputDirectory 'modules'
 $elevated = [bool](Test-Elevated)
 $asOtherUser = Test-ElevatedAsOtherUser -LaunchingSid $LaunchingUserSid
 $progressPath = Join-Path $OutputDirectory 'progress.jsonl'
-if (Test-Path -LiteralPath $progressPath) { Remove-Item -LiteralPath $progressPath -Force }
+if (Test-Path -LiteralPath $progressPath) { try { Remove-Item -LiteralPath $progressPath -Force -ErrorAction Stop } catch { } }
 Add-ProgressEvent -Path $progressPath -Event ([ordered]@{ event = 'start'; modules = @($Modules); elevated = $elevated; elevatedAsOtherUser = $asOtherUser; externalAllowed = [bool]$AllowExternal })
 $info = Get-TunnelEyeInfo
 $totalWatch = [Diagnostics.Stopwatch]::StartNew()

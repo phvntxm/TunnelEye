@@ -165,10 +165,31 @@ namespace Argus.Core.Rules
             {
                 var pattern = operand as string;
                 if (pattern == null) throw new RuleFormatException("'match' needs a string pattern.");
-                try { _regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(200)); }
-                catch (ArgumentException e) { throw new RuleFormatException("Invalid 'match' pattern: " + e.Message); }
+                // A threshold pattern is compiled once it is resolved (RuleLoader checks it at load).
+                if (!pattern.StartsWith("$threshold.", StringComparison.Ordinal)) _regex = Compile(pattern);
             }
         }
+
+        internal static Regex Compile(string pattern)
+        {
+            try { return new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(200)); }
+            catch (ArgumentException e) { throw new RuleFormatException("Invalid 'match' pattern: " + e.Message); }
+        }
+
+        private Regex RegexFor(object resolved)
+        {
+            if (_regex != null) return _regex;
+            var pattern = resolved as string;
+            if (pattern == null) throw new RuleFormatException("'match' threshold must be a string pattern.");
+            lock (this)
+            {
+                if (_thresholdPattern != pattern) { _thresholdRegex = Compile(pattern); _thresholdPattern = pattern; }
+                return _thresholdRegex;
+            }
+        }
+
+        private string _thresholdPattern;
+        private Regex _thresholdRegex;
 
         internal string Path { get; }
         internal string Op { get; }
@@ -196,7 +217,7 @@ namespace Argus.Core.Rules
                 case "gte": { var c = Compare(value, operand); return c != null && c >= 0; }
                 case "in": return (JsonValue.AsList(operand) ?? new object[0]).Any(o => ValuesEqual(value, context.Resolve(o)));
                 case "notIn": return !(JsonValue.AsList(operand) ?? new object[0]).Any(o => ValuesEqual(value, context.Resolve(o)));
-                case "match": { var s = value as string; return s != null && _regex.IsMatch(s); }
+                case "match": { var s = value as string; return s != null && RegexFor(operand).IsMatch(s); }
                 case "olderThanDays": { var age = AgeDays(value, context); var n = JsonValue.AsDecimal(operand); return age != null && n != null && age.Value > (double)n.Value; }
                 case "newerThanDays": { var age = AgeDays(value, context); var n = JsonValue.AsDecimal(operand); return age != null && n != null && age.Value < (double)n.Value; }
                 default: throw new RuleFormatException("Unknown operator '" + Op + "'.");

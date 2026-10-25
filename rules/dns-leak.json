@@ -1,0 +1,39 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "dns-leak",
+  "level": "advice",
+  "experimental": true,
+  "facts": [ "dnsServers" ],
+  "condition": {
+    "from": "dnsServers",
+    "where": {
+      "allOf": [
+        { "path": "fullTunnel", "eq": true },
+        { "path": "interfaceIsTunnel", "eq": false },
+        { "path": "interfaceUp", "eq": true },
+        { "path": "addressClass", "notIn": [ "loopback", "unspecified" ] },
+        { "path": "viaTunnel", "eq": false },
+        { "path": "responds", "eq": true },
+        { "anyOf": [ { "path": "nrptCatchAll", "eq": false }, { "path": "nrptCatchAll", "exists": false } ] }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "DNS-запросы идут мимо VPN",
+      "en": "DNS queries bypass the VPN"
+    },
+    "why": {
+      "ru": "Весь трафик идёт через VPN, но у обычного подключения остался свой DNS-сервер, и он доступен напрямую. Windows может спрашивать адреса сайтов у него — провайдер видит, какие сайты вы открываете, а иногда подменяет ответы.",
+      "en": "All traffic goes through the VPN, but the regular connection still has its own DNS server, reachable directly. Windows may ask it for site addresses: the provider sees which sites you open and sometimes alters the answers."
+    },
+    "details": {
+      "ru": "Внешний IPv4 идёт через туннель; DNS-сервер физического адаптера ответил на проверку, и маршрут к нему идёт не через туннель; в NRPT нет правила для всех имён («.»). Спросит ли Windows этот сервер, зависит от приоритета интерфейсов и настроек VPN-клиента — поэтому правило экспериментальное.",
+      "en": "External IPv4 goes through a tunnel; a DNS server of a physical adapter answered the check and the route to it bypasses the tunnel; the NRPT has no rule for all names ('.'). Whether Windows actually asks this server depends on interface priority and VPN client settings, so the rule is experimental."
+    },
+    "fix": {
+      "ru": "Включите в VPN-клиенте защиту от утечки DNS (часто называется «DNS leak protection» или «блокировать DNS вне туннеля»). Либо уберите DNS-серверы у физического адаптера на время работы VPN.",
+      "en": "Turn on DNS leak protection in the VPN client (often called 'DNS leak protection' or 'block DNS outside the tunnel'). Or remove the DNS servers from the physical adapter while the VPN is in use."
+    }
+  }
+}

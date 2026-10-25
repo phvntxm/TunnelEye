@@ -1,0 +1,28 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "wifi-router-limits",
+  "level": "advice",
+  "facts": [ "wifiLinks" ],
+  "condition": {
+    "from": "wifiLinks",
+    "where": { "path": "accessPointBelowCard", "eq": true }
+  },
+  "text": {
+    "title": {
+      "ru": "Роутер ограничивает скорость Wi-Fi",
+      "en": "The router limits Wi-Fi speed"
+    },
+    "why": {
+      "ru": "Wi-Fi-карта компьютера поддерживает более новый стандарт, чем роутер. Скорость и устойчивость связи ограничены возможностями роутера.",
+      "en": "The computer's Wi-Fi card supports a newer standard than the router. Speed and stability are limited by what the router can do."
+    },
+    "details": {
+      "ru": "Поколение Wi-Fi точки доступа (по данным сканирования) ниже лучшего поколения, которое поддерживает драйвер карты.",
+      "en": "The Wi-Fi generation of the access point (from the scan) is below the best generation the card driver supports."
+    },
+    "fix": {
+      "ru": "Если скорости не хватает, подумайте о роутере с поддержкой того же стандарта, что и карта (например, Wi-Fi 6). Проверьте также, не выключен ли новый режим в настройках роутера.",
+      "en": "If speed is not enough, consider a router with the same standard as the card (for example Wi-Fi 6). Also check whether the newer mode is turned off in the router settings."
+    }
+  }
+}

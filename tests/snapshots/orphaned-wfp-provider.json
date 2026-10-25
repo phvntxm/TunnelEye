@@ -1,0 +1,13 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "firewall": { "data": { "wfp": { "providers": [
+        { "providerKey": "FWPM_PROVIDER_MPSSVC_WF", "name": "Microsoft Corporation", "serviceName": "mpssvc", "flags": [] },
+        { "providerKey": "{11111111-0000-0000-0000-000000000001}", "name": "Example Security Network Filter", "serviceName": "ExampleSecSvc", "flags": [ "FWPM_PROVIDER_FLAG_PERSISTENT" ] },
+        { "providerKey": "{55555555-0000-0000-0000-000000000001}", "name": "Old VPN Filter", "serviceName": "OldVpnSvc", "flags": [ "FWPM_PROVIDER_FLAG_PERSISTENT" ] }
+      ] } } }
+    }
+  }
+}

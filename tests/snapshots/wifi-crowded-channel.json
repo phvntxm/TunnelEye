@@ -1,0 +1,24 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean-wifi",
+  "patch": {
+    "modules": {
+      "wifi": { "data": {
+        "interfaces": [
+          { "name": "Wi-Fi", "description": "Example Wireless Adapter", "interfaceGuid": "{00000000-0000-0000-0000-000000000005}", "connected": true, "ssid": "Example", "bandGHz": null, "channel": 6, "radioType": "802.11ax", "authentication": "WPA2-Personal", "cipher": "CCMP", "receiveRateMbps": 144, "transmitRateMbps": 144, "signalPercent": 75, "rssiDbm": null }
+        ],
+        "neighbors": { "networkCount": 8, "bss": [
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": null, "channel": 2, "signalPercent": 40, "radioType": "802.11n", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": null, "channel": 3, "signalPercent": 35, "radioType": "802.11n", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": null, "channel": 4, "signalPercent": 50, "radioType": "802.11n", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": true, "bandGHz": null, "channel": 6, "signalPercent": 75, "radioType": "802.11ax", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": null, "channel": 6, "signalPercent": 60, "radioType": "802.11n", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": null, "channel": 8, "signalPercent": 30, "radioType": "802.11g", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": null, "channel": 10, "signalPercent": 25, "radioType": "802.11n", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": null, "channel": 11, "signalPercent": 20, "radioType": "802.11n", "channelUtilizationPercent": null, "connectedStations": null },
+          { "interfaceName": "Wi-Fi", "connected": false, "bandGHz": "5", "channel": 40, "signalPercent": 20, "radioType": "802.11ac", "channelUtilizationPercent": null, "connectedStations": null }
+        ] }
+      } }
+    }
+  }
+}

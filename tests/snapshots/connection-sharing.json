@@ -1,0 +1,15 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean",
+  "patch": {
+    "modules": {
+      "routing": { "data": { "ics": {
+        "service": { "status": "Running", "startType": "Manual", "scopeAddress": "192.168.137.1" },
+        "connections": [
+          { "name": "Ethernet", "deviceName": "Example Gigabit Ethernet", "guid": "{00000000-0000-0000-0000-000000000003}", "sharingEnabled": true, "sharingType": "Public" },
+          { "name": "Local Area Connection* 2", "deviceName": "Microsoft Wi-Fi Direct Virtual Adapter", "guid": "{00000000-0000-0000-0000-000000000022}", "sharingEnabled": true, "sharingType": "Private" }
+        ]
+      } } }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "clean-wifi",
+  "patch": {
+    "modules": {
+      "wifi": { "data": {
+        "interfaces": [
+          { "name": "Wi-Fi", "description": "Example Wireless Adapter", "interfaceGuid": "{00000000-0000-0000-0000-000000000005}", "connected": true, "ssid": "Example", "bandGHz": "5", "channel": 36, "radioType": "802.11ac", "authentication": "WPA3-Personal", "cipher": "GCMP", "receiveRateMbps": 866, "transmitRateMbps": 866, "signalPercent": 82, "rssiDbm": -55 }
+        ]
+      } }
+    }
+  }
+}
