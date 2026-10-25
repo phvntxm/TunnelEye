@@ -1,0 +1,38 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "dead-proxy",
+  "level": "critical",
+  "facts": [ "proxies" ],
+  "condition": {
+    "from": "proxies",
+    "where": {
+      "allOf": [
+        { "path": "effective", "eq": true },
+        {
+          "anyOf": [
+            { "path": "tcpStatus", "in": [ "refused", "timeout" ] },
+            { "allOf": [ { "path": "isLoopback", "eq": true }, { "path": "listening", "eq": false } ] }
+          ]
+        }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Прокси не отвечает",
+      "en": "The proxy does not respond"
+    },
+    "why": {
+      "ru": "В Windows включён прокси, но по его адресу никто не принимает подключения. Браузер и многие программы не открывают сайты, хотя сеть работает.",
+      "en": "Windows has a proxy turned on, but nothing accepts connections at its address. The browser and many programs cannot open sites although the network works."
+    },
+    "details": {
+      "ru": "Прокси из настроек пользователя, компьютера или WinHTTP действует, а TCP-подключение к нему отклонено или не отвечает, либо на локальном порту прокси нет слушающего процесса. Часто остаётся после удалённого или выключенного VPN-клиента.",
+      "en": "A proxy from the user, machine or WinHTTP settings is in force, while a TCP connection to it is refused or times out, or nothing listens on the local proxy port. It is often left behind by a removed or stopped VPN client."
+    },
+    "fix": {
+      "ru": "Выключите прокси: Параметры → Сеть и Интернет → Прокси → «Использовать прокси-сервер» — выкл. Или запустите программу, которая должна этот прокси обслуживать.",
+      "en": "Turn the proxy off: Settings → Network & internet → Proxy → \"Use a proxy server\" — off. Or start the program that is supposed to serve this proxy."
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "vpn-leftovers",
+  "level": "advice",
+  "facts": [ "leftovers" ],
+  "condition": {
+    "from": "leftovers",
+    "where": { "path": "kind", "in": [ "tunnelDriverWithoutAdapter", "tapAdapterWithoutClient", "adapterNotPresent" ] }
+  },
+  "text": {
+    "title": {
+      "ru": "Остатки старых VPN",
+      "en": "Leftovers of old VPNs"
+    },
+    "why": {
+      "ru": "После удалённых VPN-программ остались драйверы или сетевые адаптеры. Они не нужны и иногда мешают новым VPN: перехватывают маршруты или конфликтуют драйверами.",
+      "en": "Removed VPN programs left drivers or network adapters behind. They are not needed and sometimes interfere with new VPNs by taking over routes or conflicting drivers."
+    },
+    "details": {
+      "ru": "Найдено: драйвер TAP-Windows без адаптера, адаптер TAP-Windows без установленного VPN-клиента или адаптер VPN-клиента в состоянии «Not Present».",
+      "en": "Found: a TAP-Windows driver without an adapter, a TAP-Windows adapter without an installed VPN client, or a VPN client adapter that is 'Not Present'."
+    },
+    "fix": {
+      "ru": "Удалите ненужный адаптер в Диспетчере устройств (Вид → Показать скрытые устройства → Сетевые адаптеры), а драйвер — вместе с ним. Если VPN-программа ещё нужна, оставьте как есть.",
+      "en": "Uninstall the unneeded adapter in Device Manager (View → Show hidden devices → Network adapters) together with its driver. If you still need the VPN program, leave it as it is."
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schema": "tunneleye.snapshot/1",
+  "snapshotId": "00000000-0000-4000-8000-000000000001",
+  "createdAt": "2026-10-25T10:00:00.000Z",
+  "tool": { "name": "TunnelEye", "version": "0.1.0" },
+  "host": { "osBuild": "26100.1", "psVersion": "5.1", "culture": "ru-RU", "uiCulture": "ru-RU", "elevated": true },
+  "externalAllowed": false,
+  "summary": { "ok": 6, "partial": 0, "failed": 0, "skipped": 0, "durationMs": 1000 },
+  "modules": {
+    "adapters": {
+      "schema": "tunneleye.module/1", "module": "adapters", "version": "1.0.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": {
+        "adapters": [
+          { "name": "Ethernet", "interfaceDescription": "Example Gigabit Ethernet", "interfaceIndex": 3, "status": "Up", "virtual": false, "hidden": false, "componentId": "PCI\\VEN_0000&DEV_0001" },
+          { "name": "Wi-Fi", "interfaceDescription": "Example Wireless Adapter", "interfaceIndex": 5, "status": "Disconnected", "virtual": false, "hidden": false, "componentId": "PCI\\VEN_0000&DEV_0002" }
+        ],
+        "devices": [], "driverPackages": [], "driverPackagesRaw": ""
+      }
+    },
+    "routing": {
+      "schema": "tunneleye.module/1", "module": "routing", "version": "1.1.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": {
+        "routes": [
+          { "addressFamily": "IPv4", "destinationPrefix": "0.0.0.0/0", "nextHop": "192.168.1.1", "interfaceIndex": 3, "interfaceAlias": "Ethernet", "routeMetric": 0, "interfaceMetric": 25, "effectiveMetric": 25, "protocol": "NetMgmt", "publish": "No" }
+        ],
+        "persistentRoutes": [],
+        "routeSelection": [
+          { "kind": "externalIPv4", "target": "192.0.2.1", "reachable": true, "interfaceIndex": 3, "interfaceAlias": "Ethernet" },
+          { "kind": "externalIPv6", "target": "2001:db8::1", "reachable": false }
+        ],
+        "interfaces": [
+          { "interfaceIndex": 3, "interfaceAlias": "Ethernet", "addressFamily": "IPv4", "connectionState": "Connected", "interfaceMetric": 25 },
+          { "interfaceIndex": 5, "interfaceAlias": "Wi-Fi", "addressFamily": "IPv4", "connectionState": "Disconnected", "interfaceMetric": 30 }
+        ],
+        "addresses": [], "ipEnableRouter": null, "bridge": { "adapters": [], "members": [] }, "ics": { "service": null, "connections": [] }
+      }
+    },
+    "vpn": {
+      "schema": "tunneleye.module/1", "module": "vpn", "version": "1.1.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": { "builtIn": { "profiles": [], "services": [] }, "clients": [] }
+    },
+    "dns-proxy": {
+      "schema": "tunneleye.module/1", "module": "dns-proxy", "version": "1.0.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": {
+        "proxy": {
+          "user": { "proxyEnable": false, "proxyServer": null, "proxyOverride": null, "autoConfigUrl": null, "userInfoRemoved": false },
+          "machine": { "proxyEnable": null, "proxyServer": null, "proxyOverride": null, "autoConfigUrl": null, "userInfoRemoved": false, "proxySettingsPerUser": null },
+          "winhttp": { "direct": true, "proxyServer": null, "bypassList": null, "raw": "" },
+          "environment": []
+        }
+      }
+    },
+    "connectivity": {
+      "schema": "tunneleye.module/1", "module": "connectivity", "version": "1.1.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": { "externalAllowed": false, "externalConsentSource": null, "windowsConnectivity": [], "context": {}, "gateways": [], "dnsServers": [], "proxies": [], "external": null }
+    },
+    "connections": {
+      "schema": "tunneleye.module/1", "module": "connections", "version": "1.0.0", "status": "ok", "elevated": true,
+      "startedAt": "2026-10-25T10:00:00.000Z", "durationMs": 100, "errors": [],
+      "data": { "tcpListeners": [ { "localAddress": "0.0.0.0", "localPort": 135, "localClass": "unspecified", "processId": 1000, "process": "svchost" } ], "udpEndpoints": [], "tcpConnections": [], "publicConnections": [] }
+    }
+  }
+}
