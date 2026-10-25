@@ -12,15 +12,23 @@ param(
         'system', 'adapters', 'routing', 'dns-proxy', 'vpn', 'firewall', 'services',
         'connections', 'tcp-stack', 'wifi', 'events', 'hardware', 'connectivity'
     ),
-    [string] $CollectorPath = $PSScriptRoot,
+    # Default: this script's folder, set in the body. $PSScriptRoot is empty
+    # in parameter defaults when Windows PowerShell 5.1 runs a script with
+    # -File (found on the test stand).
+    [string] $CollectorPath,
     [ValidateRange(1, 3600)][int] $TimeoutSec = 120,
     # Explicit consent to external connection tests (D-002), per run only:
     # passed to the 'connectivity' module and recorded in snapshot.json.
-    [switch] $AllowExternal
+    [switch] $AllowExternal,
+    # SID of the user who started the GUI. Under UAC another administrator's
+    # account may run this script; HKCU and %LOCALAPPDATA% are then not the
+    # user's (D-015). Only the comparison goes into the snapshot, not the SID.
+    [string] $LaunchingUserSid
 )
 
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
+if (-not $CollectorPath) { $CollectorPath = $PSScriptRoot }
 Import-Module (Join-Path $PSScriptRoot 'TunnelEye.Common.psm1') -Force
 
 $validStatuses = 'ok', 'partial', 'failed', 'skipped'
@@ -118,6 +126,22 @@ function Invoke-ModuleProcess {
     $envelope
 }
 
+function Test-ElevatedAsOtherUser {
+    # $true / $false when the launching user's SID is known, $null otherwise.
+    param([string] $LaunchingSid)
+    if (-not $LaunchingSid) { return $null }
+    $current = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    -not [string]::Equals($current, $LaunchingSid.Trim(), [StringComparison]::OrdinalIgnoreCase)
+}
+
+function Add-ProgressEvent {
+    # progress.jsonl: one JSON object per line, appended as the run goes, so a
+    # GUI can follow an elevated run (UAC gives no access to its stdout).
+    param([string] $Path, [System.Collections.IDictionary] $Event)
+    $Event['time'] = Format-Timestamp ([datetime]::UtcNow)
+    [IO.File]::AppendAllText($Path, (ConvertTo-CollectorJson -InputObject $Event) + "`n", (New-Object Text.UTF8Encoding($false)))
+}
+
 function Get-OsBuild {
     try {
         $cv = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
@@ -139,6 +163,10 @@ $OutputDirectory = (Resolve-Path -LiteralPath $OutputDirectory).ProviderPath
 $moduleDir = Join-Path $OutputDirectory 'modules'
 
 $elevated = [bool](Test-Elevated)
+$asOtherUser = Test-ElevatedAsOtherUser -LaunchingSid $LaunchingUserSid
+$progressPath = Join-Path $OutputDirectory 'progress.jsonl'
+if (Test-Path -LiteralPath $progressPath) { Remove-Item -LiteralPath $progressPath -Force }
+Add-ProgressEvent -Path $progressPath -Event ([ordered]@{ event = 'start'; modules = @($Modules); elevated = $elevated; elevatedAsOtherUser = $asOtherUser; externalAllowed = [bool]$AllowExternal })
 $info = Get-TunnelEyeInfo
 $totalWatch = [Diagnostics.Stopwatch]::StartNew()
 # Generic Dictionary keeps insertion order here (no removals) and, unlike
@@ -149,6 +177,7 @@ $counts = [ordered]@{ ok = 0; partial = 0; failed = 0; skipped = 0 }
 for ($i = 0; $i -lt $Modules.Count; $i++) {
     $module = $Modules[$i]
     Write-Progress -Activity 'TunnelEye snapshot' -Status $module -PercentComplete ([int](100 * $i / $Modules.Count))
+    Add-ProgressEvent -Path $progressPath -Event ([ordered]@{ event = 'moduleStart'; module = $module; index = $i; total = $Modules.Count })
     $extra = ''
     if ($module -eq 'connectivity' -and $AllowExternal) { $extra = '-AllowExternal' }
     $envelope = Invoke-ModuleProcess -Module $module `
@@ -157,6 +186,7 @@ for ($i = 0; $i -lt $Modules.Count; $i++) {
         -TimeoutSec $TimeoutSec -Elevated $elevated -ExtraArguments $extra
     $results[$module] = $envelope
     $counts[[string]$envelope['status']]++
+    Add-ProgressEvent -Path $progressPath -Event ([ordered]@{ event = 'moduleEnd'; module = $module; index = $i; total = $Modules.Count; status = [string]$envelope['status']; durationMs = $envelope['durationMs'] })
 }
 Write-Progress -Activity 'TunnelEye snapshot' -Completed
 $totalWatch.Stop()
@@ -172,6 +202,7 @@ $snapshot = [ordered]@{
         culture   = (Get-Culture).Name
         uiCulture = (Get-UICulture).Name
         elevated  = $elevated
+        elevatedAsOtherUser = $asOtherUser
     }
     externalAllowed = [bool]$AllowExternal
     summary    = [ordered]@{
@@ -189,6 +220,7 @@ $plain = ConvertTo-CollectorData -InputObject $snapshot
 $plain['modules'] = $results
 $snapshotPath = Join-Path $OutputDirectory 'snapshot.json'
 Write-JsonFile -Path $snapshotPath -Json (ConvertTo-CollectorJson -InputObject $plain -Normalized)
+Add-ProgressEvent -Path $progressPath -Event ([ordered]@{ event = 'end'; snapshot = 'snapshot.json'; ok = $counts.ok; partial = $counts.partial; failed = $counts.failed; skipped = $counts.skipped; durationMs = [int64]$totalWatch.ElapsedMilliseconds })
 
 [pscustomobject]@{
     Path     = $snapshotPath

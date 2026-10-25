@@ -96,3 +96,68 @@ Describe 'Invoke-Snapshot: consent to external tests (D-002)' {
         $snapshot['modules']['connectivity']['data']['externalAllowed'] | Should Be $false
     }
 }
+
+Describe 'Invoke-Snapshot: started with powershell.exe -File' {
+    # In Windows PowerShell 5.1 $PSScriptRoot is empty in parameter defaults
+    # under -File; the GUI starts the orchestrator exactly this way (UAC).
+    $orchestrator = Join-Path (Get-RepoRoot) 'collectors\Invoke-Snapshot.ps1'
+    $outDir = Join-Path $TestDrive 'file-run'
+    & (Join-Path $PSHOME 'powershell.exe') -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $orchestrator -OutputDirectory $outDir -Modules 'system' | Out-Null
+
+    It 'finds its collectors and produces an ok envelope' {
+        $path = Join-Path $outDir 'snapshot.json'
+        Test-Path $path | Should Be $true
+        $snapshot = ConvertFrom-CollectorJson ([IO.File]::ReadAllText($path, [Text.Encoding]::UTF8))
+        $snapshot['modules']['system']['status'] | Should Be 'ok'
+    }
+}
+
+Describe 'Invoke-Snapshot: progress.jsonl' {
+    $orchestrator = Join-Path (Get-RepoRoot) 'collectors\Invoke-Snapshot.ps1'
+    $fixtures = Join-Path $PSScriptRoot 'fixtures'
+    $outDir = Join-Path $TestDrive 'progress'
+    $null = & $orchestrator -OutputDirectory $outDir -Modules 'fixture-ok', 'fixture-crash' -CollectorPath $fixtures -TimeoutSec 30
+    $lines = @([IO.File]::ReadAllLines((Join-Path $outDir 'progress.jsonl'), [Text.Encoding]::UTF8) | Where-Object { $_ })
+    $events = @($lines | ForEach-Object { ConvertFrom-CollectorJson $_ })
+
+    It 'writes one JSON line per event in order' {
+        ($events | ForEach-Object { $_['event'] + ':' + $_['module'] }) -join ',' |
+            Should Be 'start:,moduleStart:fixture-ok,moduleEnd:fixture-ok,moduleStart:fixture-crash,moduleEnd:fixture-crash,end:'
+    }
+    It 'reports module statuses, totals and times' {
+        $events[2]['status'] | Should Be 'ok'
+        $events[4]['status'] | Should Be 'failed'
+        $events[1]['total'] | Should Be 2
+        $events[-1]['failed'] | Should Be 1
+        foreach ($e in $events) { $e['time'] | Should Match 'Z$' }
+    }
+}
+
+Describe 'Invoke-Snapshot: elevatedAsOtherUser (D-015)' {
+    $orchestrator = Join-Path (Get-RepoRoot) 'collectors\Invoke-Snapshot.ps1'
+    $fixtures = Join-Path $PSScriptRoot 'fixtures'
+    function Get-HostFlag([string] $Sid) {
+        $outDir = Join-Path $TestDrive ('sid-' + [guid]::NewGuid().ToString('N'))
+        $params = @{ OutputDirectory = $outDir; Modules = 'fixture-ok'; CollectorPath = $fixtures; TimeoutSec = 30 }
+        if ($Sid) { $params['LaunchingUserSid'] = $Sid }
+        $result = & $orchestrator @params
+        $snapshot = ConvertFrom-CollectorJson ([IO.File]::ReadAllText($result.Path, [Text.Encoding]::UTF8))
+        , @($snapshot['host'].ContainsKey('elevatedAsOtherUser'), $snapshot['host']['elevatedAsOtherUser'], [IO.File]::ReadAllText($result.Path))
+    }
+
+    It 'is false when the launching user runs it' {
+        $r = Get-HostFlag ([Security.Principal.WindowsIdentity]::GetCurrent().User.Value)
+        $r[1] | Should Be $false
+    }
+    It 'is true under another account and the SID is not stored' {
+        $fake = 'S-1-5-21-1111111111-2222222222-3333333333-1001'
+        $r = Get-HostFlag $fake
+        $r[1] | Should Be $true
+        $r[2] | Should Not Match ([regex]::Escape($fake))
+    }
+    It 'is null when the launching user is unknown' {
+        $r = Get-HostFlag $null
+        $r[0] | Should Be $true
+        $null -eq $r[1] | Should Be $true
+    }
+}
