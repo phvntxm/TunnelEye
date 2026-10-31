@@ -2,7 +2,7 @@
 
 **Диагностика сети Windows-ПК в один клик.** TunnelEye, на движке Argus, видит, что творится в ваших туннелях: конфликты VPN и обходов блокировок, утечки DNS, кривые маршруты, лишние адаптеры и службы — и объясняет простым языком, что с этим делать.
 
-> Статус: в разработке, этап 1 (модули сбора).
+> Статус: в разработке, этап 2. Модули сбора, анализатор и CLI с HTML/JSON-отчётом готовы; окно программы ещё разрабатывается.
 
 ## Что умеет (план)
 
@@ -22,7 +22,17 @@
 
 ## Сборка
 
-C# / .NET Framework 4.8 / WPF. Инструкции появятся после этапа 2.
+C# / .NET Framework 4.8 / WPF. Для сборки нужен .NET SDK и targeting pack .NET Framework 4.8; для запуска — Windows с .NET Framework 4.8.
+
+```powershell
+dotnet build src/TunnelEye.sln
+dotnet test src/TunnelEye.sln
+src/TunnelEye.Cli/bin/Debug/net48/tunneleye.exe analyze snapshot.json --lang ru --html report.html --report-json report.json --mask
+```
+
+HTML открывается офлайн. `--mask` заменяет личные данные псевдонимами; полный исходный снимок сохраняется. Английский язык: `--lang en`. [Формат отчёта и параметры экспорта](docs/schema/report.md).
+
+EN: Build with `dotnet build src/TunnelEye.sln`. Analyze a saved snapshot with the command above; use `--lang en` for English and `--mask` to mask personal data in the exports.
 
 ## Лицензия
 

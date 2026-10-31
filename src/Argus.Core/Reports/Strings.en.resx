@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 phvntxm. SPDX-License-Identifier: Apache-2.0 -->
+<root><resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+<data name="Version" xml:space="preserve"><value>Version</value></data>
+<data name="Masked" xml:space="preserve"><value>Export with personal data masked</value></data>
+<data name="Score_red" xml:space="preserve"><value>Critical problems found</value></data>
+<data name="Score_yellow" xml:space="preserve"><value>Important problems found</value></data>
+<data name="Score_green" xml:space="preserve"><value>Critical checks completed</value></data>
+<data name="Score_gray" xml:space="preserve"><value>Not everything was checked</value></data>
+<data name="Scope" xml:space="preserve"><value>The score covers the checks performed. Check limitations are listed below. Traffic analysis and upgrade recommendations are planned for later stages.</value></data>
+<data name="Counts" xml:space="preserve"><value>Findings by severity</value></data>
+<data name="Recommendations" xml:space="preserve"><value>Top recommendations</value></data>
+<data name="Findings" xml:space="preserve"><value>Findings</value></data>
+<data name="Fix" xml:space="preserve"><value>What to do:</value></data>
+<data name="Evidence" xml:space="preserve"><value>Technical details and evidence</value></data>
+<data name="Coverage" xml:space="preserve"><value>Check coverage</value></data>
+<data name="Experimental" xml:space="preserve"><value>Experimental check</value></data>
+<data name="Network" xml:space="preserve"><value>Network</value></data>
+<data name="Services" xml:space="preserve"><value>Services and startup</value></data>
+<data name="Hardware" xml:space="preserve"><value>Hardware</value></data>
+<data name="Appendix" xml:space="preserve"><value>Appendix</value></data>
+<data name="Module" xml:space="preserve"><value>Module</value></data>
+<data name="Status" xml:space="preserve"><value>Status</value></data>
+<data name="ConsentHint" xml:space="preserve"><value>This check requires consent to external connectivity tests.</value></data>
+<data name="AdminHint" xml:space="preserve"><value>Run collection with administrator rights for this check.</value></data>
+<data name="CheckHint" xml:space="preserve"><value>Review the module status and limitations in technical details.</value></data>
+<data name="Level_critical" xml:space="preserve"><value>Critical</value></data>
+<data name="Level_important" xml:space="preserve"><value>Important</value></data>
+<data name="Level_advice" xml:space="preserve"><value>Advice</value></data>
+<data name="Level_info" xml:space="preserve"><value>Info</value></data>
+<data name="Status_found" xml:space="preserve"><value>Found</value></data>
+<data name="Status_notFound" xml:space="preserve"><value>Not found</value></data>
+<data name="Status_notChecked" xml:space="preserve"><value>Not checked</value></data>
+<data name="Status_notApplicable" xml:space="preserve"><value>Not applicable</value></data>
+<data name="ModuleStatus_ok" xml:space="preserve"><value>Completed</value></data>
+<data name="ModuleStatus_partial" xml:space="preserve"><value>Partial</value></data>
+<data name="ModuleStatus_failed" xml:space="preserve"><value>Failed</value></data>
+<data name="ModuleStatus_skipped" xml:space="preserve"><value>Not applicable</value></data>
+<data name="Module_system" xml:space="preserve"><value>System</value></data>
+<data name="Module_adapters" xml:space="preserve"><value>Adapters</value></data>
+<data name="Module_routing" xml:space="preserve"><value>Routing</value></data>
+<data name="Module_dns-proxy" xml:space="preserve"><value>DNS and proxy</value></data>
+<data name="Module_vpn" xml:space="preserve"><value>VPN and tunnels</value></data>
+<data name="Module_firewall" xml:space="preserve"><value>Firewall</value></data>
+<data name="Module_wifi" xml:space="preserve"><value>Wi-Fi</value></data>
+<data name="Module_connectivity" xml:space="preserve"><value>Connectivity tests</value></data>
+<data name="Module_connections" xml:space="preserve"><value>Connections</value></data>
+<data name="Module_tcp-stack" xml:space="preserve"><value>TCP stack</value></data>
+<data name="Module_services" xml:space="preserve"><value>Services and startup</value></data>
+<data name="Module_events" xml:space="preserve"><value>Events</value></data>
+<data name="Module_hardware" xml:space="preserve"><value>Hardware</value></data>
+<data name="Charts"><value>Charts</value></data>
+<data name="ChartScope"><value>Missing data does not mean zero latency or no events. Each chart has its own scale; event timestamps are a sample, not the complete log. Connectivity measurements refer to the indicated interface and may reflect a tunnel response.</value></data>
+<data name="Latency"><value>Average RTT, ms</value></data>
+<data name="Losses"><value>ICMP loss, %</value></data>
+<data name="DnsLatency"><value>DNS response time, ms</value></data>
+<data name="WifiChannels"><value>Access point signal by channel, %</value></data>
+<data name="EventTimeline"><value>Network event timestamps by UTC day (sample)</value></data>
+<data name="NoData"><value>No collected data</value></data>
+<data name="RouteMap"><value>Adapter → gateway → route prefix</value></data>
+</root>
