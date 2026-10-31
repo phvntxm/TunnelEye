@@ -84,8 +84,34 @@ namespace Argus.Core.Facts
                     }
                 }
             }
+            AddOrphanedNdisFilters(context, fact);
             AddOrphanedWfpProviders(context, fact);
             return fact;
+        }
+
+        // A registered filter with no service is an orphan. A mandatory filter
+        // alone is normal for installed VPN/security software and is not enough.
+        private static void AddOrphanedNdisFilters(FactContext context, FactSet fact)
+        {
+            string reason;
+            var services = context.ModuleData("services", out reason);
+            if (services == null) { fact.Limitations.Add("ndis-filters-not-checked:" + reason); return; }
+            if (JsonValue.Get(services, "ndisFilters") == null || JsonValue.Get(services, "drivers") == null || JsonValue.Get(services, "services") == null)
+            { fact.Limitations.Add("ndis-filters-not-checked:section-missing"); return; }
+            var known = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var section in new[] { "services", "drivers" })
+                foreach (var s in JsonValue.GetList(services, section)) known.Add(JsonValue.AsString(JsonValue.Get(s, "name")) ?? "");
+            var filters = JsonValue.GetList(services, "ndisFilters");
+            for (var i = 0; i < filters.Count; i++)
+            {
+                var f = filters[i];
+                var component = JsonValue.AsString(JsonValue.Get(f, "componentId"));
+                var service = JsonValue.AsString(JsonValue.Get(f, "service"));
+                if (string.IsNullOrEmpty(component) || component.StartsWith("ms_", StringComparison.OrdinalIgnoreCase)
+                    || string.IsNullOrEmpty(service) || known.Contains(service)) continue;
+                var item = Add(fact, "ndisFilterWithoutService", null, component, service, null, "services.ndisFilters[" + i + "]");
+                item.Values["filterRunType"] = JsonValue.Get(f, "filterRunType");
+            }
         }
 
         private static void AddOrphanedWfpProviders(FactContext context, FactSet fact)

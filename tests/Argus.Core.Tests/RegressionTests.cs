@@ -37,10 +37,14 @@ namespace Argus.Core.Tests
             ["orphaned-wfp-provider"] = "vpn-leftovers",
             ["vpn-service-missing"] = "vpn-leftovers",
             ["vpn-conflict"] = "vpn-conflict",
+            ["ndis-filter-leftover"] = "ndis-filter-leftover",
             ["dns-leak"] = "dns-leak",
             ["ipv6-bypass"] = "ipv6-bypass",
             ["wfp-conflict"] = "wfp-conflict",
             ["hosts-sensitive"] = "hosts-sensitive",
+            ["hosts-sensitive-blocked"] = "hosts-sensitive-blocked",
+            ["elevated-as-other-user"] = "elevated-as-other-user",
+            ["dead-proxy-other-user"] = "elevated-as-other-user",
             ["hosts-pinned"] = "hosts-pinned",
             ["network-bridge"] = "network-bridge",
             ["connection-sharing"] = "connection-sharing",
@@ -60,7 +64,7 @@ namespace Argus.Core.Tests
         };
 
         /// <summary>Snapshots on which nothing may be found.</summary>
-        private static readonly string[] Silent = { "clean", "clean-wifi", "full-tunnel", "routing-failed", "dead-proxy-other-user" };
+        private static readonly string[] Silent = { "clean", "clean-wifi", "full-tunnel", "routing-failed" };
 
         public static IEnumerable<object[]> ProblemCases() => Problems.Select(p => new object[] { p.Key, p.Value });
 
@@ -112,7 +116,6 @@ namespace Argus.Core.Tests
         [Theory]
         [InlineData("full-tunnel")]
         [InlineData("routing-failed")]
-        [InlineData("dead-proxy-other-user")]
         public void Nothing_is_found_on_a_silent_snapshot(string snapshot)
         {
             Assert.Empty(TestData.Analyze(TestData.LoadSnapshot(snapshot)).Results.Where(r => r.Status == RuleStatus.Found).Select(r => r.Rule.Id));

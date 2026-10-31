@@ -1,0 +1,30 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "ndis-filter-leftover",
+  "level": "advice",
+  "facts": [
+    "leftovers"
+  ],
+  "condition": {
+    "from": "leftovers",
+    "where": {
+      "path": "kind",
+      "eq": "ndisFilterWithoutService"
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Остаток сетевого фильтра",
+      "en": "Leftover network filter"
+    },
+    "why": {
+      "ru": "Сторонний фильтр NDIS зарегистрирован, но его служба отсутствует. Это может быть остаток удалённого VPN или защитного ПО.",
+      "en": "A third-party NDIS filter is registered but its service is missing. It may be a leftover of removed VPN or security software."
+    },
+    "fix": {
+      "ru": "Проверьте, удалено ли связанное приложение. Используйте его штатный установщик или средство удаления для восстановления сетевых компонентов.",
+      "en": "Check whether the related application was removed. Use its installer or uninstaller to repair its network components."
+    }
+  },
+  "experimental": true
+}

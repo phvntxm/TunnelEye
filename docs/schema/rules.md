@@ -262,11 +262,11 @@
 
 | Правило | Уровень | Факт | Экспериментальное |
 | --- | --- | --- | --- |
-| `vpn-conflict` | Критично | `tunnels`: ≥ 2 туннелей с маршрутом по умолчанию | |
+| `vpn-conflict` | Критично | `tunnels`: ≥ 2 разных активных клиентов с маршрутом по умолчанию | |
 | `dead-proxy` | Критично | `proxies` | |
 | `two-gateways` | Важно | `routeSummary` | |
 | `ipv6-bypass` | Важно | `tunnelCoverage`: полный туннель IPv4 и подтверждённый внешний IPv6 мимо него | |
-| `hosts-sensitive` | Важно | `hostsEntries`: имя из списка чувствительных, любой адрес | |
+| `hosts-sensitive` | Важно | `hostsEntries`: имя из списка чувствительных, адрес не loopback и не неопределённый | |
 | `network-bridge` | Важно | `bridges` | |
 | `mtu-low` | Важно | `interfaceMtu` < 1500 | |
 | `dns-spoofing` | Важно | `dnsAnswers` | |
@@ -276,13 +276,15 @@
 | `connection-sharing` | Совет | `connectionSharing` | да: так же работает «Мобильный хот-спот» |
 | `open-ports` | Совет | `exposedPorts` | да: часть портов открывает сама Windows |
 | `wifi-link-below-capability` | Совет | `wifiLinks` | да |
+| `hosts-sensitive-blocked` | Совет | `hostsEntries`: чувствительное имя, loopback или неопределённый адрес | |
+| `ndis-filter-leftover` | Совет | `leftovers`: фильтр NDIS без службы | да |
 | `hosts-pinned` | Совет | `hostsEntries`: публичный адрес, имя не из списка | |
 | `vpn-leftovers` | Совет | `leftovers` | |
 | `missing-files` | Совет | `missingFiles` без `clientId` | |
 | `outdated-driver` | Совет | `adapters`: физический, дата старше 1095 дней, не `2006-06-21` | |
 | `adapter-power-saving` | Совет | `adapterProperties`: EEE/Green Ethernet на десктопе | |
 | `wifi-weak-signal`, `wifi-crowded-channel`, `wifi-router-limits` | Совет | `wifiLinks` | |
-| `not-elevated`, `external-not-run` | Инфо | `snapshotInfo` | |
+| `not-elevated`, `external-not-run`, `elevated-as-other-user` | Инфо | `snapshotInfo` | |
 
 Экспериментальные — не выше «Совет» и не влияют на светофор (D-014), пока не подтверждены на стенде.
 
@@ -295,3 +297,12 @@
 ```
 
 `patch` вливается в `base` (база может быть сама наложением): объекты — по ключам, массивы, значения и `null` — заменяют. Так в файле только сама проблема, а база растёт в одном месте. Наложения читает тестовый код (`TestData.LoadTree`), CLI — нет. Регресс: каждый проблемный снимок даёт ровно свою находку, у каждого правила есть снимок, на чистых (`clean`, `clean-wifi`, `full-tunnel`, …) — ничего.
+
+
+### Уточнения ревью 008
+
+- `tunnels`: добавлены `clientKey` (`clientId` либо `adapter:<interfaceIndex>`) и `otherClientsCapturingDefault` — число других различных клиентов с поднятым адаптером и маршрутом по умолчанию. `vpn-conflict` требует `status = Up` и хотя бы одного такого клиента.
+- `hosts-sensitive` исключает `addressClass = loopback | unspecified`; эти записи проверяет `hosts-sensitive-blocked` («Совет»). Оба правила и `hosts-pinned` используют одинаковый список чувствительных имён.
+- `leftovers.kind = ndisFilterWithoutService`: сторонний зарегистрированный фильтр NDIS без службы в `services.services` и `services.drivers`. Поля `clientName` — componentId, `detail` — имя службы, `filterRunType` — тип запуска. Встроенные `ms_*` исключены. При недоступных списках — ограничение; обязательность сама по себе не признак остатка. Правило `ndis-filter-leftover` экспериментальное («Совет»).
+- `elevated-as-other-user` («Инфо») проверяет `snapshotInfo.elevatedAsOtherUser`.
+- Ручное разворачивание тестового снимка: `powershell -NoProfile -File tests/Expand-Overlay.ps1 tests/snapshots/vpn-conflict.json .local/expanded.json`.

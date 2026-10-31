@@ -1,0 +1,47 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "hosts-sensitive-blocked",
+  "level": "advice",
+  "facts": [
+    "hostsEntries"
+  ],
+  "thresholds": {
+    "sensitiveNames": "(^|\\.)(sberbank\\.ru|sber\\.ru|tbank\\.ru|tinkoff\\.ru|vtb\\.ru|alfabank\\.ru|gazprombank\\.ru|raiffeisen\\.ru|psbank\\.ru|sovcombank\\.ru|open\\.ru|pochtabank\\.ru|rshb\\.ru|mkb\\.ru|nspk\\.ru|mironline\\.ru|yoomoney\\.ru|qiwi\\.com|paypal\\.com|stripe\\.com|visa\\.com|mastercard\\.com|americanexpress\\.com|mos\\.ru|gosuslugi\\.ru|nalog\\.gov\\.ru|windowsupdate\\.com|update\\.microsoft\\.com|delivery\\.mp\\.microsoft\\.com|download\\.microsoft\\.com|login\\.microsoftonline\\.com|login\\.live\\.com|smartscreen\\.microsoft\\.com|wdcp\\.microsoft\\.com|kaspersky\\.com|kaspersky\\.ru|kaspersky-labs\\.com|drweb\\.com|drweb\\.ru|eset\\.com|esetnod32\\.ru|avast\\.com|avg\\.com|bitdefender\\.com|norton\\.com|mcafee\\.com|malwarebytes\\.com)$"
+  },
+  "condition": {
+    "from": "hostsEntries",
+    "where": {
+      "allOf": [
+        {
+          "path": "name",
+          "match": "$threshold.sensitiveNames"
+        },
+        {
+          "path": "addressClass",
+          "in": [
+            "loopback",
+            "unspecified"
+          ]
+        }
+      ]
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "В hosts заблокирован важный сервис",
+      "en": "An important service is blocked in hosts"
+    },
+    "why": {
+      "ru": "Запись в hosts блокирует банк, оплату, вход, обновления Windows или антивирус. Соответствующий сервис недоступен; обновления и защита могут не работать.",
+      "en": "A hosts entry blocks banking, payments, sign-in, Windows updates or antivirus. The affected service is unavailable; updates and protection may stop working."
+    },
+    "details": {
+      "ru": "Чувствительное имя направлено на loopback или неопределённый адрес.",
+      "en": "A sensitive name points to loopback or an unspecified address."
+    },
+    "fix": {
+      "ru": "Если вы не добавляли эти строки сами, удалите их из файла C:\\Windows\\System32\\drivers\\etc\\hosts (блокнот от имени администратора) и проверьте компьютер антивирусом.",
+      "en": "If you did not add these lines yourself, delete them from C:\\Windows\\System32\\drivers\\etc\\hosts (Notepad as administrator) and scan the computer with an antivirus."
+    }
+  }
+}

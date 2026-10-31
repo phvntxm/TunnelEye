@@ -1,0 +1,29 @@
+{
+  "schema": "tunneleye.rule/1",
+  "id": "elevated-as-other-user",
+  "level": "info",
+  "facts": [
+    "snapshotInfo"
+  ],
+  "condition": {
+    "from": "snapshotInfo",
+    "where": {
+      "path": "elevatedAsOtherUser",
+      "eq": true
+    }
+  },
+  "text": {
+    "title": {
+      "ru": "Сбор от имени другого пользователя",
+      "en": "Collected as another user"
+    },
+    "why": {
+      "ru": "После UAC сбор выполнялся под другой учётной записью. Пользовательский прокси, автозагрузка и файл целей исходного пользователя не проверены.",
+      "en": "After UAC, collection ran under another account. The original user proxy, startup entries and target file were not checked."
+    },
+    "fix": {
+      "ru": "Учитывайте это ограничение при чтении отчёта.",
+      "en": "Keep this limitation in mind when reading the report."
+    }
+  }
+}

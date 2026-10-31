@@ -135,6 +135,50 @@ namespace Argus.Core.Tests
             Assert.Equal(RuleStatus.NotFound, Result(snapshot, "wfp-conflict").Status);
         }
 
+        [Theory]
+        [InlineData("0.0.0.0")]
+        [InlineData("127.5.6.7")]
+        [InlineData("::")]
+        [InlineData("::1")]
+        public void Blocked_sensitive_names_are_advice_not_redirection(string address)
+        {
+            var snapshot = Edit("hosts-sensitive-blocked", t =>
+                JsonValue.AsObject(JsonValue.GetList(JsonValue.Get(Data(t, "dns-proxy"), "hosts"), "entries")[0])["address"] = address);
+            Assert.Equal(RuleStatus.NotFound, Result(snapshot, "hosts-sensitive").Status);
+            Assert.Equal(RuleStatus.Found, Result(snapshot, "hosts-sensitive-blocked").Status);
+        }
+
+        [Fact]
+        public void Two_adapters_of_one_client_are_not_two_vpns()
+        {
+            var snapshot = Edit("vpn-conflict", t => Data(t, "vpn")["clients"] = JsonValue.Parse(
+                @"[{""id"":""example-vpn"",""kind"":""vpn"",""adapters"":[{""interfaceIndex"":9},{""interfaceIndex"":10}]}]"));
+            Assert.Equal(RuleStatus.NotFound, Result(snapshot, "vpn-conflict").Status);
+            Assert.All(Fact(snapshot, "tunnels").Items, i => Assert.Equal(0, i.Values["otherClientsCapturingDefault"]));
+        }
+
+        [Theory]
+        [InlineData("Disconnected")]
+        [InlineData("Not Present")]
+        public void Inactive_adapter_with_saved_routes_is_not_a_vpn_conflict(string status)
+        {
+            var snapshot = Edit("vpn-conflict", t => {
+                var adapter = JsonValue.GetList(Data(t, "adapters"), "adapters").Single(a => JsonValue.AsInt(JsonValue.Get(a, "interfaceIndex")) == 10);
+                JsonValue.AsObject(adapter)["status"] = status;
+                Data(t, "routing")["interfaces"] = JsonValue.GetList(Data(t, "routing"), "interfaces")
+                    .Where(i => JsonValue.AsInt(JsonValue.Get(i, "interfaceIndex")) != 10).ToArray();
+            });
+            Assert.Equal(RuleStatus.NotFound, Result(snapshot, "vpn-conflict").Status);
+        }
+
+        [Fact]
+        public void Mandatory_ndis_filter_with_its_service_is_not_a_leftover()
+        {
+            var snapshot = Edit("ndis-filter-leftover", t => Data(t, "services")["drivers"] =
+                JsonValue.Parse(@"[{""name"":""RemovedFilter"",""imageExists"":true}]"));
+            Assert.Equal(RuleStatus.NotFound, Result(snapshot, "ndis-filter-leftover").Status);
+        }
+
         // --- hosts ---
 
         [Fact]
@@ -144,10 +188,11 @@ namespace Argus.Core.Tests
             var a = rules.Single(r => r.Id == "hosts-sensitive").Thresholds["sensitiveNames"];
             var b = rules.Single(r => r.Id == "hosts-pinned").Thresholds["sensitiveNames"];
             Assert.Equal(a, b);
+            Assert.Equal(a, rules.Single(r => r.Id == "hosts-sensitive-blocked").Thresholds["sensitiveNames"]);
         }
 
         [Theory]
-        [InlineData("0.0.0.0", "update.microsoft.com", true)]
+        [InlineData("0.0.0.0", "update.microsoft.com", false)]
         [InlineData("203.0.113.1", "www.paypal.com", true)]
         [InlineData("203.0.113.1", "notpaypal.com", false)]
         [InlineData("203.0.113.1", "paypal.com.example", false)]

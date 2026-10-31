@@ -68,6 +68,7 @@ namespace Argus.Core.Facts
                     ["interfaceIndex"] = index,
                     ["description"] = adapter.Values["description"],
                     ["clientId"] = adapter.Values["clientId"],
+                    ["clientKey"] = JsonValue.AsString(adapter.Values["clientId"]) ?? ("adapter:" + index),
                     ["clientKind"] = adapter.Values["clientKind"],
                     ["status"] = status,
                     ["capturesDefaultIPv4"] = captures4,
@@ -75,6 +76,18 @@ namespace Argus.Core.Facts
                     ["selectedIPv4"] = selected4 == index,
                     ["selectedIPv6"] = selected6 == index,
                 }, evidence));
+            }
+            foreach (var item in fact.Items)
+            {
+                var others = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var candidate in fact.Items)
+                {
+                    if (!string.Equals(JsonValue.AsString(candidate.Values["status"]), "Up", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (!(bool)candidate.Values["capturesDefaultIPv4"] && !(bool)candidate.Values["capturesDefaultIPv6"]) continue;
+                    var key = (string)candidate.Values["clientKey"];
+                    if (!string.Equals(key, (string)item.Values["clientKey"], StringComparison.OrdinalIgnoreCase)) others.Add(key);
+                }
+                item.Values["otherClientsCapturingDefault"] = others.Count;
             }
             return fact;
         }
