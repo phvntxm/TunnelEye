@@ -6,11 +6,13 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="Usage" xml:space="preserve"><value>Использование: tunneleye analyze &lt;snapshot.json&gt; [--rules &lt;каталог&gt;] [--json &lt;файл&gt;]</value></data>
+  <data name="Usage" xml:space="preserve"><value>Использование: tunneleye analyze &lt;snapshot.json&gt; [--rules &lt;каталог&gt;] [--json &lt;файл&gt;] [--report-json &lt;файл&gt;] [--html &lt;файл&gt;] [--snapshot-json &lt;файл&gt;] [--mask] [--lang ru|en]</value></data>
   <data name="SnapshotError" xml:space="preserve"><value>Не удалось прочитать снимок: {0}</value></data>
   <data name="RulesMissing" xml:space="preserve"><value>Каталог правил не найден: {0}</value></data>
   <data name="RuleError" xml:space="preserve"><value>Правило пропущено: {0}</value></data>
   <data name="Status_found" xml:space="preserve"><value>найдено</value></data>
   <data name="Status_notFound" xml:space="preserve"><value>нет</value></data>
   <data name="Status_notChecked" xml:space="preserve"><value>не проверено</value></data>
+<data name="OutputCollision"><value>Выходные пути должны отличаться друг от друга и от исходного снимка.</value></data>
+<data name="ExportError"><value>Не удалось записать экспорт. Проверьте путь и права доступа.</value></data>
 </root>

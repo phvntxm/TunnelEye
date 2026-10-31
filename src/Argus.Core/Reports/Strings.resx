@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 phvntxm. SPDX-License-Identifier: Apache-2.0 -->
+<root><resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+<data name="Version" xml:space="preserve"><value>Версия</value></data>
+<data name="Masked" xml:space="preserve"><value>Экспорт без личных данных</value></data>
+<data name="Score_red" xml:space="preserve"><value>Найдены критические проблемы</value></data>
+<data name="Score_yellow" xml:space="preserve"><value>Есть важные проблемы</value></data>
+<data name="Score_green" xml:space="preserve"><value>Критические проверки выполнены</value></data>
+<data name="Score_gray" xml:space="preserve"><value>Проверено не всё</value></data>
+<data name="Scope" xml:space="preserve"><value>Оценка относится к выполненным правилам. Ограничения проверок перечислены ниже. Анализ трафика и рекомендации по апгрейду появятся на следующих этапах.</value></data>
+<data name="Counts" xml:space="preserve"><value>Проблемы по уровням</value></data>
+<data name="Recommendations" xml:space="preserve"><value>Главные рекомендации</value></data>
+<data name="Findings" xml:space="preserve"><value>Найденные проблемы</value></data>
+<data name="Fix" xml:space="preserve"><value>Что сделать:</value></data>
+<data name="Evidence" xml:space="preserve"><value>Технические детали и доказательства</value></data>
+<data name="Coverage" xml:space="preserve"><value>Что проверено и что осталось</value></data>
+<data name="Experimental" xml:space="preserve"><value>Экспериментальная проверка</value></data>
+<data name="Network" xml:space="preserve"><value>Сеть</value></data>
+<data name="Services" xml:space="preserve"><value>Службы и автозагрузка</value></data>
+<data name="Hardware" xml:space="preserve"><value>Железо</value></data>
+<data name="Appendix" xml:space="preserve"><value>Приложение</value></data>
+<data name="Module" xml:space="preserve"><value>Модуль</value></data>
+<data name="Status" xml:space="preserve"><value>Статус</value></data>
+<data name="ConsentHint" xml:space="preserve"><value>Для этой проверки нужно согласие на внешние тесты связи.</value></data>
+<data name="AdminHint" xml:space="preserve"><value>Для этой проверки запустите сбор с правами администратора.</value></data>
+<data name="CheckHint" xml:space="preserve"><value>Проверьте статус модуля и ограничения в технических деталях.</value></data>
+<data name="Level_critical" xml:space="preserve"><value>Критично</value></data>
+<data name="Level_important" xml:space="preserve"><value>Важно</value></data>
+<data name="Level_advice" xml:space="preserve"><value>Совет</value></data>
+<data name="Level_info" xml:space="preserve"><value>Инфо</value></data>
+<data name="Status_found" xml:space="preserve"><value>Найдено</value></data>
+<data name="Status_notFound" xml:space="preserve"><value>Не найдено</value></data>
+<data name="Status_notChecked" xml:space="preserve"><value>Не проверено</value></data>
+<data name="Status_notApplicable" xml:space="preserve"><value>Не применимо</value></data>
+<data name="ModuleStatus_ok" xml:space="preserve"><value>Готово</value></data>
+<data name="ModuleStatus_partial" xml:space="preserve"><value>Частично</value></data>
+<data name="ModuleStatus_failed" xml:space="preserve"><value>Ошибка</value></data>
+<data name="ModuleStatus_skipped" xml:space="preserve"><value>Не применимо</value></data>
+<data name="Module_system" xml:space="preserve"><value>Система</value></data>
+<data name="Module_adapters" xml:space="preserve"><value>Адаптеры</value></data>
+<data name="Module_routing" xml:space="preserve"><value>Маршрутизация</value></data>
+<data name="Module_dns-proxy" xml:space="preserve"><value>DNS и прокси</value></data>
+<data name="Module_vpn" xml:space="preserve"><value>VPN и туннели</value></data>
+<data name="Module_firewall" xml:space="preserve"><value>Брандмауэр</value></data>
+<data name="Module_wifi" xml:space="preserve"><value>Wi-Fi</value></data>
+<data name="Module_connectivity" xml:space="preserve"><value>Тесты связи</value></data>
+<data name="Module_connections" xml:space="preserve"><value>Соединения</value></data>
+<data name="Module_tcp-stack" xml:space="preserve"><value>TCP-стек</value></data>
+<data name="Module_services" xml:space="preserve"><value>Службы и автозагрузка</value></data>
+<data name="Module_events" xml:space="preserve"><value>События</value></data>
+<data name="Module_hardware" xml:space="preserve"><value>Железо</value></data>
+<data name="Charts"><value>Графики</value></data>
+<data name="ChartScope"><value>Пустые данные не означают нулевую задержку или отсутствие событий. Шкала каждого графика независима; отметки событий — выборка, не полный журнал. Измерения связи относятся к указанному интерфейсу и могут отражать ответ туннеля.</value></data>
+<data name="Latency"><value>Средний RTT, мс</value></data>
+<data name="Losses"><value>Потери ICMP, %</value></data>
+<data name="DnsLatency"><value>Время ответа DNS, мс</value></data>
+<data name="WifiChannels"><value>Сигнал точек по каналам, %</value></data>
+<data name="EventTimeline"><value>Отметки сетевых событий по дням UTC (выборка)</value></data>
+<data name="NoData"><value>Нет собранных данных</value></data>
+<data name="RouteMap"><value>Адаптер → шлюз → префикс маршрута</value></data>
+</root>
