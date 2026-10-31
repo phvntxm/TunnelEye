@@ -1,4 +1,4 @@
-# Copyright 2026 phvntxm
+﻿# Copyright 2026 phvntxm
 # SPDX-License-Identifier: Apache-2.0
 #
 # Repository-wide checks for PowerShell sources.
@@ -7,7 +7,7 @@ Import-Module (Join-Path $PSScriptRoot 'TestHelpers.psm1') -Force
 
 Describe 'PowerShell sources' {
     $root = Get-RepoRoot
-    $files = @(Get-ChildItem -Path (Join-Path $root 'collectors'), (Join-Path $root 'tests') -Recurse -Include *.ps1, *.psm1)
+    $files = @(Get-ChildItem -Path (Join-Path $root 'collectors'), (Join-Path $root 'tests'), (Join-Path $root 'tools') -Recurse -Include *.ps1, *.psm1)
 
     It 'are ASCII-only or start with a UTF-8 BOM (PowerShell 5.1 reads BOM-less files as ANSI)' {
         $bad = foreach ($f in $files) {

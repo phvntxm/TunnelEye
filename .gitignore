@@ -22,3 +22,35 @@ desktop.ini
 
 # Local results (admin test runs)
 .local/
+
+# Secrets and signing material (.cer/.crt public certificates remain allowed)
+.env
+.env.*
+*.env
+!.env.example
+*.key
+*.pem
+*.pfx
+*.p12
+*.jks
+*.keystore
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+/credentials/
+/secrets/
+
+# Diagnostic exports, logs and crash dumps
+/exports/
+/reports/
+/logs/
+*.log
+*.dmp
+*.dump
+/snapshot*.json
+/report*.json
+/report*.html
+/analysis*.json
+/progress.jsonl
+/test-results*.xml
