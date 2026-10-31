@@ -34,6 +34,18 @@ HTML открывается офлайн. `--mask` заменяет личные
 
 EN: Build with `dotnet build src/TunnelEye.sln`. Analyze a saved snapshot with the command above; use `--lang en` for English and `--mask` to mask personal data in the exports.
 
+## Проверка перед коммитом
+
+После клонирования включите защиту от случайной публикации секретов и диагностических данных:
+
+```powershell
+powershell.exe -NoProfile -File tools/Install-SafetyHook.ps1
+```
+
+Проверяются подготовленные к коммиту файлы. Подробности и ограничения — [защита репозитория](docs/REPOSITORY-SAFETY.md).
+
+EN: Run the command above after cloning to enable the local staged-content safety check. It blocks common secrets and diagnostic exports without printing matched values.
+
 ## Лицензия
 
 [Apache License 2.0](LICENSE). При распространении копий и форков обязательно сохранять файлы `LICENSE` и `NOTICE`.

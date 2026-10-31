@@ -1,2 +1,5 @@
 # Real tool output captured in a legacy code page: keep the bytes exactly.
 *.cp1251.txt -text
+
+# Git for Windows runs hooks through its POSIX shell.
+.githooks/* text eol=lf
