@@ -2,11 +2,35 @@
   "schema": "tunneleye.rule/1",
   "id": "vpn-conflict",
   "level": "critical",
-  "facts": [ "tunnels" ],
+  "facts": [
+    "tunnels"
+  ],
   "condition": {
     "from": "tunnels",
-    "where": { "anyOf": [ { "path": "capturesDefaultIPv4", "eq": true }, { "path": "capturesDefaultIPv6", "eq": true } ] },
-    "having": { "count": { "gte": 2 } }
+    "where": {
+      "allOf": [
+        {
+          "path": "status",
+          "eq": "Up"
+        },
+        {
+          "anyOf": [
+            {
+              "path": "capturesDefaultIPv4",
+              "eq": true
+            },
+            {
+              "path": "capturesDefaultIPv6",
+              "eq": true
+            }
+          ]
+        },
+        {
+          "path": "otherClientsCapturingDefault",
+          "gte": 1
+        }
+      ]
+    }
   },
   "text": {
     "title": {
@@ -18,8 +42,8 @@
       "en": "Several VPNs or proxy tunnels try to carry all traffic at the same time. They get in each other's way: sites do not open, connections drop, traffic goes through the wrong VPN."
     },
     "details": {
-      "ru": "У двух и более туннельных адаптеров есть маршрут по умолчанию (0.0.0.0/0, ::/0 или его половины 0.0.0.0/1 и 128.0.0.0/1).",
-      "en": "Two or more tunnel adapters have a default route (0.0.0.0/0, ::/0 or its halves 0.0.0.0/1 and 128.0.0.0/1)."
+      "ru": "У разных активных VPN-клиентов есть маршруты по умолчанию (включая половины /1). Несколько адаптеров одного клиента считаются одним VPN.",
+      "en": "Distinct active VPN clients have default routes (including /1 halves). Multiple adapters of one client count as one VPN."
     },
     "fix": {
       "ru": "Оставьте включённым один VPN, остальные отключите. Если второй нужен для отдельных адресов (работа, игры), включите в нём раздельное туннелирование.",

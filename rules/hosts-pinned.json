@@ -2,16 +2,26 @@
   "schema": "tunneleye.rule/1",
   "id": "hosts-pinned",
   "level": "advice",
-  "facts": [ "hostsEntries" ],
+  "facts": [
+    "hostsEntries"
+  ],
   "thresholds": {
-    "sensitiveNames": "(^|\\.)(sberbank\\.ru|sber\\.ru|tbank\\.ru|tinkoff\\.ru|vtb\\.ru|alfabank\\.ru|gazprombank\\.ru|raiffeisen\\.ru|psbank\\.ru|sovcombank\\.ru|open\\.ru|pochtabank\\.ru|rshb\\.ru|mkb\\.ru|nspk\\.ru|mironline\\.ru|yoomoney\\.ru|qiwi\\.com|paypal\\.com|stripe\\.com|visa\\.com|mastercard\\.com|americanexpress\\.com|gosuslugi\\.ru|nalog\\.gov\\.ru|windowsupdate\\.com|update\\.microsoft\\.com|delivery\\.mp\\.microsoft\\.com|download\\.microsoft\\.com|login\\.microsoftonline\\.com|login\\.live\\.com|smartscreen\\.microsoft\\.com|wdcp\\.microsoft\\.com|kaspersky\\.com|kaspersky\\.ru|kaspersky-labs\\.com|drweb\\.com|drweb\\.ru|eset\\.com|esetnod32\\.ru|avast\\.com|avg\\.com|bitdefender\\.com|norton\\.com|mcafee\\.com|malwarebytes\\.com)$"
+    "sensitiveNames": "(^|\\.)(sberbank\\.ru|sber\\.ru|tbank\\.ru|tinkoff\\.ru|vtb\\.ru|alfabank\\.ru|gazprombank\\.ru|raiffeisen\\.ru|psbank\\.ru|sovcombank\\.ru|open\\.ru|pochtabank\\.ru|rshb\\.ru|mkb\\.ru|nspk\\.ru|mironline\\.ru|yoomoney\\.ru|qiwi\\.com|paypal\\.com|stripe\\.com|visa\\.com|mastercard\\.com|americanexpress\\.com|mos\\.ru|gosuslugi\\.ru|nalog\\.gov\\.ru|windowsupdate\\.com|update\\.microsoft\\.com|delivery\\.mp\\.microsoft\\.com|download\\.microsoft\\.com|login\\.microsoftonline\\.com|login\\.live\\.com|smartscreen\\.microsoft\\.com|wdcp\\.microsoft\\.com|kaspersky\\.com|kaspersky\\.ru|kaspersky-labs\\.com|drweb\\.com|drweb\\.ru|eset\\.com|esetnod32\\.ru|avast\\.com|avg\\.com|bitdefender\\.com|norton\\.com|mcafee\\.com|malwarebytes\\.com)$"
   },
   "condition": {
     "from": "hostsEntries",
     "where": {
       "allOf": [
-        { "path": "addressClass", "eq": "public" },
-        { "not": { "path": "name", "match": "$threshold.sensitiveNames" } }
+        {
+          "path": "addressClass",
+          "eq": "public"
+        },
+        {
+          "not": {
+            "path": "name",
+            "match": "$threshold.sensitiveNames"
+          }
+        }
       ]
     }
   },

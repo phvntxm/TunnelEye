@@ -2,13 +2,31 @@
   "schema": "tunneleye.rule/1",
   "id": "hosts-sensitive",
   "level": "important",
-  "facts": [ "hostsEntries" ],
+  "facts": [
+    "hostsEntries"
+  ],
   "thresholds": {
-    "sensitiveNames": "(^|\\.)(sberbank\\.ru|sber\\.ru|tbank\\.ru|tinkoff\\.ru|vtb\\.ru|alfabank\\.ru|gazprombank\\.ru|raiffeisen\\.ru|psbank\\.ru|sovcombank\\.ru|open\\.ru|pochtabank\\.ru|rshb\\.ru|mkb\\.ru|nspk\\.ru|mironline\\.ru|yoomoney\\.ru|qiwi\\.com|paypal\\.com|stripe\\.com|visa\\.com|mastercard\\.com|americanexpress\\.com|gosuslugi\\.ru|nalog\\.gov\\.ru|windowsupdate\\.com|update\\.microsoft\\.com|delivery\\.mp\\.microsoft\\.com|download\\.microsoft\\.com|login\\.microsoftonline\\.com|login\\.live\\.com|smartscreen\\.microsoft\\.com|wdcp\\.microsoft\\.com|kaspersky\\.com|kaspersky\\.ru|kaspersky-labs\\.com|drweb\\.com|drweb\\.ru|eset\\.com|esetnod32\\.ru|avast\\.com|avg\\.com|bitdefender\\.com|norton\\.com|mcafee\\.com|malwarebytes\\.com)$"
+    "sensitiveNames": "(^|\\.)(sberbank\\.ru|sber\\.ru|tbank\\.ru|tinkoff\\.ru|vtb\\.ru|alfabank\\.ru|gazprombank\\.ru|raiffeisen\\.ru|psbank\\.ru|sovcombank\\.ru|open\\.ru|pochtabank\\.ru|rshb\\.ru|mkb\\.ru|nspk\\.ru|mironline\\.ru|yoomoney\\.ru|qiwi\\.com|paypal\\.com|stripe\\.com|visa\\.com|mastercard\\.com|americanexpress\\.com|mos\\.ru|gosuslugi\\.ru|nalog\\.gov\\.ru|windowsupdate\\.com|update\\.microsoft\\.com|delivery\\.mp\\.microsoft\\.com|download\\.microsoft\\.com|login\\.microsoftonline\\.com|login\\.live\\.com|smartscreen\\.microsoft\\.com|wdcp\\.microsoft\\.com|kaspersky\\.com|kaspersky\\.ru|kaspersky-labs\\.com|drweb\\.com|drweb\\.ru|eset\\.com|esetnod32\\.ru|avast\\.com|avg\\.com|bitdefender\\.com|norton\\.com|mcafee\\.com|malwarebytes\\.com)$"
   },
   "condition": {
     "from": "hostsEntries",
-    "where": { "path": "name", "match": "$threshold.sensitiveNames" }
+    "where": {
+      "allOf": [
+        {
+          "path": "name",
+          "match": "$threshold.sensitiveNames"
+        },
+        {
+          "not": {
+            "path": "addressClass",
+            "in": [
+              "loopback",
+              "unspecified"
+            ]
+          }
+        }
+      ]
+    }
   },
   "text": {
     "title": {
@@ -16,12 +34,12 @@
       "en": "The hosts file has entries for banks, payments, updates or antivirus"
     },
     "why": {
-      "ru": "Файл hosts указывает Windows, куда идти по имени сайта, — в обход DNS. Запись для банка, платёжного сервиса, Центра обновления или антивируса может вести на чужой сервер или блокировать сервис. Так делают вредоносные программы, а иногда — «оптимизаторы».",
-      "en": "The hosts file tells Windows where a site name leads, bypassing DNS. An entry for a bank, payment service, Windows Update or antivirus may lead to someone else's server or block the service. Malware does this, and sometimes so do 'optimizer' tools."
+      "ru": "Запись в hosts направляет имя банка, платёжного сервиса, обновлений или антивируса на заданный адрес в обход DNS. Это может быть признаком подмены и требует проверки.",
+      "en": "A hosts entry redirects a bank, payment, update or antivirus name to a fixed address, bypassing DNS. This may indicate tampering and needs checking."
     },
     "details": {
-      "ru": "Имя из списка чувствительных (банки, платёжные сервисы, обновления Windows, антивирусы) записано в hosts — независимо от адреса.",
-      "en": "A name from the sensitive list (banks, payment services, Windows updates, antiviruses) is in hosts, whatever the address."
+      "ru": "Чувствительное имя направлено на адрес, отличный от loopback и неопределённого адреса.",
+      "en": "A sensitive name points to an address other than loopback or unspecified."
     },
     "fix": {
       "ru": "Если вы не добавляли эти строки сами, удалите их из файла C:\\Windows\\System32\\drivers\\etc\\hosts (блокнот от имени администратора) и проверьте компьютер антивирусом.",
