@@ -44,17 +44,11 @@ src/TunnelEye.App/bin/Debug/net48/TunnelEye.exe
 
 EN: Start the executable above to run the WPF app. Open a snapshot or run diagnostics; external tests require consent for each run. Personal data is masked in exports by default.
 
-## Проверка перед коммитом
+## Для разработчиков
 
-После клонирования включите защиту от случайной публикации секретов и диагностических данных:
+[Подготовка репозитория и проверка перед коммитом](CONTRIBUTING.md).
 
-```powershell
-powershell.exe -NoProfile -File tools/Install-SafetyHook.ps1
-```
-
-Проверяются подготовленные к коммиту файлы. Подробности и ограничения — [защита репозитория](docs/REPOSITORY-SAFETY.md).
-
-EN: Run the command above after cloning to enable the local staged-content safety check. It blocks common secrets and diagnostic exports without printing matched values.
+EN: [Repository setup and pre-commit checks](CONTRIBUTING.md).
 
 ## Лицензия
 
