@@ -58,4 +58,5 @@
 <data name="EventTimeline"><value>Отметки сетевых событий по дням UTC (выборка)</value></data>
 <data name="NoData"><value>Нет собранных данных</value></data>
 <data name="RouteMap"><value>Адаптер → шлюз → префикс маршрута</value></data>
+<data name="WifiUtilization"><value>Загрузка каналов Wi-Fi, %</value></data>
 </root>

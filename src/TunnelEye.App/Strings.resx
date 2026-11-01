@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 phvntxm. SPDX-License-Identifier: Apache-2.0 -->
+<root><resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+<data name="Title" xml:space="preserve"><value>TunnelEye</value></data>
+<data name="Tagline" xml:space="preserve"><value>Диагностика сети · Argus</value></data>
+<data name="Russian" xml:space="preserve"><value>Русский</value></data>
+<data name="English" xml:space="preserve"><value>Английский</value></data>
+<data name="Language" xml:space="preserve"><value>Язык интерфейса</value></data>
+<data name="Diagnose" xml:space="preserve"><value>Диагностика</value></data>
+<data name="OpenSnapshot" xml:space="preserve"><value>Открыть снимок</value></data>
+<data name="ExportHtml" xml:space="preserve"><value>Экспорт HTML</value></data>
+<data name="ExportJson" xml:space="preserve"><value>Экспорт JSON</value></data>
+<data name="ExternalConsent" xml:space="preserve"><value>Разрешить внешние тесты связи на этот запуск</value></data>
+<data name="MaskExports" xml:space="preserve"><value>Скрывать личные данные при экспорте</value></data>
+<data name="Ready" xml:space="preserve"><value>Готово к диагностике. Все данные обрабатываются локально.</value></data>
+<data name="Analyzing" xml:space="preserve"><value>Анализируем снимок…</value></data>
+<data name="Collecting" xml:space="preserve"><value>Запускаем сбор. Подтвердите запрос Windows.</value></data>
+<data name="Loaded" xml:space="preserve"><value>Снимок проанализирован. Отчёт готов.</value></data>
+<data name="NotElevatedFallback" xml:space="preserve"><value>Запрос прав отменён. Продолжаем сбор с доступными правами.</value></data>
+<data name="SlowCollection" xml:space="preserve"><value>Сбор занимает больше времени. Ожидаем завершения модулей.</value></data>
+<data name="CollectionProgress" xml:space="preserve"><value>Собрано {0} из {1} · {2}</value></data>
+<data name="WelcomeTitle" xml:space="preserve"><value>Поймите, что происходит с сетью</value></data>
+<data name="WelcomeBody" xml:space="preserve"><value>TunnelEye собирает настройки сети, проверяет их и объясняет найденные проблемы. Начните диагностику или откройте сохранённый снимок.</value></data>
+<data name="WelcomeDetails" xml:space="preserve"><value>Проверим адаптеры, VPN, маршруты, DNS, прокси и службы. Внешние тесты включаются только с вашего согласия.</value></data>
+<data name="Overview" xml:space="preserve"><value>Сводка</value></data>
+<data name="Network" xml:space="preserve"><value>Сеть</value></data>
+<data name="Charts" xml:space="preserve"><value>Графики</value></data>
+<data name="Services" xml:space="preserve"><value>Службы</value></data>
+<data name="Hardware" xml:space="preserve"><value>Железо</value></data>
+<data name="Appendix" xml:space="preserve"><value>Приложение</value></data>
+<data name="ScoreScope" xml:space="preserve"><value>Оценка учитывает выполненные проверки. Если часть данных недоступна, ограничения указаны ниже.</value></data>
+<data name="SnapshotDate" xml:space="preserve"><value>Снимок:</value></data>
+<data name="NoRecommendations" xml:space="preserve"><value>По выполненным проверкам дополнительных рекомендаций нет.</value></data>
+<data name="NoFindings" xml:space="preserve"><value>По выполненным проверкам проблем не найдено. Проверьте охват диагностики ниже.</value></data>
+<data name="TechnicalDetails" xml:space="preserve"><value>Технические детали</value></data>
+<data name="Evidence" xml:space="preserve"><value>Доказательства</value></data>
+<data name="Limitations" xml:space="preserve"><value>Ограничения проверки</value></data>
+<data name="Unknown" xml:space="preserve"><value>—</value></data>
+<data name="Yes" xml:space="preserve"><value>Да</value></data>
+<data name="No" xml:space="preserve"><value>Нет</value></data>
+<data name="Adapters" xml:space="preserve"><value>Сетевые адаптеры</value></data>
+<data name="Routes" xml:space="preserve"><value>Маршруты</value></data>
+<data name="Dns" xml:space="preserve"><value>DNS-серверы</value></data>
+<data name="Vpn" xml:space="preserve"><value>VPN и туннели</value></data>
+<data name="Wifi" xml:space="preserve"><value>Wi-Fi</value></data>
+<data name="Proxy" xml:space="preserve"><value>Прокси</value></data>
+<data name="WifiPermissions" xml:space="preserve"><value>Разрешение Wi-Fi</value></data>
+<data name="LocationHint" xml:space="preserve"><value>Windows может требовать разрешение на местоположение для чтения Wi-Fi. Откройте настройки, если хотите разрешить доступ, и повторите диагностику. После проверки можно выключить разрешение обратно.</value></data>
+<data name="OpenLocation" xml:space="preserve"><value>Открыть настройки местоположения</value></data>
+<data name="Name" xml:space="preserve"><value>Название</value></data>
+<data name="Status" xml:space="preserve"><value>Состояние</value></data>
+<data name="Description" xml:space="preserve"><value>Описание</value></data>
+<data name="Mtu" xml:space="preserve"><value>MTU, байт</value></data>
+<data name="Adapter" xml:space="preserve"><value>Адаптер</value></data>
+<data name="Prefix" xml:space="preserve"><value>Префикс</value></data>
+<data name="Gateway" xml:space="preserve"><value>Шлюз</value></data>
+<data name="Metric" xml:space="preserve"><value>Метрика</value></data>
+<data name="Address" xml:space="preserve"><value>Адреса</value></data>
+<data name="Type" xml:space="preserve"><value>Тип</value></data>
+<data name="Ssid" xml:space="preserve"><value>Сеть (SSID)</value></data>
+<data name="Channel" xml:space="preserve"><value>Канал</value></data>
+<data name="Signal" xml:space="preserve"><value>Сигнал, %</value></data>
+<data name="Radio" xml:space="preserve"><value>Стандарт</value></data>
+<data name="StartMode" xml:space="preserve"><value>Запуск</value></data>
+<data name="Image" xml:space="preserve"><value>Файл программы</value></data>
+<data name="Startup" xml:space="preserve"><value>Автозагрузка</value></data>
+<data name="Enabled" xml:space="preserve"><value>Включено</value></data>
+<data name="Drivers" xml:space="preserve"><value>Драйверы-службы</value></data>
+<data name="Cpu" xml:space="preserve"><value>Процессор</value></data>
+<data name="Memory" xml:space="preserve"><value>Оперативная память</value></data>
+<data name="Gpu" xml:space="preserve"><value>Видеокарта</value></data>
+<data name="Disks" xml:space="preserve"><value>Диски</value></data>
+<data name="BoardBios" xml:space="preserve"><value>Плата и BIOS</value></data>
+<data name="Model" xml:space="preserve"><value>Модель</value></data>
+<data name="Cores" xml:space="preserve"><value>Ядра</value></data>
+<data name="Threads" xml:space="preserve"><value>Потоки</value></data>
+<data name="Clock" xml:space="preserve"><value>Частота, МГц</value></data>
+<data name="Bytes" xml:space="preserve"><value>Объём</value></data>
+<data name="MemoryBytes" xml:space="preserve"><value>Видеопамять</value></data>
+<data name="MemorySpeed" xml:space="preserve"><value>Скорость, МТ/с</value></data>
+<data name="PartNumber" xml:space="preserve"><value>Модель модуля</value></data>
+<data name="Health" xml:space="preserve"><value>Состояние</value></data>
+<data name="GiB" xml:space="preserve"><value>ГиБ</value></data>
+<data name="Modules" xml:space="preserve"><value>Модули сбора</value></data>
+<data name="Module" xml:space="preserve"><value>Модуль</value></data>
+<data name="Errors" xml:space="preserve"><value>Ошибки</value></data>
+<data name="AnalysisErrors" xml:space="preserve"><value>Ошибки анализа</value></data>
+<data name="UnexpectedError" xml:space="preserve"><value>Не удалось выполнить действие. Сохранённые снимки остаются на диске.</value></data>
+<data name="WaitForCollection" xml:space="preserve"><value>Дождитесь завершения текущей операции, затем закройте окно.</value></data>
+<data name="OpenFailed" xml:space="preserve"><value>Не удалось открыть снимок. Проверьте, что выбран JSON-снимок TunnelEye и файл доступен.</value></data>
+<data name="CollectionFailed" xml:space="preserve"><value>Сбор или анализ не завершён. Проверьте доступ к PowerShell, модулям и каталогу локальных снимков. Уже сохранённый снимок можно открыть отдельно.</value></data>
+<data name="ExportFailed" xml:space="preserve"><value>Не удалось записать отчёт. Проверьте путь и права доступа.</value></data>
+<data name="SettingsError" xml:space="preserve"><value>Не удалось открыть настройки Windows. Откройте раздел «Конфиденциальность → Местоположение» вручную.</value></data>
+<data name="OutputCollision" xml:space="preserve"><value>Выберите другой файл: исходный снимок нельзя перезаписывать отчётом.</value></data>
+<data name="SnapshotFilter" xml:space="preserve"><value>Снимок TunnelEye (*.json)|*.json</value></data>
+<data name="HtmlFilter" xml:space="preserve"><value>HTML-отчёт (*.html)|*.html</value></data>
+<data name="ReportFilter" xml:space="preserve"><value>JSON-отчёт (*.json)|*.json</value></data>
+<data name="ExportTitle" xml:space="preserve"><value>Сохранить отчёт</value></data>
+<data name="Exported" xml:space="preserve"><value>Отчёт сохранён.</value></data>
+<data name="NetworkMap"><value>Адаптер → шлюз → сеть назначения</value></data>
+<data name="RouteLine"><value>{0} → {1}</value></data>
+<data name="Data_Up"><value>Подключён</value></data>
+<data name="Data_Down"><value>Выключен</value></data>
+<data name="Data_Disconnected"><value>Отключён</value></data>
+<data name="Data_Not Present"><value>Отсутствует</value></data>
+<data name="Data_Running"><value>Работает</value></data>
+<data name="Data_Stopped"><value>Остановлена</value></data>
+<data name="Data_Start Pending"><value>Запускается</value></data>
+<data name="Data_Auto"><value>Автоматически</value></data>
+<data name="Data_Manual"><value>Вручную</value></data>
+<data name="Data_Disabled"><value>Отключено</value></data>
+<data name="Data_Boot"><value>При загрузке</value></data>
+<data name="Data_System"><value>Системный</value></data>
+<data name="Data_Healthy"><value>В норме</value></data>
+<data name="Data_Warning"><value>Предупреждение</value></data>
+<data name="Data_Unhealthy"><value>Проблема</value></data>
+<data name="Data_Unknown"><value>Неизвестно</value></data>
+</root>

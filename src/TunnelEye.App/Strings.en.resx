@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 phvntxm. SPDX-License-Identifier: Apache-2.0 -->
+<root><resheader name="resmimetype"><value>text/microsoft-resx</value></resheader><resheader name="version"><value>2.0</value></resheader><resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader><resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+<data name="Title" xml:space="preserve"><value>TunnelEye</value></data>
+<data name="Tagline" xml:space="preserve"><value>Network diagnostics · Argus</value></data>
+<data name="Russian" xml:space="preserve"><value>Russian</value></data>
+<data name="English" xml:space="preserve"><value>English</value></data>
+<data name="Language" xml:space="preserve"><value>Interface language</value></data>
+<data name="Diagnose" xml:space="preserve"><value>Run diagnostics</value></data>
+<data name="OpenSnapshot" xml:space="preserve"><value>Open snapshot</value></data>
+<data name="ExportHtml" xml:space="preserve"><value>Export HTML</value></data>
+<data name="ExportJson" xml:space="preserve"><value>Export JSON</value></data>
+<data name="ExternalConsent" xml:space="preserve"><value>Allow external connectivity tests for this run</value></data>
+<data name="MaskExports" xml:space="preserve"><value>Mask personal data in exports</value></data>
+<data name="Ready" xml:space="preserve"><value>Ready. All diagnostics data is processed locally.</value></data>
+<data name="Analyzing" xml:space="preserve"><value>Analyzing the snapshot…</value></data>
+<data name="Collecting" xml:space="preserve"><value>Starting collection. Respond to the Windows elevation prompt.</value></data>
+<data name="Loaded" xml:space="preserve"><value>Snapshot analyzed. Your report is ready.</value></data>
+<data name="NotElevatedFallback" xml:space="preserve"><value>Elevation cancelled. Continuing with available permissions.</value></data>
+<data name="SlowCollection" xml:space="preserve"><value>Collection is taking longer. Waiting for the modules to finish.</value></data>
+<data name="CollectionProgress" xml:space="preserve"><value>Collected {0} of {1} · {2}</value></data>
+<data name="WelcomeTitle" xml:space="preserve"><value>Understand what is happening on your network</value></data>
+<data name="WelcomeBody" xml:space="preserve"><value>TunnelEye collects network settings, checks them and explains the findings. Run diagnostics or open a saved snapshot.</value></data>
+<data name="WelcomeDetails" xml:space="preserve"><value>Review adapters, VPNs, routes, DNS, proxies and services. External connectivity tests run only with your consent.</value></data>
+<data name="Overview" xml:space="preserve"><value>Overview</value></data>
+<data name="Network" xml:space="preserve"><value>Network</value></data>
+<data name="Charts" xml:space="preserve"><value>Charts</value></data>
+<data name="Services" xml:space="preserve"><value>Services</value></data>
+<data name="Hardware" xml:space="preserve"><value>Hardware</value></data>
+<data name="Appendix" xml:space="preserve"><value>Appendix</value></data>
+<data name="ScoreScope" xml:space="preserve"><value>The score reflects completed checks. Limitations are listed below when some data is unavailable.</value></data>
+<data name="SnapshotDate" xml:space="preserve"><value>Snapshot:</value></data>
+<data name="NoRecommendations" xml:space="preserve"><value>No additional recommendations from the completed checks.</value></data>
+<data name="NoFindings" xml:space="preserve"><value>No issues found by the completed checks. Review coverage below.</value></data>
+<data name="TechnicalDetails" xml:space="preserve"><value>Technical details</value></data>
+<data name="Evidence" xml:space="preserve"><value>Evidence</value></data>
+<data name="Limitations" xml:space="preserve"><value>Check limitations</value></data>
+<data name="Unknown" xml:space="preserve"><value>—</value></data>
+<data name="Yes" xml:space="preserve"><value>Yes</value></data>
+<data name="No" xml:space="preserve"><value>No</value></data>
+<data name="Adapters" xml:space="preserve"><value>Network adapters</value></data>
+<data name="Routes" xml:space="preserve"><value>Routes</value></data>
+<data name="Dns" xml:space="preserve"><value>DNS servers</value></data>
+<data name="Vpn" xml:space="preserve"><value>VPN and tunnels</value></data>
+<data name="Wifi" xml:space="preserve"><value>Wi-Fi</value></data>
+<data name="Proxy" xml:space="preserve"><value>Proxy</value></data>
+<data name="WifiPermissions" xml:space="preserve"><value>Wi-Fi permission</value></data>
+<data name="LocationHint" xml:space="preserve"><value>Windows may require location permission to read Wi-Fi information. Open settings if you want to grant access, then run diagnostics again. You can turn the permission off after the check.</value></data>
+<data name="OpenLocation" xml:space="preserve"><value>Open location settings</value></data>
+<data name="Name" xml:space="preserve"><value>Name</value></data>
+<data name="Status" xml:space="preserve"><value>Status</value></data>
+<data name="Description" xml:space="preserve"><value>Description</value></data>
+<data name="Mtu" xml:space="preserve"><value>MTU, bytes</value></data>
+<data name="Adapter" xml:space="preserve"><value>Adapter</value></data>
+<data name="Prefix" xml:space="preserve"><value>Prefix</value></data>
+<data name="Gateway" xml:space="preserve"><value>Gateway</value></data>
+<data name="Metric" xml:space="preserve"><value>Metric</value></data>
+<data name="Address" xml:space="preserve"><value>Addresses</value></data>
+<data name="Type" xml:space="preserve"><value>Type</value></data>
+<data name="Ssid" xml:space="preserve"><value>Network (SSID)</value></data>
+<data name="Channel" xml:space="preserve"><value>Channel</value></data>
+<data name="Signal" xml:space="preserve"><value>Signal, %</value></data>
+<data name="Radio" xml:space="preserve"><value>Radio standard</value></data>
+<data name="StartMode" xml:space="preserve"><value>Startup mode</value></data>
+<data name="Image" xml:space="preserve"><value>Program file</value></data>
+<data name="Startup" xml:space="preserve"><value>Startup entries</value></data>
+<data name="Enabled" xml:space="preserve"><value>Enabled</value></data>
+<data name="Drivers" xml:space="preserve"><value>Driver services</value></data>
+<data name="Cpu" xml:space="preserve"><value>Processor</value></data>
+<data name="Memory" xml:space="preserve"><value>Memory</value></data>
+<data name="Gpu" xml:space="preserve"><value>Graphics</value></data>
+<data name="Disks" xml:space="preserve"><value>Disks</value></data>
+<data name="BoardBios" xml:space="preserve"><value>Board and BIOS</value></data>
+<data name="Model" xml:space="preserve"><value>Model</value></data>
+<data name="Cores" xml:space="preserve"><value>Cores</value></data>
+<data name="Threads" xml:space="preserve"><value>Threads</value></data>
+<data name="Clock" xml:space="preserve"><value>Clock, MHz</value></data>
+<data name="Bytes" xml:space="preserve"><value>Capacity</value></data>
+<data name="MemoryBytes" xml:space="preserve"><value>Video memory</value></data>
+<data name="MemorySpeed" xml:space="preserve"><value>Speed, MT/s</value></data>
+<data name="PartNumber" xml:space="preserve"><value>Module part number</value></data>
+<data name="Health" xml:space="preserve"><value>Health</value></data>
+<data name="GiB" xml:space="preserve"><value>GiB</value></data>
+<data name="Modules" xml:space="preserve"><value>Collection modules</value></data>
+<data name="Module" xml:space="preserve"><value>Module</value></data>
+<data name="Errors" xml:space="preserve"><value>Errors</value></data>
+<data name="AnalysisErrors" xml:space="preserve"><value>Analysis errors</value></data>
+<data name="UnexpectedError" xml:space="preserve"><value>The action could not be completed. Saved snapshots remain on disk.</value></data>
+<data name="WaitForCollection" xml:space="preserve"><value>Wait for the current operation to finish before closing the window.</value></data>
+<data name="OpenFailed" xml:space="preserve"><value>Could not open the snapshot. Select an accessible TunnelEye JSON snapshot.</value></data>
+<data name="CollectionFailed" xml:space="preserve"><value>Collection or analysis did not finish. Check access to PowerShell, collectors and the local snapshot directory. A saved snapshot can be opened separately.</value></data>
+<data name="ExportFailed" xml:space="preserve"><value>Could not write the report. Check the path and permissions.</value></data>
+<data name="SettingsError" xml:space="preserve"><value>Could not open Windows settings. Open Privacy → Location manually.</value></data>
+<data name="OutputCollision" xml:space="preserve"><value>Choose another file: a report cannot overwrite the source snapshot.</value></data>
+<data name="SnapshotFilter" xml:space="preserve"><value>TunnelEye snapshot (*.json)|*.json</value></data>
+<data name="HtmlFilter" xml:space="preserve"><value>HTML report (*.html)|*.html</value></data>
+<data name="ReportFilter" xml:space="preserve"><value>JSON report (*.json)|*.json</value></data>
+<data name="ExportTitle" xml:space="preserve"><value>Save report</value></data>
+<data name="Exported" xml:space="preserve"><value>Report saved.</value></data>
+<data name="NetworkMap"><value>Adapter → gateway → destination network</value></data>
+<data name="RouteLine"><value>{0} → {1}</value></data>
+<data name="Data_Up"><value>Up</value></data>
+<data name="Data_Down"><value>Down</value></data>
+<data name="Data_Disconnected"><value>Disconnected</value></data>
+<data name="Data_Not Present"><value>Not present</value></data>
+<data name="Data_Running"><value>Running</value></data>
+<data name="Data_Stopped"><value>Stopped</value></data>
+<data name="Data_Start Pending"><value>Starting</value></data>
+<data name="Data_Auto"><value>Automatic</value></data>
+<data name="Data_Manual"><value>Manual</value></data>
+<data name="Data_Disabled"><value>Disabled</value></data>
+<data name="Data_Boot"><value>Boot</value></data>
+<data name="Data_System"><value>System</value></data>
+<data name="Data_Healthy"><value>Healthy</value></data>
+<data name="Data_Warning"><value>Warning</value></data>
+<data name="Data_Unhealthy"><value>Unhealthy</value></data>
+<data name="Data_Unknown"><value>Unknown</value></data>
+</root>

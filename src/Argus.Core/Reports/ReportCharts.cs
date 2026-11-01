@@ -26,9 +26,13 @@ namespace Argus.Core.Reports
                     Point(dns, JsonValue.Get(query, "name") + " / " + JsonValue.Get(response, "server") + " / " + JsonValue.Get(response, "status"), JsonValue.Get(response, "rttMs"));
             charts["Latency"] = latency; charts["Losses"] = losses; charts["DnsLatency"] = dns;
             var wifi = new List<object>();
+            var utilization = new List<object>();
             foreach (var bss in JsonValue.GetList(JsonValue.Get(snapshot.Module("wifi")?.Data, "neighbors"), "bss"))
+            {
+                Point(utilization, JsonValue.Get(bss, "bandGHz") + " / " + JsonValue.Get(bss, "channel"), JsonValue.Get(bss, "channelUtilizationPercent"));
                 Point(wifi, JsonValue.Get(bss, "bandGHz") + " / " + JsonValue.Get(bss, "channel"), JsonValue.Get(bss, "signalPercent"));
-            charts["WifiChannels"] = wifi;
+            }
+            charts["WifiChannels"] = wifi; charts["WifiUtilization"] = utilization;
             var days = new SortedDictionary<string, int>(StringComparer.Ordinal);
             foreach (var group in JsonValue.GetList(snapshot.Module("events")?.Data, "groups"))
                 foreach (var time in JsonValue.GetList(group, "times"))

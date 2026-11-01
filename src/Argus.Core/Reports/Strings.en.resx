@@ -58,4 +58,5 @@
 <data name="EventTimeline"><value>Network event timestamps by UTC day (sample)</value></data>
 <data name="NoData"><value>No collected data</value></data>
 <data name="RouteMap"><value>Adapter → gateway → route prefix</value></data>
+<data name="WifiUtilization"><value>Wi-Fi channel utilization, %</value></data>
 </root>

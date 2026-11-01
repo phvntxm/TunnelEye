@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.8": {
+      "OxyPlot.Core": {
+        "type": "Direct",
+        "requested": "[2.2.0, )",
+        "resolved": "2.2.0",
+        "contentHash": "QhXNdXR5FPpro/VoLx3BOp6AhQo7YrbfmWEZ9cgY+pnYM7RYORZjnu+aDMA8ka9A1r8hLkX//NbCPZNUv+l8qA==",
+        "dependencies": {
+          "Microsoft.NETFramework.ReferenceAssemblies": "1.0.2"
+        }
+      },
+      "OxyPlot.Wpf": {
+        "type": "Direct",
+        "requested": "[2.2.0, )",
+        "resolved": "2.2.0",
+        "contentHash": "69KzgsMWpJSZmeXZt07FwfV7B1D4CM1nl0MWMj4wjrCsb3USBMo32up1+fQIjxp5tHCPdGwX9VWhSxW8nsY7pQ==",
+        "dependencies": {
+          "Microsoft.NETFramework.ReferenceAssemblies": "1.0.2",
+          "OxyPlot.Core": "2.2.0",
+          "OxyPlot.Wpf.Shared": "2.2.0"
+        }
+      },
+      "OxyPlot.Wpf.Shared": {
+        "type": "Direct",
+        "requested": "[2.2.0, )",
+        "resolved": "2.2.0",
+        "contentHash": "JoOD/feTOlKFmgXqeTNrl4Ze0i0L6WizPapNw9pXwot+cnI0qhFgYv3tFjlSdu51hZw0EgmcgeRXMtm5bkueYA==",
+        "dependencies": {
+          "Microsoft.NETFramework.ReferenceAssemblies": "1.0.2",
+          "OxyPlot.Core": "2.2.0"
+        }
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies": {
+        "type": "Transitive",
+        "resolved": "1.0.2",
+        "contentHash": "5/cSEVld+px/CuRrbohO/djfg6++eR6zGpy88MgqloXvkj//WXWpFZyu/OpkXPN0u5m+dN/EVwLNYFUxD4h2+A==",
+        "dependencies": {
+          "Microsoft.NETFramework.ReferenceAssemblies.net48": "1.0.2"
+        }
+      },
+      "Microsoft.NETFramework.ReferenceAssemblies.net48": {
+        "type": "Transitive",
+        "resolved": "1.0.2",
+        "contentHash": "5auzRPELLLWdSifssw9eSL11wiIaOx/U/mJUIXilEWdYfjVx509SOn3HwDQCrZY0VKHQxvMk+enM67RXtfsrVg=="
+      },
+      "argus.core": {
+        "type": "Project"
+      }
+    },
+    ".NETFramework,Version=v4.8/win-x86": {}
+  }
+}
