@@ -38,8 +38,8 @@ namespace Argus.Core.Reports
             var summary = JsonValue.AsObject(root["summary"]);
             var checks = JsonValue.GetList(root, "checks");
             var b = new StringBuilder("<!doctype html><html lang=\"");
-            b.Append(H(lang)).Append("\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:\"><title>TunnelEye</title><style>body{font:16px system-ui,sans-serif;max-width:1080px;margin:auto;padding:24px;background:#f3f5f8;color:#182438}article,section{background:white;border-radius:12px;padding:20px;margin:16px 0}h1,h2{line-height:1.3}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}summary{cursor:pointer}svg{width:100%;height:auto}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:8px;border-bottom:1px solid #ddd}.red{border-left:8px solid #c63545}.yellow{border-left:8px solid #d39a16}.green{border-left:8px solid #21865a}.gray{border-left:8px solid #79818f}.muted{color:#536175}li{margin:8px 0}</style></head><body><h1>TunnelEye В· Argus</h1>");
-            b.Append("<p>").Append(H(root["createdAt"])).Append(" В· ").Append(t("Version")).Append(' ').Append(H(root["version"])).Append("</p>");
+            b.Append(H(lang)).Append("\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:\"><title>TunnelEye</title><style>body{font:16px system-ui,sans-serif;max-width:1080px;margin:auto;padding:24px;background:#f3f5f8;color:#182438}article,section{background:white;border-radius:12px;padding:20px;margin:16px 0}h1,h2{line-height:1.3}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}summary{cursor:pointer}svg{width:100%;height:auto}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:8px;border-bottom:1px solid #ddd}.red{border-left:8px solid #c63545}.yellow{border-left:8px solid #d39a16}.green{border-left:8px solid #21865a}.gray{border-left:8px solid #79818f}.muted{color:#536175}li{margin:8px 0}</style></head><body><h1>TunnelEye · Argus</h1>");
+            b.Append("<p>").Append(H(root["createdAt"])).Append(" · ").Append(t("Version")).Append(' ').Append(H(root["version"])).Append("</p>");
             if (Equals(root["masked"], true)) b.Append("<p>").Append(t("Masked")).Append("</p>");
             b.Append("<section class=\"").Append(H(summary["score"])).Append("\"><h2>").Append(t("Score_" + summary["score"])).Append("</h2>");
             b.Append("<p>").Append(t("Scope")).Append("</p>");
@@ -63,19 +63,19 @@ namespace Argus.Core.Reports
             foreach (var check in checks.Where(c => Equals(JsonValue.Get(c, "status"), "found")))
             {
                 b.Append("<article><p class=\"muted\">").Append(t("Level_" + JsonValue.Get(check, "level")));
-                if (Equals(JsonValue.Get(check, "experimental"), true)) b.Append(" В· ").Append(t("Experimental"));
+                if (Equals(JsonValue.Get(check, "experimental"), true)) b.Append(" · ").Append(t("Experimental"));
                 b.Append("</p><h3>").Append(H(JsonValue.Get(check, "title"))).Append("</h3><p>").Append(H(JsonValue.Get(check, "why"))).Append("</p><p><strong>").Append(t("Fix")).Append("</strong> ").Append(H(JsonValue.Get(check, "fix"))).Append("</p>");
                 b.Append("<details><summary>").Append(t("Evidence")).Append(" (").Append(H(JsonValue.Get(check, "evidenceCount"))).Append(")</summary><p>").Append(H(JsonValue.Get(check, "details"))).Append("</p>");
                 // Hundreds of hosts names share one address: one collapsed group per address.
                 var groups = JsonValue.GetList(check, "evidence").GroupBy(e => JsonValue.AsString(JsonValue.Get(JsonValue.Get(e, "values"), "address")) ?? "");
                 foreach (var group in groups)
-                    b.Append("<details><summary>").Append(H(group.Key)).Append(" В· ").Append(group.Count()).Append("</summary><pre>").Append(H(JsonValue.Serialize(group.ToArray()))).Append("</pre></details>");
+                    b.Append("<details><summary>").Append(H(group.Key)).Append(" · ").Append(group.Count()).Append("</summary><pre>").Append(H(JsonValue.Serialize(group.ToArray()))).Append("</pre></details>");
                 b.Append("</details></article>");
             }
             b.Append("<section><h2>").Append(t("Coverage")).Append("</h2>");
             foreach (var check in checks.Where(c => !Equals(JsonValue.Get(c, "status"), "found") || JsonValue.GetList(c, "limitations").Count > 0))
             {
-                b.Append("<details><summary>").Append(H(JsonValue.Get(check, "title"))).Append(" В· ").Append(t("Status_" + JsonValue.Get(check, "status"))).Append("</summary><p>").Append(H(JsonValue.Get(check, "hint"))).Append("</p><pre>").Append(H(JsonValue.Serialize(new { reason = JsonValue.Get(check, "reason"), limitations = JsonValue.Get(check, "limitations") }))).Append("</pre></details>");
+                b.Append("<details><summary>").Append(H(JsonValue.Get(check, "title"))).Append(" · ").Append(t("Status_" + JsonValue.Get(check, "status"))).Append("</summary><p>").Append(H(JsonValue.Get(check, "hint"))).Append("</p><pre>").Append(H(JsonValue.Serialize(new { reason = JsonValue.Get(check, "reason"), limitations = JsonValue.Get(check, "limitations") }))).Append("</pre></details>");
             }
             b.Append("</section>");
             b.Append("<section><h2>").Append(t("Charts")).Append("</h2><p>").Append(t("ChartScope")).Append("</p>");
