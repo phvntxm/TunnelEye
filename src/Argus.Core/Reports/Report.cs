@@ -16,6 +16,7 @@ namespace Argus.Core.Reports
     public static class ReportText
     {
         private static readonly ResourceManager Resources = new ResourceManager("Argus.Core.Reports.Strings", typeof(ReportText).Assembly);
+        public static string CollectionMode(Report report, string language) => Get(report.CollectionElevated == true ? "CollectionModeElevated" : report.CollectionElevated == false ? "CollectionModeLimited" : "CollectionModeUnknown", language);
         public static string Get(string key, string language) => Resources.GetString(key, CultureInfo.GetCultureInfo(language)) ?? key;
     }
 
@@ -25,6 +26,7 @@ namespace Argus.Core.Reports
         public const string Schema = "tunneleye.report/1";
         internal Report(IDictionary<string, object> root) { Root = root; }
         public IDictionary<string, object> Root { get; }
+        public bool? CollectionElevated => JsonValue.AsBool(JsonValue.Get(JsonValue.Get(Root, "collection"), "elevated"));
         public string Json() => JsonValue.Serialize(Root);
         public Report Masked(PrivacyMasker masker) => new Report(JsonValue.AsObject(masker.Transform(Root)));
 
@@ -57,6 +59,7 @@ namespace Argus.Core.Reports
             var tree = new Dictionary<string, object>
             {
                 ["schema"] = Schema, ["snapshotId"] = snapshot.SnapshotId, ["createdAt"] = snapshot.CreatedAtUtc.ToString("o", CultureInfo.InvariantCulture),
+                ["collection"] = new Dictionary<string, object> { ["elevated"] = snapshot.Elevated },
                 ["version"] = typeof(Report).Assembly.GetName().Version.ToString(), ["language"] = language, ["masked"] = false,
                 ["summary"] = new Dictionary<string, object> { ["score"] = score, ["counts"] = counts,
                     ["incompleteCritical"] = missingCritical.Select(r => r.Rule.Id).ToArray(),

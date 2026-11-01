@@ -48,6 +48,58 @@ namespace Argus.Core.Tests
             Assert.Equal(original, JsonValue.Serialize(snapshot.Root));
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Nrpt_scalar_and_array_namespaces_and_server_hostnames_are_masked_consistently(bool namespaceIsArray)
+        {
+            const string privateNamespace = ".private-review.example";
+            const string privateServer = "dns.other-review.example";
+            var tree = TestData.LoadTree("clean");
+            var dns = ModuleData(tree, "dns-proxy");
+            dns["nrpt"] = new object[]
+            {
+                new Dictionary<string, object>
+                {
+                    ["namespace"] = namespaceIsArray ? (object)new[] { privateNamespace } : privateNamespace,
+                    ["nameServers"] = new[] { privateServer },
+                },
+            };
+            dns["message"] = privateNamespace + " " + privateServer;
+            var snapshot = Snapshot.Parse(JsonValue.Serialize(tree));
+            var original = JsonValue.Serialize(snapshot.Root);
+            var masker = new PrivacyMasker(snapshot);
+            var snapshotJson = masker.SnapshotJson(snapshot);
+            var report = Report.Build(snapshot, TestData.Analyze(snapshot)).Masked(masker);
+            var reportJson = report.Json();
+            var html = HtmlReport.Write(report);
+            foreach (var output in new[] { snapshotJson, reportJson, html })
+            {
+                Assert.DoesNotContain(privateNamespace, output);
+                Assert.DoesNotContain(privateNamespace.TrimStart('.'), output);
+                Assert.DoesNotContain(privateServer, output);
+            }
+            var snapshotEntry = PathValue(JsonValue.Parse(snapshotJson), "modules.dns-proxy.data.nrpt[0]");
+            var reportEntry = PathValue(JsonValue.Parse(reportJson), "sections.dns-proxy.nrpt[0]");
+            var maskedNamespace = JsonValue.Get(snapshotEntry, "namespace");
+            var reportNamespace = JsonValue.Get(reportEntry, "namespace");
+            if (namespaceIsArray)
+            {
+                maskedNamespace = JsonValue.AsList(maskedNamespace).Single();
+                reportNamespace = JsonValue.AsList(reportNamespace).Single();
+            }
+            var maskedServer = JsonValue.GetList(snapshotEntry, "nameServers").Single();
+            Assert.StartsWith("DNS-", (string)maskedNamespace);
+            Assert.StartsWith("SERVER-", (string)maskedServer);
+            Assert.Equal(maskedNamespace, reportNamespace);
+            Assert.Equal(maskedServer, JsonValue.GetList(reportEntry, "nameServers").Single());
+            Assert.Contains((string)maskedNamespace, html);
+            Assert.Contains((string)maskedServer, html);
+            var copiedText = PathValue(JsonValue.Parse(snapshotJson), "modules.dns-proxy.data.message");
+            Assert.Equal(maskedNamespace + " " + maskedServer, copiedText);
+            Assert.Equal(original, JsonValue.Serialize(snapshot.Root));
+        }
+
         [Fact]
         public void An_ipv6_address_only_present_in_an_error_keeps_sentence_punctuation()
         {

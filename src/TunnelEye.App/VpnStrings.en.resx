@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2026 phvntxm. SPDX-License-Identifier: Apache-2.0 -->
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Title"><value>Built-in Windows VPN</value></data>
+  <data name="Name"><value>Profile name</value></data>
+  <data name="ConnectionStatus"><value>Status</value></data>
+  <data name="Server"><value>Server</value></data>
+  <data name="TunnelType"><value>Tunnel type</value></data>
+  <data name="SplitTunneling"><value>Split tunneling</value></data>
+  <data name="TechnicalDetails"><value>Built-in VPN technical details</value></data>
+  <data name="Empty"><value>No built-in VPN profiles found.</value></data>
+  <data name="Unavailable"><value>Built-in VPN profile data was not collected.</value></data>
+  <data name="Unknown"><value>Unknown</value></data>
+  <data name="Yes"><value>Yes</value></data>
+  <data name="No"><value>No</value></data>
+  <data name="connectionStatus_Connected"><value>Connected</value></data>
+  <data name="connectionStatus_Disconnected"><value>Disconnected</value></data>
+  <data name="connectionStatus_Connecting"><value>Connecting</value></data>
+  <data name="connectionStatus_Disconnecting"><value>Disconnecting</value></data>
+  <data name="tunnelType_Automatic"><value>Automatic</value></data>
+  <data name="tunnelType_Pptp"><value>PPTP</value></data>
+  <data name="tunnelType_L2tp"><value>L2TP</value></data>
+  <data name="tunnelType_Sstp"><value>SSTP</value></data>
+  <data name="tunnelType_Ikev2"><value>IKEv2</value></data>
+</root>

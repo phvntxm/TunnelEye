@@ -59,4 +59,7 @@
 <data name="NoData"><value>Нет собранных данных</value></data>
 <data name="RouteMap"><value>Адаптер → шлюз → префикс маршрута</value></data>
 <data name="WifiUtilization"><value>Загрузка каналов Wi-Fi, %</value></data>
+<data name="CollectionModeElevated"><value>Сбор выполнен с правами администратора</value></data>
+<data name="CollectionModeLimited"><value>Сбор выполнен без прав администратора — часть данных недоступна</value></data>
+<data name="CollectionModeUnknown"><value>Режим прав при сборе неизвестен: в снимке нет отметки</value></data>
 </root>

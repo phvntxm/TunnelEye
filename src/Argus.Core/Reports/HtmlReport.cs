@@ -43,6 +43,7 @@ namespace Argus.Core.Reports
             if (Equals(root["masked"], true)) b.Append("<p>").Append(t("Masked")).Append("</p>");
             b.Append("<section class=\"").Append(H(summary["score"])).Append("\"><h2>").Append(t("Score_" + summary["score"])).Append("</h2>");
             b.Append("<p>").Append(t("Scope")).Append("</p>");
+            b.Append("<p class=\"collection-mode\"><strong>").Append(H(ReportText.CollectionMode(report, lang))).Append("</strong></p>");
             var counts = JsonValue.AsObject(summary["counts"]);
             b.Append("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 680 160\" role=\"img\"><title>").Append(t("Counts")).Append("</title>");
             var max = Math.Max(1, counts.Values.Max(v => Convert.ToInt32(v, CultureInfo.InvariantCulture)));

@@ -115,4 +115,5 @@
 <data name="Data_Warning"><value>Warning</value></data>
 <data name="Data_Unhealthy"><value>Unhealthy</value></data>
 <data name="Data_Unknown"><value>Unknown</value></data>
+<data name="ThirdPartyVpn"><value>Third-party VPN applications and components</value></data>
 </root>

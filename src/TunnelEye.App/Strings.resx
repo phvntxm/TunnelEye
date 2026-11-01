@@ -115,4 +115,5 @@
 <data name="Data_Warning"><value>Предупреждение</value></data>
 <data name="Data_Unhealthy"><value>Проблема</value></data>
 <data name="Data_Unknown"><value>Неизвестно</value></data>
+<data name="ThirdPartyVpn"><value>Сторонние VPN-программы и компоненты</value></data>
 </root>

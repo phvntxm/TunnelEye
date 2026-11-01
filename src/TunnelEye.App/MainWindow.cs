@@ -55,7 +55,7 @@ namespace TunnelEye.App
             Background = new SolidColorBrush(Color.FromRgb(243, 246, 250));
             Closing += OnClosing;
             Render();
-            if (startupPath != null) Loaded += async (s, e) => await OpenSnapshotAsync(startupPath);
+            if (startupPath != null) Loaded += async (s, e) => await OpenSnapshotFromUiAsync(startupPath);
         }
 
         private void OnClosing(object sender, CancelEventArgs e)
@@ -110,7 +110,7 @@ namespace TunnelEye.App
             var toolbar = new StackPanel { Margin = new Thickness(28, 20, 28, 8) };
             var buttons = new WrapPanel();
             buttons.Children.Add(Action("Diagnose", async (s, e) => await CollectAsync(), true));
-            buttons.Children.Add(Action("OpenSnapshot", async (s, e) => { var d = new OpenFileDialog { Filter = S("SnapshotFilter"), Title = S("OpenSnapshot") }; if (d.ShowDialog(this) == true) await OpenSnapshotAsync(d.FileName); }));
+            buttons.Children.Add(Action("OpenSnapshot", async (s, e) => { var d = new OpenFileDialog { Filter = S("SnapshotFilter"), Title = S("OpenSnapshot") }; if (d.ShowDialog(this) == true) await OpenSnapshotFromUiAsync(d.FileName); }));
             buttons.Children.Add(Action("ExportHtml", (s, e) => Export(true), requiresReport: true));
             buttons.Children.Add(Action("ExportJson", (s, e) => Export(false), requiresReport: true));
             toolbar.Children.Add(buttons);
@@ -180,6 +180,9 @@ namespace TunnelEye.App
             var score = (string)summary["score"];
             var color = score == "red" ? Brushes.Crimson : score == "yellow" ? Brushes.DarkGoldenrod : score == "green" ? teal : Brushes.SlateGray;
             var lead = new StackPanel(); lead.Children.Add(Text(R("Score_" + score), 27, true));
+            var mode = Text(ReportText.CollectionMode(report, language), 14, true);
+            AutomationProperties.SetAutomationId(mode, "CollectionMode");
+            lead.Children.Add(mode);
             lead.Children.Add(Text(S("ScoreScope"))); lead.Children.Add(Text(S("SnapshotDate") + " " + snapshot.CreatedAtUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture), 12));
             var counts = new WrapPanel(); foreach (var p in JsonValue.AsObject(summary["counts"])) counts.Children.Add(new TextBlock { Text = R("Level_" + p.Key) + ": " + p.Value, Margin = new Thickness(0, 8, 24, 0), FontWeight = FontWeights.SemiBold });
             lead.Children.Add(counts); panel.Children.Add(Card(lead, color));
@@ -228,7 +231,8 @@ namespace TunnelEye.App
             Section(p, S("Adapters"), Table(JsonValue.Get(Data("adapters"), "adapters"), "Name|name", "Status|status", "Description|interfaceDescription", "Mtu|mtuSize"));
             Section(p, S("Routes"), Table(JsonValue.Get(Data("routing"), "routes"), "Adapter|interfaceAlias", "Prefix|destinationPrefix", "Gateway|nextHop", "Metric|effectiveMetric"));
             Section(p, S("Dns"), Table(JsonValue.Get(Data("dns-proxy"), "dnsServers"), "Adapter|interfaceAlias", "Address|serverAddresses"));
-            Section(p, S("Vpn"), Table(JsonValue.Get(Data("vpn"), "clients"), "Name|name", "Type|kind"));
+            Section(p, S("ThirdPartyVpn"), Table(JsonValue.Get(Data("vpn"), "clients"), "Name|name", "Type|kind"));
+            p.Children.Add(BuiltInVpnView.Create(report, language));
             Section(p, S("Wifi"), Table(JsonValue.Get(Data("wifi"), "interfaces"), "Name|name", "Ssid|ssid", "Channel|channel", "Signal|signalPercent", "Radio|radioType"));
             Section(p, S("Proxy"), Technical(JsonValue.Get(Data("dns-proxy"), "proxy")));
             var wifiModule = JsonValue.GetList(report.Root, "modules").FirstOrDefault(m => Equals(JsonValue.Get(m, "name"), "wifi"));
@@ -277,14 +281,20 @@ namespace TunnelEye.App
             SetBusy(true, "Analyzing");
             try { await LoadAsync(path); statusKey = "Loaded"; }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is SnapshotFormatException || e is InvalidOperationException)
-            { statusKey = "OpenFailed"; ShowError("OpenFailed"); }
+            { statusKey = "OpenFailed"; throw; }
             finally { busy = false; Render(); }
+        }
+        private async Task OpenSnapshotFromUiAsync(string path)
+        {
+            try { await OpenSnapshotAsync(path); }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is SnapshotFormatException || e is InvalidOperationException)
+            { ShowError("OpenFailed"); }
         }
         private async Task LoadAsync(string path)
         {
             var result = await Task.Run(() => {
                 var s = Snapshot.Load(path); var catalog = FactCatalog.CreateDefault();
-                var rules = RuleLoader.LoadDirectory(Path.Combine(Path.GetDirectoryName(typeof(MainWindow).Assembly.Location), "rules"), catalog);
+                var rules = RuleLoader.LoadDirectory(Path.Combine(Path.GetDirectoryName(new Uri(typeof(MainWindow).Assembly.CodeBase).LocalPath), "rules"), catalog);
                 var a = new RuleEngine(catalog).Evaluate(s, rules.Rules, rules.Errors);
                 return Tuple.Create(s, a, Report.Build(s, a, language));
             });

@@ -6,7 +6,8 @@ param(
     [Parameter(Mandatory = $true)][string]$OutputPath,
     [string]$SnapshotPath,
     [ValidateSet('ru','en')][string]$Language = 'ru',
-    [ValidateRange(0,5)][int]$Tab = 0
+    [ValidateRange(0,5)][int]$Tab = 0,
+    [ValidateRange(0,100000)][int]$ScrollOffset = 0
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName PresentationFramework,PresentationCore,WindowsBase
@@ -44,6 +45,14 @@ $visual = $window.Content
 $window.UpdateLayout()
 [Windows.Threading.Dispatcher]::CurrentDispatcher.Invoke([Windows.Threading.DispatcherPriority]::ApplicationIdle, [Action]{})
 $visual.UpdateLayout()
+if ($SnapshotPath -and $ScrollOffset -gt 0) {
+    $scroll = $body.Children[0].Items[$Tab].Content
+    if ($scroll -is [Windows.Controls.ScrollViewer]) {
+        $scroll.ScrollToVerticalOffset($ScrollOffset)
+        [Windows.Threading.Dispatcher]::CurrentDispatcher.Invoke([Windows.Threading.DispatcherPriority]::ApplicationIdle, [Action]{})
+        $visual.UpdateLayout()
+    }
+}
 $drawing = New-Object Windows.Media.DrawingVisual
 $context = $drawing.RenderOpen()
 try {

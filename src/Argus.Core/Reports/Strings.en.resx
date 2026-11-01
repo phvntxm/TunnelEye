@@ -59,4 +59,7 @@
 <data name="NoData"><value>No collected data</value></data>
 <data name="RouteMap"><value>Adapter → gateway → route prefix</value></data>
 <data name="WifiUtilization"><value>Wi-Fi channel utilization, %</value></data>
+<data name="CollectionModeElevated"><value>Collected with administrator rights</value></data>
+<data name="CollectionModeLimited"><value>Collected without administrator rights — some data is unavailable</value></data>
+<data name="CollectionModeUnknown"><value>Collection permissions are unknown: the snapshot has no elevation flag</value></data>
 </root>

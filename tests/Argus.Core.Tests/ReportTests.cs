@@ -81,7 +81,7 @@ namespace Argus.Core.Tests
             Assert.DoesNotContain(evil, html);
             Assert.DoesNotContain("<script", html.ToLowerInvariant());
             Assert.Contains("attack", html);
-            Assert.True(html.Contains("&lt;svg") || html.Contains(@"<svg"));
+            Assert.True(html.Contains("&lt;svg") || html.Contains(@"\u003csvg"));
             // Event-like text can exist as encoded inert text, never as attributes.
             Assert.DoesNotContain("<svg onload", html);
             Assert.DoesNotMatch(@"\son\w+\s*=", html);

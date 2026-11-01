@@ -114,8 +114,9 @@ namespace Argus.Core.Reports
             else if (lower.Contains(".builtin.profiles[]") && (lower.EndsWith(".name") || lower.EndsWith(".friendlyname"))) Learn(text, "VPN");
             else if (lower.EndsWith(".serveraddress") || lower.EndsWith(".proxyserver") || lower.EndsWith(".autoconfigurl") || lower.EndsWith(".pacurl")
                 || lower.EndsWith(".proxyoverride") || lower.EndsWith(".bypasslist") || lower.EndsWith(".dohtemplate")
-                || lower.EndsWith(".proxy.environment[].value") || (lower.Contains("proxies[]") && lower.EndsWith(".host"))) LearnProxy(text);
-            else if ((lower.Contains("suffix") && !lower.EndsWith(".suffixorigin")) || lower.EndsWith(".nrpt[].namespace"))
+                || lower.EndsWith(".proxy.environment[].value") || (lower.Contains("proxies[]") && lower.EndsWith(".host"))
+                || lower.EndsWith(".nrpt[].nameservers") || lower.EndsWith(".nrpt[].nameservers[]")) LearnProxy(text);
+            else if ((lower.Contains("suffix") && !lower.EndsWith(".suffixorigin")) || lower.EndsWith(".nrpt[].namespace") || lower.EndsWith(".nrpt[].namespace[]"))
             { Learn(text, "DNS"); if (text.StartsWith(".", StringComparison.Ordinal)) Learn(text.TrimStart('.'), "DNS"); }
             else if (lower.EndsWith(".computer.name") || lower.EndsWith(".computer.domain") || lower.EndsWith(".computer.workgroup") || lower.EndsWith(".computername") || lower.EndsWith(".hostname")) Learn(text, "HOST");
             else if (lower.EndsWith(".username") || lower.EndsWith(".user")) Learn(text, "USER");

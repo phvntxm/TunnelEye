@@ -84,6 +84,7 @@ namespace TunnelEye.Cli
             if (masker != null) report = report.Masked(masker);
             var summary = JsonValue.AsObject(report.Root["summary"]);
             Console.WriteLine(ReportText.Get("Score_" + summary["score"], language));
+            Console.WriteLine(ReportText.CollectionMode(report, language));
             foreach (var check in JsonValue.GetList(report.Root, "checks"))
                 Console.WriteLine("[{0}] {1} ({2})", ReportText.Get("Status_" + JsonValue.Get(check, "status"), language), JsonValue.Get(check, "title"), JsonValue.Get(check, "id"));
             try
