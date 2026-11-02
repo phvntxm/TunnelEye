@@ -62,4 +62,46 @@
 <data name="CollectionModeElevated"><value>Collected with administrator rights</value></data>
 <data name="CollectionModeLimited"><value>Collected without administrator rights — some data is unavailable</value></data>
 <data name="CollectionModeUnknown"><value>Collection permissions are unknown: the snapshot has no elevation flag</value></data>
+  <data name="EvidenceDomain" xml:space="preserve"><value>Domain</value></data>
+  <data name="EvidenceAddress" xml:space="preserve"><value>Address</value></data>
+  <data name="EvidenceSource" xml:space="preserve"><value>Source</value></data>
+  <data name="EvidenceField" xml:space="preserve"><value>Property</value></data>
+  <data name="EvidenceValue" xml:space="preserve"><value>Value</value></data>
+  <data name="EvidenceOther" xml:space="preserve"><value>Other evidence</value></data>
+  <data name="EvidenceJson" xml:space="preserve"><value>Technical JSON</value></data>
+  <data name="EvidenceUnknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="EvidenceEmpty" xml:space="preserve"><value>Empty</value></data>
+  <data name="EvidenceYes" xml:space="preserve"><value>Yes</value></data>
+  <data name="EvidenceNo" xml:space="preserve"><value>No</value></data>
+  <data name="EvidenceField_name" xml:space="preserve"><value>Name</value></data>
+  <data name="EvidenceField_address" xml:space="preserve"><value>Address</value></data>
+  <data name="EvidenceField_addressClass" xml:space="preserve"><value>Address class</value></data>
+  <data name="EvidenceField_interfaceAlias" xml:space="preserve"><value>Adapter</value></data>
+  <data name="EvidenceField_interfaceIndex" xml:space="preserve"><value>Interface index</value></data>
+  <data name="EvidenceField_status" xml:space="preserve"><value>Status</value></data>
+  <data name="EvidenceField_kind" xml:space="preserve"><value>Type</value></data>
+  <data name="EvidenceField_clientName" xml:space="preserve"><value>VPN client</value></data>
+  <data name="EvidenceField_detail" xml:space="preserve"><value>Details</value></data>
+  <data name="EvidenceField_destinationPrefix" xml:space="preserve"><value>Destination network</value></data>
+  <data name="EvidenceField_nextHop" xml:space="preserve"><value>Gateway</value></data>
+  <data name="EvidenceField_effectiveMetric" xml:space="preserve"><value>Effective metric</value></data>
+  <data name="EvidenceField_imagePath" xml:space="preserve"><value>File path</value></data>
+  <data name="EvidenceField_process" xml:space="preserve"><value>Process</value></data>
+  <data name="EvidenceField_port" xml:space="preserve"><value>Port</value></data>
+  <data name="EvidenceField_driverVersion" xml:space="preserve"><value>Driver version</value></data>
+  <data name="EvidenceField_driverDate" xml:space="preserve"><value>Driver date</value></data>
+  <data name="EvidenceField_value" xml:space="preserve"><value>Value</value></data>
+  <data name="EvidenceField_displayValue" xml:space="preserve"><value>Property value</value></data>
+  <data name="EvidenceField_keyword" xml:space="preserve"><value>Adapter property</value></data>
+  <data name="EvidenceField_adapter" xml:space="preserve"><value>Adapter</value></data>
+  <data name="EvidenceField_mtu" xml:space="preserve"><value>MTU</value></data>
+  <data name="EvidenceField_signalPercent" xml:space="preserve"><value>Signal, %</value></data>
+  <data name="EvidenceField_startMode" xml:space="preserve"><value>Start mode</value></data>
+  <data name="EvidenceField_description" xml:space="preserve"><value>Description</value></data>
+  <data name="EvidenceField_clientId" xml:space="preserve"><value>VPN client ID</value></data>
+  <data name="EvidenceField_filters" xml:space="preserve"><value>Filter count</value></data>
+  <data name="EvidenceField_target" xml:space="preserve"><value>Target</value></data>
+  <data name="EvidenceField_elevated" xml:space="preserve"><value>Administrator rights</value></data>
+  <data name="EvidenceField_elevatedAsOtherUser" xml:space="preserve"><value>Collected as another account</value></data>
+  <data name="EvidenceField_externalAllowed" xml:space="preserve"><value>External checks allowed</value></data>
 </root>

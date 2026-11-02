@@ -38,7 +38,7 @@ namespace Argus.Core.Reports
             var summary = JsonValue.AsObject(root["summary"]);
             var checks = JsonValue.GetList(root, "checks");
             var b = new StringBuilder("<!doctype html><html lang=\"");
-            b.Append(H(lang)).Append("\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:\"><title>TunnelEye</title><style>body{font:16px system-ui,sans-serif;max-width:1080px;margin:auto;padding:24px;background:#f3f5f8;color:#182438}article,section{background:white;border-radius:12px;padding:20px;margin:16px 0}h1,h2{line-height:1.3}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}summary{cursor:pointer}svg{width:100%;height:auto}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:8px;border-bottom:1px solid #ddd}.red{border-left:8px solid #c63545}.yellow{border-left:8px solid #d39a16}.green{border-left:8px solid #21865a}.gray{border-left:8px solid #79818f}.muted{color:#536175}li{margin:8px 0}</style></head><body><h1>TunnelEye · Argus</h1>");
+            b.Append(H(lang)).Append("\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; img-src data:\"><title>TunnelEye</title><style>body{font:16px system-ui,sans-serif;max-width:1080px;margin:auto;padding:24px;background:#f3f5f8;color:#182438}article,section{background:white;border-radius:12px;padding:20px;margin:16px 0}h1,h2{line-height:1.3}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}summary{cursor:pointer}svg{width:100%;height:auto}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:8px;border-bottom:1px solid #ddd}.red{border-left:8px solid #c63545}.yellow{border-left:8px solid #d39a16}.green{border-left:8px solid #21865a}.gray{border-left:8px solid #79818f}.muted{color:#536175}li{margin:8px 0}.evidence-scroll{max-height:28rem;overflow:auto;margin:12px 0}.evidence-table{table-layout:fixed}.evidence-table td{white-space:pre-wrap;overflow-wrap:anywhere;vertical-align:top}.evidence-table th{position:sticky;top:0;background:#f3f5f8;overflow-wrap:anywhere}.evidence-table caption{text-align:left;padding:8px;font-weight:600}</style></head><body><h1>TunnelEye · Argus</h1>");
             b.Append("<p>").Append(H(root["createdAt"])).Append(" · ").Append(t("Version")).Append(' ').Append(H(root["version"])).Append("</p>");
             if (Equals(root["masked"], true)) b.Append("<p>").Append(t("Masked")).Append("</p>");
             b.Append("<section class=\"").Append(H(summary["score"])).Append("\"><h2>").Append(t("Score_" + summary["score"])).Append("</h2>");
@@ -68,9 +68,19 @@ namespace Argus.Core.Reports
                 b.Append("</p><h3>").Append(H(JsonValue.Get(check, "title"))).Append("</h3><p>").Append(H(JsonValue.Get(check, "why"))).Append("</p><p><strong>").Append(t("Fix")).Append("</strong> ").Append(H(JsonValue.Get(check, "fix"))).Append("</p>");
                 b.Append("<details><summary>").Append(t("Evidence")).Append(" (").Append(H(JsonValue.Get(check, "evidenceCount"))).Append(")</summary><p>").Append(H(JsonValue.Get(check, "details"))).Append("</p>");
                 // Hundreds of hosts names share one address: one collapsed group per address.
-                var groups = JsonValue.GetList(check, "evidence").GroupBy(e => JsonValue.AsString(JsonValue.Get(JsonValue.Get(e, "values"), "address")) ?? "");
-                foreach (var group in groups)
-                    b.Append("<details><summary>").Append(H(group.Key)).Append(" · ").Append(group.Count()).Append("</summary><pre>").Append(H(JsonValue.Serialize(group.ToArray()))).Append("</pre></details>");
+                foreach (var group in EvidenceTable.Groups(check))
+                {
+                    b.Append("<details class=\"evidence-group\"><summary>").Append(H(group.Title(lang))).Append("</summary><div class=\"evidence-scroll\" tabindex=\"0\" role=\"region\" aria-label=\"").Append(t("Evidence")).Append("\"><table class=\"evidence-table\"><caption>").Append(H(group.Title(lang))).Append("</caption><thead><tr>");
+                    foreach (var header in group.Headers(lang)) b.Append("<th scope=\"col\">").Append(H(header)).Append("</th>");
+                    b.Append("</tr></thead><tbody>");
+                    foreach (var row in group.Rows(lang))
+                    {
+                        b.Append("<tr>");
+                        foreach (var cell in row) b.Append("<td>").Append(H(cell)).Append("</td>");
+                        b.Append("</tr>");
+                    }
+                    b.Append("</tbody></table></div><details><summary>").Append(t("EvidenceJson")).Append("</summary><pre>").Append(H(JsonValue.Serialize(group.Evidence))).Append("</pre></details></details>");
+                }
                 b.Append("</details></article>");
             }
             b.Append("<section><h2>").Append(t("Coverage")).Append("</h2>");

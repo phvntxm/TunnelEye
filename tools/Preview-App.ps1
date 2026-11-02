@@ -7,12 +7,15 @@ param(
     [string]$SnapshotPath,
     [ValidateSet('ru','en')][string]$Language = 'ru',
     [ValidateRange(0,5)][int]$Tab = 0,
-    [ValidateRange(0,100000)][int]$ScrollOffset = 0
+    [ValidateRange(0,100000)][int]$ScrollOffset = 0,
+    [string]$BinaryDirectory,
+    [switch]$ExpandEvidence
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName PresentationFramework,PresentationCore,WindowsBase
 $root = Split-Path $PSScriptRoot -Parent
 $bin = Join-Path $root 'src\TunnelEye.App\bin\Debug\net48'
+if ($BinaryDirectory) { $bin = [IO.Path]::GetFullPath($BinaryDirectory) }
 foreach ($name in 'Argus.Core.dll','OxyPlot.dll','OxyPlot.Wpf.Shared.dll','OxyPlot.Wpf.dll','TunnelEye.exe') {
     [void][Reflection.Assembly]::LoadFrom((Join-Path $bin $name))
 }
@@ -42,6 +45,15 @@ $header.Children[1].SelectedIndex = $(if ($Language -eq 'en') { 1 } else { 0 })
 $body = $window.Content.Children[$window.Content.Children.Count - 1]
 if ($SnapshotPath) { $body.Children[0].SelectedIndex = $Tab }
 $visual = $window.Content
+if ($ExpandEvidence) {
+    function Expand-EvidenceNode($node) {
+        if ($node -isnot [Windows.DependencyObject]) { return }
+        $id = [Windows.Automation.AutomationProperties]::GetAutomationId($node)
+        if ($node -is [Windows.Controls.Expander] -and $id -in @('FindingEvidence','EvidenceGroup')) { $node.IsExpanded = $true }
+        foreach ($child in [Windows.LogicalTreeHelper]::GetChildren($node)) { Expand-EvidenceNode $child }
+    }
+    Expand-EvidenceNode $visual
+}
 $window.UpdateLayout()
 [Windows.Threading.Dispatcher]::CurrentDispatcher.Invoke([Windows.Threading.DispatcherPriority]::ApplicationIdle, [Action]{})
 $visual.UpdateLayout()

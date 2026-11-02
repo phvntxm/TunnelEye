@@ -201,10 +201,12 @@ namespace TunnelEye.App
                 card.Children.Add(Text(Value(check, "title"), 20, true)); card.Children.Add(Text(Value(check, "why")));
                 card.Children.Add(Text(R("Fix"), 14, true)); card.Children.Add(Text(Value(check, "fix")));
                 var details = new StackPanel(); details.Children.Add(Text(Value(check, "details")));
-                foreach (var group in JsonValue.GetList(check, "evidence").GroupBy(e => JsonValue.AsString(JsonValue.Get(JsonValue.Get(e, "values"), "address")) ?? ""))
-                    details.Children.Add(Technical(group.ToArray(), (group.Key.Length == 0 ? S("Evidence") : group.Key) + " · " + group.Count()));
+                foreach (var group in EvidenceTable.Groups(check))
+                    details.Children.Add(EvidenceView.Create(group, language));
                 if (JsonValue.GetList(check, "limitations").Count > 0) details.Children.Add(Technical(JsonValue.Get(check, "limitations"), S("Limitations")));
-                card.Children.Add(new Expander { Header = S("TechnicalDetails") + " · " + Value(check, "evidenceCount"), Content = details });
+                var evidence = new Expander { Header = S("Evidence") + " · " + Value(check, "evidenceCount"), Content = details };
+                AutomationProperties.SetAutomationId(evidence, "FindingEvidence");
+                card.Children.Add(evidence);
                 panel.Children.Add(Card(card, level == "critical" ? Brushes.Crimson : level == "important" ? Brushes.DarkGoldenrod : line));
             }
             var coverage = new StackPanel();

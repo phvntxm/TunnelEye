@@ -62,4 +62,46 @@
 <data name="CollectionModeElevated"><value>Сбор выполнен с правами администратора</value></data>
 <data name="CollectionModeLimited"><value>Сбор выполнен без прав администратора — часть данных недоступна</value></data>
 <data name="CollectionModeUnknown"><value>Режим прав при сборе неизвестен: в снимке нет отметки</value></data>
+  <data name="EvidenceDomain" xml:space="preserve"><value>Домен</value></data>
+  <data name="EvidenceAddress" xml:space="preserve"><value>Адрес</value></data>
+  <data name="EvidenceSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="EvidenceField" xml:space="preserve"><value>Параметр</value></data>
+  <data name="EvidenceValue" xml:space="preserve"><value>Значение</value></data>
+  <data name="EvidenceOther" xml:space="preserve"><value>Другие доказательства</value></data>
+  <data name="EvidenceJson" xml:space="preserve"><value>Технический JSON</value></data>
+  <data name="EvidenceUnknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="EvidenceEmpty" xml:space="preserve"><value>Пусто</value></data>
+  <data name="EvidenceYes" xml:space="preserve"><value>Да</value></data>
+  <data name="EvidenceNo" xml:space="preserve"><value>Нет</value></data>
+  <data name="EvidenceField_name" xml:space="preserve"><value>Имя</value></data>
+  <data name="EvidenceField_address" xml:space="preserve"><value>Адрес</value></data>
+  <data name="EvidenceField_addressClass" xml:space="preserve"><value>Класс адреса</value></data>
+  <data name="EvidenceField_interfaceAlias" xml:space="preserve"><value>Адаптер</value></data>
+  <data name="EvidenceField_interfaceIndex" xml:space="preserve"><value>Номер интерфейса</value></data>
+  <data name="EvidenceField_status" xml:space="preserve"><value>Состояние</value></data>
+  <data name="EvidenceField_kind" xml:space="preserve"><value>Тип</value></data>
+  <data name="EvidenceField_clientName" xml:space="preserve"><value>VPN-клиент</value></data>
+  <data name="EvidenceField_detail" xml:space="preserve"><value>Подробности</value></data>
+  <data name="EvidenceField_destinationPrefix" xml:space="preserve"><value>Сеть назначения</value></data>
+  <data name="EvidenceField_nextHop" xml:space="preserve"><value>Шлюз</value></data>
+  <data name="EvidenceField_effectiveMetric" xml:space="preserve"><value>Эффективная метрика</value></data>
+  <data name="EvidenceField_imagePath" xml:space="preserve"><value>Путь к файлу</value></data>
+  <data name="EvidenceField_process" xml:space="preserve"><value>Процесс</value></data>
+  <data name="EvidenceField_port" xml:space="preserve"><value>Порт</value></data>
+  <data name="EvidenceField_driverVersion" xml:space="preserve"><value>Версия драйвера</value></data>
+  <data name="EvidenceField_driverDate" xml:space="preserve"><value>Дата драйвера</value></data>
+  <data name="EvidenceField_value" xml:space="preserve"><value>Значение</value></data>
+  <data name="EvidenceField_displayValue" xml:space="preserve"><value>Значение свойства</value></data>
+  <data name="EvidenceField_keyword" xml:space="preserve"><value>Свойство адаптера</value></data>
+  <data name="EvidenceField_adapter" xml:space="preserve"><value>Адаптер</value></data>
+  <data name="EvidenceField_mtu" xml:space="preserve"><value>MTU</value></data>
+  <data name="EvidenceField_signalPercent" xml:space="preserve"><value>Сигнал, %</value></data>
+  <data name="EvidenceField_startMode" xml:space="preserve"><value>Тип запуска</value></data>
+  <data name="EvidenceField_description" xml:space="preserve"><value>Описание</value></data>
+  <data name="EvidenceField_clientId" xml:space="preserve"><value>Код VPN-клиента</value></data>
+  <data name="EvidenceField_filters" xml:space="preserve"><value>Число фильтров</value></data>
+  <data name="EvidenceField_target" xml:space="preserve"><value>Цель</value></data>
+  <data name="EvidenceField_elevated" xml:space="preserve"><value>Права администратора</value></data>
+  <data name="EvidenceField_elevatedAsOtherUser" xml:space="preserve"><value>Сбор под другой учётной записью</value></data>
+  <data name="EvidenceField_externalAllowed" xml:space="preserve"><value>Согласие на внешние проверки</value></data>
 </root>
