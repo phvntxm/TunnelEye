@@ -116,4 +116,19 @@
 <data name="Data_Unhealthy"><value>Unhealthy</value></data>
 <data name="Data_Unknown"><value>Unknown</value></data>
 <data name="ThirdPartyVpn"><value>Third-party VPN applications and components</value></data>
+<data name="EnableAnimations" xml:space="preserve"><value>Argus animations</value></data>
+<data name="ArgusAnimation" xml:space="preserve"><value>Decorative Argus eyes</value></data>
+<data name="AwaitingCollector" xml:space="preserve"><value>Waiting for the collector to start</value></data>
+<data name="AwaitingModule" xml:space="preserve"><value>Waiting for the current module</value></data>
+<data name="CheckingModule" xml:space="preserve"><value>Checking: {0}</value></data>
+<data name="CompletedModules" xml:space="preserve"><value>{0} of {1} modules completed</value></data>
+<data name="UnknownProgress" xml:space="preserve"><value>Progress not yet known</value></data>
+<data name="CollectionAdmin" xml:space="preserve"><value>Collecting with administrator rights</value></data>
+<data name="CollectionLimited" xml:space="preserve"><value>Collecting without administrator rights — partial data</value></data>
+<data name="CollectionUnknownRights" xml:space="preserve"><value>Collection permissions not yet known</value></data>
+<data name="CollectionStopped" xml:space="preserve"><value>Collection stopped · {0}</value></data>
+<data name="CollectionFailureNote" xml:space="preserve"><value>The diagnosis could not finish. Try again or open a saved snapshot.</value></data>
+<data name="ModuleFailedContinuing" xml:space="preserve"><value>This module failed. The remaining modules will still be collected.</value></data>
+<data name="AwaitingCollectorNote" xml:space="preserve"><value>Waiting for the first collector event or UAC confirmation. No estimated percentage is shown.</value></data>
+<data name="AnimationProgressNote" xml:space="preserve"><value>Progress comes from collector events. Eye movement is decorative. System motion preferences take priority.</value></data>
 </root>

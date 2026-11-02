@@ -1,0 +1,11 @@
+<!-- Copyright 2026 phvntxm. SPDX-License-Identifier: Apache-2.0 -->
+<DrawingImage xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+  <DrawingImage.Drawing><DrawingGroup>
+    <GeometryDrawing Brush="#202123" Geometry="M0,0 H64 V64 H0 Z"/>
+    <DrawingGroup Transform="1,0.42,-0.42,1,16,-9">
+      <GeometryDrawing Geometry="M9,34 C21,16 43,16 55,34 C43,52 21,52 9,34 Z"><GeometryDrawing.Pen><Pen Brush="#F28C38" Thickness="2.3"/></GeometryDrawing.Pen></GeometryDrawing>
+      <GeometryDrawing><GeometryDrawing.Geometry><EllipseGeometry Center="32,34" RadiusX="8" RadiusY="8"/></GeometryDrawing.Geometry><GeometryDrawing.Pen><Pen Brush="#F28C38" Thickness="2"/></GeometryDrawing.Pen></GeometryDrawing>
+    </DrawingGroup>
+    <GeometryDrawing Brush="#F28C38"><GeometryDrawing.Geometry><GeometryGroup><EllipseGeometry Center="16,15" RadiusX="2.2" RadiusY="2.2"/><EllipseGeometry Center="32,9" RadiusX="2.2" RadiusY="2.2"/><EllipseGeometry Center="48,15" RadiusX="2.2" RadiusY="2.2"/></GeometryGroup></GeometryDrawing.Geometry></GeometryDrawing>
+  </DrawingGroup></DrawingImage.Drawing>
+</DrawingImage>

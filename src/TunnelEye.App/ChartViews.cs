@@ -21,11 +21,11 @@ namespace TunnelEye.App
     /// <summary>Native, read-only charts of report data; no HTML or script rendering.</summary>
     public static class ChartViews
     {
-        private static readonly OxyColor Ink = OxyColor.FromRgb(24, 42, 65);
-        private static readonly OxyColor Slate = OxyColor.FromRgb(93, 111, 132);
-        private static readonly OxyColor Teal = OxyColor.FromRgb(20, 134, 128);
-        private static readonly OxyColor GridLine = OxyColor.FromRgb(229, 235, 242);
-        private static readonly Color CardBorder = Color.FromRgb(222, 230, 240);
+        private static readonly OxyColor Ink = OxyColor.FromRgb(236, 236, 236);
+        private static readonly OxyColor Slate = OxyColor.FromRgb(181, 183, 186);
+        private static readonly OxyColor Teal = OxyColor.FromRgb(242, 140, 56);
+        private static readonly OxyColor GridLine = OxyColor.FromRgb(66, 69, 74);
+        private static readonly Color CardBorder = Color.FromRgb(66, 69, 74);
 
         public static FrameworkElement Create(Report report, string language)
         {
@@ -43,7 +43,7 @@ namespace TunnelEye.App
             {
                 Text = ReportText.Get("ChartScope", language),
                 TextWrapping = TextWrapping.Wrap,
-                Foreground = new SolidColorBrush(Color.FromRgb(83, 101, 123)),
+                Foreground = new SolidColorBrush(Color.FromRgb(181, 183, 186)),
                 Margin = new Thickness(4, 4, 4, 16),
                 FontSize = 13,
             });
@@ -53,8 +53,8 @@ namespace TunnelEye.App
             var levels = new[] { "critical", "important", "advice", "info" };
             var colors = new[]
             {
-                OxyColor.FromRgb(192, 53, 71), OxyColor.FromRgb(185, 126, 15),
-                Teal, OxyColor.FromRgb(93, 111, 132),
+                OxyColor.FromRgb(241, 139, 145), OxyColor.FromRgb(230, 197, 104),
+                OxyColor.FromRgb(120, 195, 155), OxyColor.FromRgb(181, 183, 186),
             };
             var severity = new List<ChartPoint>();
             for (var i = 0; i < levels.Length; i++)
@@ -105,12 +105,12 @@ namespace TunnelEye.App
                     FontSize = 17,
                     FontWeight = System.Windows.FontWeights.SemiBold,
                     TextWrapping = TextWrapping.Wrap,
-                    Foreground = new SolidColorBrush(Color.FromRgb(24, 42, 65)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(236, 236, 236)),
                 });
                 empty.Children.Add(new TextBlock
                 {
                     Text = ReportText.Get("NoData", language),
-                    Foreground = new SolidColorBrush(Color.FromRgb(93, 111, 132)),
+                    Foreground = new SolidColorBrush(Color.FromRgb(181, 183, 186)),
                     Margin = new Thickness(0, 10, 0, 2),
                 });
                 content = empty;
@@ -125,7 +125,7 @@ namespace TunnelEye.App
                     DefaultFont = "Segoe UI",
                     DefaultFontSize = 12,
                     TextColor = Ink,
-                    Background = OxyColors.White,
+                    Background = OxyColor.FromRgb(43, 45, 48),
                     PlotAreaBorderColor = OxyColors.Transparent,
                     Culture = culture,
                     IsLegendVisible = false,
@@ -188,7 +188,7 @@ namespace TunnelEye.App
             return new Border
             {
                 Child = content,
-                Background = Brushes.White,
+                Background = AppTheme.Surface,
                 BorderBrush = new SolidColorBrush(CardBorder),
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(12),

@@ -9,18 +9,22 @@ param(
     [ValidateRange(0,5)][int]$Tab = 0,
     [ValidateRange(0,100000)][int]$ScrollOffset = 0,
     [string]$BinaryDirectory,
-    [switch]$ExpandEvidence
+    [switch]$ExpandEvidence,
+    [ValidateSet('None','Waiting','Collecting','Limited','Error')][string]$DiagnosisState = 'None',
+    [switch]$DisableAnimations
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName PresentationFramework,PresentationCore,WindowsBase
 $root = Split-Path $PSScriptRoot -Parent
 $bin = Join-Path $root 'src\TunnelEye.App\bin\Debug\net48'
 if ($BinaryDirectory) { $bin = [IO.Path]::GetFullPath($BinaryDirectory) }
+$bin = [IO.Path]::GetFullPath($bin)
 foreach ($name in 'Argus.Core.dll','OxyPlot.dll','OxyPlot.Wpf.Shared.dll','OxyPlot.Wpf.dll','TunnelEye.exe') {
     [void][Reflection.Assembly]::LoadFrom((Join-Path $bin $name))
 }
 [Threading.SynchronizationContext]::SetSynchronizationContext((New-Object Windows.Threading.DispatcherSynchronizationContext))
 $app = New-Object Windows.Application
+$app.ShutdownMode = [Windows.ShutdownMode]::OnExplicitShutdown
 $window = New-Object TunnelEye.App.MainWindow
 $window.ShowInTaskbar = $false
 $window.ShowActivated = $false
@@ -42,8 +46,30 @@ if ($SnapshotPath) {
 # Exercise the real language switch and tab selection on the detached visual tree.
 $header = $window.Content.Children[0]
 $header.Children[1].SelectedIndex = $(if ($Language -eq 'en') { 1 } else { 0 })
+if ($DiagnosisState -ne 'None') {
+    # Inject display-only fixture state, never a launcher or a real collector.
+    $display = [TunnelEye.App.CollectionDisplay]::new()
+    if ($DiagnosisState -ne 'Waiting') {
+        $elevated = $DiagnosisState -ne 'Limited'
+        if (!$elevated) { $display.Accept([TunnelEye.App.CollectionProgress]::new(0,13,$null,'notElevated')) }
+        $display.Accept([TunnelEye.App.CollectionProgress]::new(0,13,$null,'start',$elevated))
+        $display.Accept([TunnelEye.App.CollectionProgress]::new(3,13,'dns-proxy','running',$elevated))
+    }
+    if ($DiagnosisState -eq 'Error') { $display.Fail() }
+    $flags = [Reflection.BindingFlags]'Instance,NonPublic,DeclaredOnly'
+    $type = $window.GetType()
+    $type.GetField('collection',$flags).SetValue($window,$display)
+    $type.GetField('busy',$flags).SetValue($window,$true)
+    $type.GetField('animationsEnabled',$flags).SetValue($window,(!$DisableAnimations))
+    [void]$type.GetMethod('Render',$flags).Invoke($window,@())
+    $watch = [Diagnostics.Stopwatch]::StartNew()
+    while ($watch.ElapsedMilliseconds -lt 1600) {
+        [Windows.Threading.Dispatcher]::CurrentDispatcher.Invoke([Windows.Threading.DispatcherPriority]::ApplicationIdle, [Action]{})
+        Start-Sleep -Milliseconds 20
+    }
+}
 $body = $window.Content.Children[$window.Content.Children.Count - 1]
-if ($SnapshotPath) { $body.Children[0].SelectedIndex = $Tab }
+if ($SnapshotPath -and $DiagnosisState -eq 'None') { $body.Children[0].SelectedIndex = $Tab }
 $visual = $window.Content
 if ($ExpandEvidence) {
     function Expand-EvidenceNode($node) {
@@ -76,4 +102,8 @@ $bitmap.Render($drawing)
 $encoder = New-Object Windows.Media.Imaging.PngBitmapEncoder
 $encoder.Frames.Add([Windows.Media.Imaging.BitmapFrame]::Create($bitmap))
 $stream = [IO.File]::Create([IO.Path]::GetFullPath($OutputPath))
-try { $encoder.Save($stream) } finally { $stream.Dispose(); $window.Close(); $app.Shutdown() }
+try { $encoder.Save($stream) } finally {
+    $stream.Dispose()
+    if ($DiagnosisState -ne 'None') { $window.GetType().GetField('busy',[Reflection.BindingFlags]'Instance,NonPublic').SetValue($window,$false) }
+    $window.Close(); $app.Shutdown()
+}

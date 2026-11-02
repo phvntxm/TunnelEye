@@ -116,4 +116,19 @@
 <data name="Data_Unhealthy"><value>Проблема</value></data>
 <data name="Data_Unknown"><value>Неизвестно</value></data>
 <data name="ThirdPartyVpn"><value>Сторонние VPN-программы и компоненты</value></data>
+<data name="EnableAnimations" xml:space="preserve"><value>Анимации Аргуса</value></data>
+<data name="ArgusAnimation" xml:space="preserve"><value>Декоративные глаза Аргуса</value></data>
+<data name="AwaitingCollector" xml:space="preserve"><value>Ожидаем запуск сборщика</value></data>
+<data name="AwaitingModule" xml:space="preserve"><value>Ожидаем данные текущего модуля</value></data>
+<data name="CheckingModule" xml:space="preserve"><value>Проверяем: {0}</value></data>
+<data name="CompletedModules" xml:space="preserve"><value>Завершено {0} из {1} модулей</value></data>
+<data name="UnknownProgress" xml:space="preserve"><value>Прогресс пока неизвестен</value></data>
+<data name="CollectionAdmin" xml:space="preserve"><value>Сбор с правами администратора</value></data>
+<data name="CollectionLimited" xml:space="preserve"><value>Сбор без администратора — часть данных недоступна</value></data>
+<data name="CollectionUnknownRights" xml:space="preserve"><value>Режим прав пока неизвестен</value></data>
+<data name="CollectionStopped" xml:space="preserve"><value>Сбор остановлен · {0}</value></data>
+<data name="CollectionFailureNote" xml:space="preserve"><value>Не удалось завершить диагностику. Можно повторить запуск или открыть сохранённый снимок.</value></data>
+<data name="ModuleFailedContinuing" xml:space="preserve"><value>Модуль завершился с ошибкой. Сбор остальных модулей продолжается.</value></data>
+<data name="AwaitingCollectorNote" xml:space="preserve"><value>До первого события сборщика показываем ожидание запуска/UAC, без выдуманного процента.</value></data>
+<data name="AnimationProgressNote" xml:space="preserve"><value>Прогресс — по событиям сборщика. Движение глаз декоративное. Системное ограничение анимаций имеет приоритет.</value></data>
 </root>

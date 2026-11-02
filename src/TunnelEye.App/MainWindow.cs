@@ -15,6 +15,7 @@ using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Argus.Core.Engine;
 using Argus.Core.Facts;
 using Argus.Core.Json;
@@ -33,27 +34,38 @@ namespace TunnelEye.App
         private AnalysisResult analysis;
         private Report report;
         private bool busy;
+        private bool collecting, animationsEnabled = true;
+        private int generation;
+        private CollectionDisplay collection;
+        private DiagnosisView diagnosis;
+        private ImageSource completionImage;
+        private long completionCaptured;
+        private readonly Func<bool, IProgress<CollectionProgress>, Task<CollectionRunResult>> runCollection;
         private string statusKey = "Ready";
         private CheckBox consent, mask;
         private TextBlock status;
         private ProgressBar progress;
         private readonly List<Control> actions = new List<Control>();
-        private readonly Brush ink = new SolidColorBrush(Color.FromRgb(24, 42, 65));
-        private readonly Brush muted = new SolidColorBrush(Color.FromRgb(93, 111, 132));
-        private readonly Brush teal = new SolidColorBrush(Color.FromRgb(20, 134, 128));
-        private readonly Brush line = new SolidColorBrush(Color.FromRgb(222, 230, 240));
+        private readonly Brush ink = AppTheme.Text;
+        private readonly Brush muted = AppTheme.Muted;
+        private readonly Brush teal = AppTheme.Accent;
+        private readonly Brush line = AppTheme.Line;
         private string S(string key) => AppStrings.Get(key, language);
         private string R(string key) => ReportText.Get(key, language);
 
         public MainWindow() : this(null) { }
 
-        public MainWindow(string startupPath)
+        public MainWindow(string startupPath) : this(startupPath, null) { }
+        public MainWindow(string startupPath, Func<bool, IProgress<CollectionProgress>, Task<CollectionRunResult>> collectionRunner)
         {
+            runCollection = collectionRunner ?? ((allow, events) => new CollectionRunner().RunAsync(allow, events));
+            AppTheme.Apply(this);
             Title = S("Title"); Width = 1200; Height = 850; MinWidth = 900; MinHeight = 650;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
             FontFamily = new FontFamily("Segoe UI"); FontSize = 14; Foreground = ink;
-            Background = new SolidColorBrush(Color.FromRgb(243, 246, 250));
+            Background = AppTheme.Background; Icon = AppTheme.Icon(48);
             Closing += OnClosing;
+            Closed += (s, e) => { generation++; diagnosis?.Dispose(); };
             Render();
             if (startupPath != null) Loaded += async (s, e) => await OpenSnapshotFromUiAsync(startupPath);
         }
@@ -72,13 +84,13 @@ namespace TunnelEye.App
         }
         private Border Card(UIElement child, Brush stripe = null)
         {
-            return new Border { Background = Brushes.White, BorderBrush = stripe ?? line, BorderThickness = stripe == null ? new Thickness(1) : new Thickness(5, 1, 1, 1),
+            return new Border { Background = AppTheme.Surface, BorderBrush = stripe ?? line, BorderThickness = stripe == null ? new Thickness(1) : new Thickness(3, 1, 1, 1),
                 CornerRadius = new CornerRadius(10), Padding = new Thickness(22), Margin = new Thickness(0, 0, 0, 14), Child = child };
         }
         private Button Action(string key, RoutedEventHandler handler, bool primary = false, bool requiresReport = false)
         {
             var button = new Button { Content = S(key), Padding = new Thickness(16, 9, 16, 9), Margin = new Thickness(0, 0, 8, 0),
-                Background = primary ? teal : Brushes.White, Foreground = primary ? Brushes.White : ink, BorderBrush = primary ? teal : line,
+                Background = primary ? teal : AppTheme.Raised, Foreground = primary ? AppTheme.Background : ink, BorderBrush = primary ? teal : line,
                 BorderThickness = new Thickness(1), Cursor = System.Windows.Input.Cursors.Hand, IsEnabled = !busy && (!requiresReport || report != null) };
             button.Opacity = button.IsEnabled ? 1 : 0.45;
             AutomationProperties.SetAutomationId(button, key);
@@ -88,16 +100,19 @@ namespace TunnelEye.App
 
         private void Render()
         {
-            actions.Clear();
+            diagnosis?.Dispose(); diagnosis = null; actions.Clear();
             var root = new DockPanel { LastChildFill = true, Background = Background };
             System.Windows.Documents.TextElement.SetFontFamily(root, FontFamily);
             System.Windows.Documents.TextElement.SetFontSize(root, FontSize);
             System.Windows.Documents.TextElement.SetForeground(root, Foreground);
-            var heading = new Grid { Background = ink, Margin = new Thickness(0, 0, 0, 0) };
+            var heading = new Grid { Background = AppTheme.Background, Margin = new Thickness(0, 0, 0, 0) };
             heading.ColumnDefinitions.Add(new ColumnDefinition()); heading.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            var brand = new StackPanel { Margin = new Thickness(28, 18, 20, 18) };
-            brand.Children.Add(new TextBlock { Text = S("Title"), FontSize = 25, FontWeight = FontWeights.SemiBold, Foreground = Brushes.White });
-            brand.Children.Add(new TextBlock { Text = S("Tagline"), Foreground = new SolidColorBrush(Color.FromRgb(181, 204, 220)), Margin = new Thickness(0, 4, 0, 0) });
+            var brand = new StackPanel { Margin = new Thickness(28, 18, 20, 18), Orientation = Orientation.Horizontal };
+            brand.Children.Add(new Image { Source = AppTheme.Icon(48), Width = 48, Height = 48, Margin = new Thickness(0, 0, 14, 0) });
+            var brandText = new StackPanel();
+            brandText.Children.Add(new TextBlock { Text = S("Title"), FontSize = 25, FontWeight = FontWeights.SemiBold, Foreground = ink });
+            brandText.Children.Add(new TextBlock { Text = S("Tagline"), Foreground = muted, Margin = new Thickness(0, 4, 0, 0) });
+            brand.Children.Add(brandText);
             heading.Children.Add(brand);
             var langs = new ComboBox { Width = 130, Margin = new Thickness(16, 20, 28, 20), VerticalAlignment = VerticalAlignment.Center,
                 ItemsSource = new[] { AppStrings.Get("Russian", "ru"), AppStrings.Get("English", "en") }, SelectedIndex = language == "ru" ? 0 : 1, IsEnabled = !busy };
@@ -107,7 +122,7 @@ namespace TunnelEye.App
                 if (snapshot != null) report = Report.Build(snapshot, analysis, language); Render(); };
             Grid.SetColumn(langs, 1); heading.Children.Add(langs); actions.Add(langs);
             DockPanel.SetDock(heading, Dock.Top); root.Children.Add(heading);
-            var toolbar = new StackPanel { Margin = new Thickness(28, 20, 28, 8) };
+            var toolbar = new StackPanel { Margin = new Thickness(28, 8, 28, 8) };
             var buttons = new WrapPanel();
             buttons.Children.Add(Action("Diagnose", async (s, e) => await CollectAsync(), true));
             buttons.Children.Add(Action("OpenSnapshot", async (s, e) => { var d = new OpenFileDialog { Filter = S("SnapshotFilter"), Title = S("OpenSnapshot") }; if (d.ShowDialog(this) == true) await OpenSnapshotFromUiAsync(d.FileName); }));
@@ -116,15 +131,34 @@ namespace TunnelEye.App
             toolbar.Children.Add(buttons);
             var options = new WrapPanel { Margin = new Thickness(0, 14, 0, 0) };
             consent = new CheckBox { Content = S("ExternalConsent"), IsChecked = false, IsEnabled = !busy, Margin = new Thickness(0, 0, 28, 8) };
-            mask = new CheckBox { Content = S("MaskExports"), IsChecked = true, IsEnabled = !busy, Margin = new Thickness(0, 0, 0, 8) };
+            mask = new CheckBox { Content = S("MaskExports"), IsChecked = true, IsEnabled = !busy, Margin = new Thickness(0, 0, 24, 8) };
             options.Children.Add(consent); options.Children.Add(mask); actions.Add(consent); actions.Add(mask); toolbar.Children.Add(options);
+            var animation = new CheckBox { Content = S("EnableAnimations"), IsChecked = animationsEnabled, Margin = new Thickness(0, 0, 0, 8) };
+            AutomationProperties.SetAutomationId(animation, "EnableAnimations");
+            animation.Click += (s, e) => { animationsEnabled = animation.IsChecked == true; if (diagnosis != null) diagnosis.Eyes.AnimationsEnabled = animationsEnabled; };
+            options.Children.Add(animation);
             DockPanel.SetDock(toolbar, Dock.Top); root.Children.Add(toolbar);
             var footer = new StackPanel { Margin = new Thickness(28, 6, 28, 16) };
             status = Text(S(statusKey), 12); status.Foreground = muted;
-            progress = new ProgressBar { Height = 4, Minimum = 0, Maximum = 13, Visibility = busy ? Visibility.Visible : Visibility.Collapsed, IsIndeterminate = busy };
+            progress = new ProgressBar { Height = 4, Minimum = 0, Maximum = collection?.Total ?? 13, Value = collection?.Done ?? 0,
+                Visibility = busy ? Visibility.Visible : Visibility.Collapsed, IsIndeterminate = busy && collection == null, Foreground = teal, Background = AppTheme.Raised };
             footer.Children.Add(status); footer.Children.Add(progress); DockPanel.SetDock(footer, Dock.Bottom); root.Children.Add(footer);
             var body = new Grid { Margin = new Thickness(28, 6, 28, 0) };
-            if (report == null)
+            if (collection != null)
+            {
+                diagnosis = new DiagnosisView(collection, language, animationsEnabled);
+                var layout = new Grid();
+                layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(155) });
+                layout.ColumnDefinitions.Add(new ColumnDefinition());
+                var navigation = new StackPanel { Margin = new Thickness(0, 0, 14, 0) };
+                navigation.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(59, 48, 38)), CornerRadius = new CornerRadius(6),
+                    Padding = new Thickness(14, 10, 14, 4), Margin = new Thickness(0, 0, 0, 12), Child = new TextBlock { Text = S("Diagnose"), Foreground = teal } });
+                foreach (var section in new[] { "Overview", "Network", "Charts", "Services", "Hardware", "Appendix" })
+                    navigation.Children.Add(new TextBlock { Text = S(section), Foreground = muted, Margin = new Thickness(14, 10, 0, 10) });
+                layout.Children.Add(navigation); Grid.SetColumn(diagnosis, 1); layout.Children.Add(diagnosis);
+                body.Children.Add(layout); UpdateCollectionStatus();
+            }
+            else if (report == null)
             {
                 var empty = new StackPanel { MaxWidth = 720, Margin = new Thickness(32), VerticalAlignment = VerticalAlignment.Center };
                 empty.Children.Add(Text(S("WelcomeTitle"), 32, true)); empty.Children.Add(Text(S("WelcomeBody"), 17));
@@ -132,7 +166,7 @@ namespace TunnelEye.App
             }
             else
             {
-                var tabs = new TabControl { Background = Brushes.Transparent, BorderThickness = new Thickness(0), Padding = new Thickness(0) };
+                var tabs = new TabControl { Background = Brushes.Transparent, BorderThickness = new Thickness(0), Padding = new Thickness(0), TabStripPlacement = Dock.Left };
                 AddTab(tabs, "Overview", Scroll(Overview()));
                 AddTab(tabs, "Network", Scroll(Network()));
                 AddTab(tabs, "Charts", ChartViews.Create(report, language));
@@ -140,9 +174,24 @@ namespace TunnelEye.App
                 AddTab(tabs, "Hardware", Scroll(Hardware()));
                 AddTab(tabs, "Appendix", Scroll(Appendix())); body.Children.Add(tabs);
             }
+            var fadeRemaining = 350 - (Stopwatch.GetTimestamp() - completionCaptured) * 1000.0 / Stopwatch.Frequency;
+            if (completionImage != null && fadeRemaining > 0 && report != null && animationsEnabled && SystemParameters.ClientAreaAnimation)
+            {
+                var fade = new Image { Source = completionImage, Stretch = Stretch.Uniform, MaxHeight = 280, VerticalAlignment = VerticalAlignment.Top, IsHitTestVisible = false };
+                body.Children.Add(fade);
+                var transition = new DoubleAnimation(fadeRemaining / 350, 0, TimeSpan.FromMilliseconds(fadeRemaining));
+                transition.Completed += (s, e) => { body.Children.Remove(fade); fade.BeginAnimation(OpacityProperty, null); };
+                fade.BeginAnimation(OpacityProperty, transition);
+            }
+            completionImage = null;
             root.Children.Add(body); Content = root;
         }
-        private void AddTab(TabControl tabs, string key, UIElement child) => tabs.Items.Add(new TabItem { Header = S(key), Content = child, Padding = new Thickness(14, 9, 14, 9) });
+        private void AddTab(TabControl tabs, string key, UIElement child)
+        {
+            // Tab header selection is an accent, never the report's inherited text color.
+            System.Windows.Documents.TextElement.SetForeground(child, ink);
+            tabs.Items.Add(new TabItem { Header = S(key), Content = child, Padding = new Thickness(14, 9, 14, 9) });
+        }
         private object Data(string module) => JsonValue.Get(report.Root["sections"], module);
         private IEnumerable<object> Checks => JsonValue.GetList(report.Root, "checks");
         private string Value(object row, string path)
@@ -178,7 +227,7 @@ namespace TunnelEye.App
         {
             var panel = new StackPanel(); var summary = JsonValue.AsObject(report.Root["summary"]);
             var score = (string)summary["score"];
-            var color = score == "red" ? Brushes.Crimson : score == "yellow" ? Brushes.DarkGoldenrod : score == "green" ? teal : Brushes.SlateGray;
+            var color = score == "red" ? AppTheme.Critical : score == "yellow" ? AppTheme.Important : score == "green" ? AppTheme.Healthy : muted;
             var lead = new StackPanel(); lead.Children.Add(Text(R("Score_" + score), 27, true));
             var mode = Text(ReportText.CollectionMode(report, language), 14, true);
             AutomationProperties.SetAutomationId(mode, "CollectionMode");
@@ -207,7 +256,7 @@ namespace TunnelEye.App
                 var evidence = new Expander { Header = S("Evidence") + " · " + Value(check, "evidenceCount"), Content = details };
                 AutomationProperties.SetAutomationId(evidence, "FindingEvidence");
                 card.Children.Add(evidence);
-                panel.Children.Add(Card(card, level == "critical" ? Brushes.Crimson : level == "important" ? Brushes.DarkGoldenrod : line));
+                panel.Children.Add(Card(card, level == "critical" ? AppTheme.Critical : level == "important" ? AppTheme.Important : line));
             }
             var coverage = new StackPanel();
             foreach (var check in Checks.Where(c => !Equals(JsonValue.Get(c, "status"), "found")))
@@ -280,6 +329,7 @@ namespace TunnelEye.App
         public async Task OpenSnapshotAsync(string path)
         {
             if (busy) return;
+            collection = null; generation++;
             SetBusy(true, "Analyzing");
             try { await LoadAsync(path); statusKey = "Loaded"; }
             catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is SnapshotFormatException || e is InvalidOperationException)
@@ -303,27 +353,45 @@ namespace TunnelEye.App
             sourcePath = Path.GetFullPath(path);
             snapshot = result.Item1; analysis = result.Item2; report = result.Item3;
         }
-        private async Task CollectAsync()
+        private Task CollectAsync() => DiagnoseAsync(consent.IsChecked == true);
+        private void CaptureCompletion()
+        {
+            if (completionImage != null || diagnosis == null) return;
+            completionImage = diagnosis.Eyes.Capture(); completionCaptured = Stopwatch.GetTimestamp();
+            diagnosis.Eyes.Finish();
+        }
+        private void UpdateCollectionStatus()
+        {
+            if (collection == null) return;
+            diagnosis?.Update();
+            status.Text = collection.Current(language) + " · " + collection.Count(language);
+            if (collection.Elevated == false) status.Text += " · " + S("CollectionLimited");
+            progress.IsIndeterminate = false; progress.Maximum = Math.Max(1, collection.Total ?? 1); progress.Value = collection.Done;
+            progress.Foreground = collection.Failed ? AppTheme.Critical : teal;
+        }
+        public async Task DiagnoseAsync(bool allowExternal = false)
         {
             if (busy) return;
-            bool external = consent.IsChecked == true;
+            var currentGeneration = ++generation;
+            completionImage = null;
+            collection = new CollectionDisplay(); collecting = true;
+            report = null; snapshot = null; analysis = null; sourcePath = null;
             SetBusy(true, "Collecting");
             try
             {
                 var events = new Progress<CollectionProgress>(p => {
-                    if (!busy) return;
-                    if (p.Status == "notElevated") { status.Text = S("NotElevatedFallback"); return; }
-                    if (p.Status == "slow") { status.Text = S("SlowCollection"); return; }
-                    progress.IsIndeterminate = p.Total <= 0; progress.Maximum = Math.Max(1, p.Total); progress.Value = p.Done;
-                    status.Text = string.Format(CultureInfo.CurrentCulture, S("CollectionProgress"), p.Done, p.Total, string.IsNullOrEmpty(p.Module) ? "" : R("Module_" + p.Module));
+                    if (!collecting || generation != currentGeneration) return;
+                    if (p.Status == "end") CaptureCompletion();
+                    collection.Accept(p); UpdateCollectionStatus();
                 });
-                var result = await new CollectionRunner().RunAsync(external, events);
-                status.Text = S("Analyzing"); progress.IsIndeterminate = true;
-                await LoadAsync(result.SnapshotPath); statusKey = "Loaded";
+                var result = await runCollection(allowExternal, events);
+                CaptureCompletion();
+                collecting = false; collection.Analyze(); UpdateCollectionStatus();
+                await LoadAsync(result.SnapshotPath); collection = null; statusKey = "Loaded";
             }
             catch (Exception e) when (e is CollectionRunException || e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is SnapshotFormatException || e is InvalidOperationException)
-            { statusKey = "CollectionFailed"; ShowError("CollectionFailed"); }
-            finally { busy = false; Render(); }
+            { statusKey = "CollectionFailed"; collection.Fail(); UpdateCollectionStatus(); }
+            finally { collecting = false; busy = false; Render(); }
         }
         private void Export(bool html)
         {

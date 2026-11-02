@@ -85,8 +85,8 @@ namespace TunnelEye.App
             content.Children.Add(details);
             var card = new Border
             {
-                Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(222, 230, 240)),
+                Background = AppTheme.Surface,
+                BorderBrush = AppTheme.Line,
                 BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(22),
@@ -102,7 +102,7 @@ namespace TunnelEye.App
         {
             return new TextBlock
             {
-                Text = value ?? string.Empty,
+                Text = value ?? string.Empty, Foreground = AppTheme.Text,
                 TextWrapping = TextWrapping.Wrap,
                 FontSize = size,
                 FontWeight = bold ? FontWeights.SemiBold : FontWeights.Normal,
@@ -115,12 +115,12 @@ namespace TunnelEye.App
             var cell = new Border
             {
                 Padding = new Thickness(8, 7, 10, 7),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(229, 235, 242)),
+                BorderBrush = AppTheme.Line,
                 BorderThickness = new Thickness(0, 0, 0, 1),
-                Background = header ? new SolidColorBrush(Color.FromRgb(247, 249, 252)) : Brushes.Transparent,
+                Background = header ? AppTheme.Raised : Brushes.Transparent,
                 Child = new TextBlock
                 {
-                    Text = value,
+                    Text = value, Foreground = AppTheme.Text,
                     TextWrapping = TextWrapping.Wrap,
                     FontWeight = header ? FontWeights.SemiBold : FontWeights.Normal,
                 },

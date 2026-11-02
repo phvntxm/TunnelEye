@@ -17,8 +17,9 @@ namespace TunnelEye.App
 {
     public sealed class CollectionProgress
     {
-        public CollectionProgress(int done, int total, string module, string status)
-        { Done = done; Total = total; Module = module; Status = status; }
+        public CollectionProgress(int done, int total, string module, string status, bool? elevated = null)
+        { Done = done; Total = total; Module = module; Status = status; Elevated = elevated; }
+        public bool? Elevated { get; }
         public int Done { get; }
         public int Total { get; }
         public string Module { get; }
@@ -240,7 +241,7 @@ namespace TunnelEye.App
                     {
                         var modules = JsonValue.GetList(tree, "modules");
                         if (modules.Count > 0 && modules.Count <= 1000) Total = modules.Count;
-                        progress?.Report(new CollectionProgress(0, Total, null, "start"));
+                        progress?.Report(new CollectionProgress(0, Total, null, "start", JsonValue.AsBool(JsonValue.Get(tree, "elevated"))));
                     }
                     else if (kind == "moduleStart" || kind == "moduleEnd")
                     {
