@@ -141,13 +141,15 @@
 | Поле | Тип | Смысл |
 | --- | --- | --- |
 | `source` | string | `user` \| `machine` \| `winhttp` |
-| `effective` | bool | Настройка действует. `user`: `ProxyEnable`. `machine`: `ProxyEnable` **и** политика `ProxySettingsPerUser = 0` (иначе HKLM не используется). `winhttp`: не «прямой доступ» |
+| `effective` | bool \| null | Ручная настройка действует в указанной области, а не во всех приложениях. Для user нужны согласованные ProxyEnable/connectionSettings без PAC/WPAD и без замещающей политики HKLM; неоднозначность режима/ошибки дают null. Machine: ProxyEnable и политика ProxySettingsPerUser = 0. WinHTTP: не «прямой доступ» |
 | `scheme`, `host`, `port` | | Разбор `ProxyServer`; порт вне 1–65535 — `null` |
 | `isLoopback` | bool | `127.x`, `::1`, `localhost` |
 | `tcpStatus` | string \| null | TCP-проверка из `connectivity.proxies` (`open` \| `refused` \| `timeout` \| `error`); `null` — не проверялся |
 | `listening` | bool \| null | Для loopback — есть ли в `connections.tcpListeners` слушатель на этом порту, **который обслуживает хост**: для IPv4-хоста — тот же адрес или `0.0.0.0`; для `::1` — `::1` или `::`; для `localhost` — любой из них. Сокет на `::` в Windows по умолчанию только IPv6 (`IPV6_V6ONLY`) и `127.0.0.1` не обслуживает. `null` — неизвестно |
 
 При `host.elevatedAsOtherUser = true` записи `user` не строятся — ограничение `elevated-as-other-user:user-proxy-not-checked` (D-015). Действующий прокси без TCP-проверки и без данных о слушателе — ограничение `proxy-not-tested:<source>:<причина>`.
+
+С D-017 `listening=false` допустим только при полной таблице без относящихся к ней ошибок, с источником `connections.tcpListeners`; при неполноте null. Положительный слушатель добавляет `process`/`processId` и ссылку на строку; это не автор настройки. TCP open не превращается в dead-proxy из-за отсутствия слушателя в более поздней таблице. Нет результата TCP и нет подходящего слушателя — отдельное основание, не выдуманный отказ подключения. Добавочные поля adapters: `identifiedClientId`/`identifiedClientName` только для единственного негeneric-сопоставления с явным generic=false; прежний clientId сохранён для совместимости.
 
 ### `leftovers`
 
@@ -262,7 +264,7 @@
 
 | Правило | Уровень | Факт | Экспериментальное |
 | --- | --- | --- | --- |
-| `vpn-conflict` | Критично | `tunnels`: ≥ 2 разных активных клиентов с маршрутом по умолчанию | |
+| `vpn-conflict` | Важно | `tunnel-route-overlaps`: пересечение широких маршрутов одной семьи через активные интерфейсы двух доказанно разных клиентов | Возможная причина, D-017 |
 | `dead-proxy` | Критично | `proxies` | |
 | `two-gateways` | Важно | `routeSummary` | |
 | `ipv6-bypass` | Важно | `tunnelCoverage`: полный туннель IPv4 и подтверждённый внешний IPv6 мимо него | |
@@ -301,7 +303,7 @@
 
 ### Уточнения ревью 008
 
-- `tunnels`: добавлены `clientKey` (`clientId` либо `adapter:<interfaceIndex>`) и `otherClientsCapturingDefault` — число других различных клиентов с поднятым адаптером и маршрутом по умолчанию. `vpn-conflict` требует `status = Up` и хотя бы одного такого клиента.
+- Историческое уточнение `tunnels`: добавлены `clientKey` (`clientId` либо `adapter:<interfaceIndex>`) и `otherClientsCapturingDefault`. С D-017 эти совместимые поля сохранены, но `vpn-conflict` использует `tunnel-route-overlaps`, описанный в [схеме отчёта](report.md#факт-tunnel-route-overlaps). Неизвестный/generic-участник не доказывает второго клиента; семейства и половины /1 рассматриваются отдельно.
 - `hosts-sensitive` исключает `addressClass = loopback | unspecified`; эти записи проверяет `hosts-sensitive-blocked` («Совет»). Оба правила и `hosts-pinned` используют одинаковый список чувствительных имён.
 - `leftovers.kind = ndisFilterWithoutService`: сторонний зарегистрированный фильтр NDIS без службы в `services.services` и `services.drivers`. Поля `clientName` — componentId, `detail` — имя службы, `filterRunType` — тип запуска. Встроенные `ms_*` исключены. При недоступных списках — ограничение; обязательность сама по себе не признак остатка. Правило `ndis-filter-leftover` экспериментальное («Совет»).
 - `elevated-as-other-user` («Инфо») проверяет `snapshotInfo.elevatedAsOtherUser`.

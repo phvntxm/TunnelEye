@@ -1,0 +1,12 @@
+{
+  "schema": "tunneleye.test-overlay/1",
+  "base": "full-tunnel",
+  "patch": {
+    "modules": {
+      "vpn": { "data": { "clients": [
+        { "id": "example-vpn-a", "name": "Example VPN A", "kind": "vpn", "generic": false,
+          "adapters": [ { "interfaceIndex": 9 } ] }
+      ] } }
+    }
+  }
+}

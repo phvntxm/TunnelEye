@@ -100,6 +100,8 @@ namespace Argus.Core.Tests
             var user = JsonValue.AsObject(JsonValue.Get(JsonValue.Get(JsonValue.Get(modules["dns-proxy"], "data"), "proxy"), "user"));
             user["proxyEnable"] = true;
             user["proxyServer"] = proxyServer;
+            user["connectionSettings"] = new Dictionary<string, object> { ["proxyEnabled"] = true,
+                ["autoConfigEnabled"] = false, ["autoDetect"] = false, ["proxyServer"] = proxyServer };
             JsonValue.AsObject(JsonValue.Get(modules["connectivity"], "data"))["proxies"] = JsonValue.Parse("[" + connectivityProxyJson + "]");
             JsonValue.AsObject(JsonValue.Get(modules["connections"], "data"))["tcpListeners"] = JsonValue.Parse(listenersJson);
             return Snapshot.Parse(JsonValue.Serialize(tree));

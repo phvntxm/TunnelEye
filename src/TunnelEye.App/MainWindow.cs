@@ -238,6 +238,12 @@ namespace TunnelEye.App
             lead.Children.Add(Text(S("ScoreScope"))); lead.Children.Add(Text(S("SnapshotDate") + " " + snapshot.CreatedAtUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture), 12));
             var counts = new WrapPanel(); foreach (var p in JsonValue.AsObject(summary["counts"])) counts.Children.Add(new TextBlock { Text = R("Level_" + p.Key) + ": " + p.Value, Margin = new Thickness(0, 8, 24, 0), FontWeight = FontWeights.SemiBold });
             lead.Children.Add(counts); panel.Children.Add(Card(lead, color));
+            var explanations = JsonValue.GetList(report.Root, "explanations");
+            if (explanations.Count > 0)
+            {
+                panel.Children.Add(Text(R("ExConfiguration"), 21, true));
+                foreach (var explanation in explanations) panel.Children.Add(Explanation(explanation));
+            }
             var top = new StackPanel();
             foreach (var id in JsonValue.GetList(summary, "recommendations"))
             { var check = Checks.Single(c => Equals(JsonValue.Get(c, "id"), id)); top.Children.Add(Text(Value(check, "title"), 16, true)); top.Children.Add(Text(Value(check, "fix"))); }
@@ -270,6 +276,35 @@ namespace TunnelEye.App
             }
             Section(panel, R("Coverage"), coverage); return panel;
         }
+        private UIElement Explanation(object explanation)
+        {
+            var panel = new StackPanel();
+            AutomationProperties.SetAutomationId(panel, "ReportExplanation");
+            panel.Children.Add(Text(R("ExAssessment_" + JsonValue.Get(explanation, "assessment")), 13, true));
+            panel.Children.Add(Text(Value(explanation, "title"), 20, true));
+            foreach (var field in new[] { "ExMechanism|mechanism", "ExSymptom|possibleSymptom", "ExAction|action", "ExLimit|primaryLimitation" })
+            {
+                var parts = field.Split('|');
+                panel.Children.Add(Text(R(parts[0]) + ": " + Value(explanation, parts[1])));
+            }
+            var details = new StackPanel();
+            var grid = new DataGrid { AutoGenerateColumns = false, IsReadOnly = true, CanUserAddRows = false,
+                CanUserDeleteRows = false, MaxHeight = 360, HeadersVisibility = DataGridHeadersVisibility.Column,
+                ItemsSource = ExplanationPresentation.Rows(explanation, language).ToArray() };
+            var style = new Style(typeof(TextBlock));
+            style.Setters.Add(new Setter(TextBlock.TextWrappingProperty, TextWrapping.Wrap));
+            var headers = ExplanationPresentation.Headers(language);
+            for (var i = 0; i < headers.Length; i++) grid.Columns.Add(new DataGridTextColumn {
+                Header = headers[i], Binding = new Binding("[" + i + "]"), ElementStyle = style,
+                Width = new DataGridLength(i == 1 ? 2 : 1, DataGridLengthUnitType.Star), MinWidth = 90 });
+            details.Children.Add(grid);
+            foreach (var path in ExplanationPresentation.Paths(explanation, language)) details.Children.Add(Text(path, 12));
+            foreach (var limitation in JsonValue.GetList(explanation, "limitations")) details.Children.Add(Text(Convert.ToString(limitation), 12));
+            details.Children.Add(Technical(explanation, R("EvidenceJson")));
+            panel.Children.Add(new Expander { Header = R("ExClaims"), Content = details });
+            return Card(panel, Equals(JsonValue.Get(explanation, "assessment"), "possibleCause") ? AppTheme.Important : line);
+        }
+
         private UIElement Network()
         {
             var p = new StackPanel();

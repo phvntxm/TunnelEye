@@ -65,6 +65,7 @@ namespace Argus.Core.Reports
                     ["incompleteCritical"] = missingCritical.Select(r => r.Rule.Id).ToArray(),
                     ["recommendations"] = found.OrderBy(r => r.Rule.Experimental).ThenBy(r => r.Rule.Level).Take(3).Select(r => r.Rule.Id).ToArray() },
                 ["checks"] = checks, ["sections"] = sections, ["charts"] = ReportCharts.Build(snapshot),
+                ["explanations"] = ReportExplanations.Build(snapshot, analysis, language),
                 ["modules"] = snapshot.Modules.Select(m => (object)new Dictionary<string, object> { ["name"] = m.Name, ["status"] = m.Status,
                     ["errors"] = m.Status == "skipped" ? new object[0] : m.Errors.Select(e => (object)new Dictionary<string, object> { ["source"] = e.Source, ["kind"] = e.Kind, ["message"] = e.Message }).ToArray() }).ToArray(),
                 ["ruleErrors"] = analysis.RuleErrors.ToArray(), ["evaluationErrors"] = analysis.EvaluationErrors.ToArray(),

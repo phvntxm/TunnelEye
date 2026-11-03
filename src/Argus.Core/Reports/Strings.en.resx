@@ -4,7 +4,7 @@
 <data name="Version" xml:space="preserve"><value>Version</value></data>
 <data name="Masked" xml:space="preserve"><value>Export with personal data masked</value></data>
 <data name="Score_red" xml:space="preserve"><value>Critical problems found</value></data>
-<data name="Score_yellow" xml:space="preserve"><value>Important problems found</value></data>
+<data name="Score_yellow" xml:space="preserve"><value>Findings need attention</value></data>
 <data name="Score_green" xml:space="preserve"><value>Critical checks completed</value></data>
 <data name="Score_gray" xml:space="preserve"><value>Not everything was checked</value></data>
 <data name="Scope" xml:space="preserve"><value>The score covers the checks performed. Check limitations are listed below. Traffic analysis and upgrade recommendations are planned for later stages.</value></data>
@@ -104,4 +104,88 @@
   <data name="EvidenceField_elevated" xml:space="preserve"><value>Administrator rights</value></data>
   <data name="EvidenceField_elevatedAsOtherUser" xml:space="preserve"><value>Collected as another account</value></data>
   <data name="EvidenceField_externalAllowed" xml:space="preserve"><value>External checks allowed</value></data>
+<data name="ExConfiguration" xml:space="preserve"><value>Configuration and explanations</value></data>
+<data name="ExAssessment_expectedBehavior" xml:space="preserve"><value>Expected behavior</value></data>
+<data name="ExAssessment_possibleCause" xml:space="preserve"><value>Possible cause</value></data>
+<data name="ExAssessment_confirmedConfigurationProblem" xml:space="preserve"><value>Confirmed configuration problem</value></data>
+<data name="ExAssessment_insufficientData" xml:space="preserve"><value>Insufficient data</value></data>
+<data name="ExMechanism" xml:space="preserve"><value>Mechanism</value></data>
+<data name="ExSymptom" xml:space="preserve"><value>Possible symptom</value></data>
+<data name="ExAction" xml:space="preserve"><value>Next check</value></data>
+<data name="ExLimit" xml:space="preserve"><value>Limitation</value></data>
+<data name="ExClaims" xml:space="preserve"><value>Claims and evidence</value></data>
+<data name="ExKind_observed" xml:space="preserve"><value>Observation</value></data>
+<data name="ExKind_derived" xml:space="preserve"><value>Derived conclusion</value></data>
+<data name="ExKind_hypothesis" xml:space="preserve"><value>Hypothesis</value></data>
+<data name="ExKind_recommendation" xml:space="preserve"><value>Recommendation</value></data>
+<data name="ExAvailability_known" xml:space="preserve"><value>Known</value></data>
+<data name="ExAvailability_unknown" xml:space="preserve"><value>Unknown</value></data>
+<data name="ExPath_configured" xml:space="preserve"><value>Configured</value></data>
+<data name="ExPath_locallySelected" xml:space="preserve"><value>Locally selected</value></data>
+<data name="ExPath_measured" xml:space="preserve"><value>Measured</value></data>
+<data name="ExPath_unknown" xml:space="preserve"><value>Unknown path</value></data>
+<data name="ExUnknownMechanism" xml:space="preserve"><value>There is not enough known data to explain the setting's effect.</value></data>
+<data name="ExNoSymptom" xml:space="preserve"><value>An application failure has not been established by this data.</value></data>
+<data name="ExInspect" xml:space="preserve"><value>Identify the affected application and preserve the snapshot for comparison.</value></data>
+<data name="ExIncomplete" xml:space="preserve"><value>There is insufficient data for this claim.</value></data>
+<data name="ExTime" xml:space="preserve"><value>Modules were collected sequentially. State may have changed between checks; exact times of individual tests are not established here.</value></data>
+<data name="ExContextMissing" xml:space="preserve"><value>The fact context for this analysis is unavailable; the main report is preserved.</value></data>
+<data name="ExBuildFailed" xml:space="preserve"><value>The explanation could not be built. This does not indicate normal operation; the main report is preserved.</value></data>
+<data name="ExUnavailable" xml:space="preserve"><value>Explanation unavailable</value></data>
+<data name="ExVpnTitle" xml:space="preserve"><value>VPN routes and configuration</value></data>
+<data name="ExOverlapTitle" xml:space="preserve"><value>The table contains overlapping routes through two VPNs</value></data>
+<data name="ExBroadScope" xml:space="preserve"><value>Broad routes of one address family; not every application connection</value></data>
+<data name="ExOverlapMechanism" xml:space="preserve"><value>Overlapping broad routes provide alternative paths for the same addresses. Selection for a specific target is shown separately when known.</value></data>
+<data name="ExOverlapSymptom" xml:space="preserve"><value>If a resource requires the other VPN's path, it may be unavailable. This does not prove the cause of the reported issue.</value></data>
+<data name="ExOverlapAction" xml:space="preserve"><value>Identify which VPN the resource needs. Preserve settings and compare the same request with each client separately in an approved test environment. Consult the administrator for a mandatory VPN.</value></data>
+<data name="ExCausality" xml:space="preserve"><value>The overlap is confirmed; its connection to an application failure is not established.</value></data>
+<data name="ExOverlapClaim" xml:space="preserve"><value>Broad {2} routes through clients {0} and {1} overlap: {3}.</value></data>
+<data name="ExRouteMechanism" xml:space="preserve"><value>Routes define possible paths. Local selection for a reference address does not confirm traffic transmission.</value></data>
+<data name="ExVpnAction" xml:space="preserve"><value>If there are no reported issues, these data do not call for a change. Otherwise identify the application and reproduce the issue.</value></data>
+<data name="ExNotTraffic" xml:space="preserve"><value>The actual packet path and Internet operation have not been verified.</value></data>
+<data name="ExNoOverlap" xml:space="preserve"><value>The complete data contain no overlap of the considered broad routes through two proven distinct clients.</value></data>
+<data name="ExVpnIncomplete" xml:space="preserve"><value>The VPN check is incomplete: not all routes, states or participants are established. Absence of a conflict is not confirmed.</value></data>
+<data name="ExNoAuthorship" xml:space="preserve"><value>An interface or process participating in a path does not establish who changed the setting.</value></data>
+<data name="ExRoute" xml:space="preserve"><value>Route {0} is configured through interface {1}.</value></data>
+<data name="ExRoutingScope" xml:space="preserve"><value>Current routing table</value></data>
+<data name="ExSelected" xml:space="preserve"><value>Windows selected interface {1} for reference address {0}.</value></data>
+<data name="ExLocalSelectionScope" xml:space="preserve"><value>Local route selection without sending a packet</value></data>
+<data name="ExLocalTable" xml:space="preserve"><value>Local routing table</value></data>
+<data name="ExInterface" xml:space="preserve"><value>Interface {0}</value></data>
+<data name="ExSelectionLabel" xml:space="preserve"><value>Selection for {0}</value></data>
+<data name="ExUnknownBeyond" xml:space="preserve"><value>Further path unknown</value></data>
+<data name="ExSelectionUnknown" xml:space="preserve"><value>Successful reference route selection is unknown.</value></data>
+<data name="ExDns" xml:space="preserve"><value>DNS addresses assigned to interface {0}: {1}. VPN ownership and availability are not established.</value></data>
+<data name="ExDnsScope" xml:space="preserve"><value>DNS assignment to an interface; not every application's selection</value></data>
+<data name="ExDnsUnknown" xml:space="preserve"><value>DNS assignment in this scope is not established; known routes are preserved.</value></data>
+<data name="ExProxyUnavailable" xml:space="preserve"><value>Proxy configuration data are unavailable.</value></data>
+<data name="ExProxyTitle" xml:space="preserve"><value>Proxy configuration</value></data>
+<data name="ExProxyScope_user" xml:space="preserve"><value>Collected account's manual proxy; only requests using it without a matching bypass</value></data>
+<data name="ExProxyScope_machine" xml:space="preserve"><value>Machine manual proxy under policy; only requests using it without a matching bypass</value></data>
+<data name="ExProxyScope_winhttp" xml:space="preserve"><value>WinHTTP proxy; only requests using these settings without a matching bypass</value></data>
+<data name="ExProxyEndpoint" xml:space="preserve"><value>Configured proxy endpoint: {0}</value></data>
+<data name="ExProxyMechanism" xml:space="preserve"><value>A request using this manual setting without a bypass first needs a connection to the configured proxy endpoint.</value></data>
+<data name="ExProxySymptom" xml:space="preserve"><value>A request using this setting may encounter a proxy error. A specific application failure was not observed.</value></data>
+<data name="ExProxyBoundary" xml:space="preserve"><value>The conclusion concerns the endpoint and check time, not all applications. TCP does not test the HTTP/SOCKS protocol.</value></data>
+<data name="ExProxyAction" xml:space="preserve"><value>If the proxy is required, check its serving application or consult the administrator. If no longer required, preserve the original settings before disabling it manually. Then repeat the local check and application request.</value></data>
+<data name="ExProxySetting" xml:space="preserve"><value>The settings contain proxy {0}.</value></data>
+<data name="ExProxyApplies" xml:space="preserve"><value>The manual setting applies in the stated scope, but not necessarily to every application.</value></data>
+<data name="ExProxyDisabled" xml:space="preserve"><value>This manual setting is not in effect in the stated scope.</value></data>
+<data name="ExProxyScopeUnknown" xml:space="preserve"><value>The effective proxy scope is unknown or ambiguous (mode, policy or account). The known setting is preserved.</value></data>
+<data name="ExTcp_refused" xml:space="preserve"><value>The TCP connection to the configured endpoint was refused during the test.</value></data>
+<data name="ExTcp_timeout" xml:space="preserve"><value>No TCP connection response arrived within the test period. This does not prove that no listener exists.</value></data>
+<data name="ExTcp_open" xml:space="preserve"><value>A TCP connection was accepted; proxy protocol operation and the application request were not checked.</value></data>
+<data name="ExTcp_error" xml:space="preserve"><value>The TCP test encountered an error; availability is not established.</value></data>
+<data name="ExTcp_unknown" xml:space="preserve"><value>Endpoint availability was not checked. External tests require consent for the run.</value></data>
+<data name="ExListenerPresent" xml:space="preserve"><value>The table contains a matching listener for the address, family and port.</value></data>
+<data name="ExListenerAbsent" xml:space="preserve"><value>No matching listener for the address, family and port was found in the complete table at collection time.</value></data>
+<data name="ExListenerUnknown" xml:space="preserve"><value>The presence of a matching listener is unknown; a missing row is not treated as evidence.</value></data>
+<data name="ExOwnerUnknown" xml:space="preserve"><value>The endpoint's owning application is unknown; the author of the setting is also not established.</value></data>
+<data name="ExListenerOwner" xml:space="preserve"><value>The matching listener is linked to process {0} (PID {1}); the author of the setting is unknown.</value></data>
+<data name="ExProxyApp" xml:space="preserve"><value>Application request using this proxy</value></data>
+<data name="ExTcpProbe" xml:space="preserve"><value>Endpoint TCP test</value></data>
+<data name="ExOtherUser" xml:space="preserve"><value>Collection ran under another account: the owner's proxy settings were not checked.</value></data>
+<data name="ExActiveInterface" xml:space="preserve"><value>Interface {0} ({1}) is active.</value></data>
+<data name="ExInterfaceClient" xml:space="preserve"><value>Interface {0} is linked to client {1}; the author of the route settings is not established.</value></data>
+<data name="ExInterfaceClientUnknown" xml:space="preserve"><value>The application linked to interface {0} is not unambiguously identified.</value></data>
 </root>

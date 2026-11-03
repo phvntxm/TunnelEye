@@ -3,6 +3,10 @@
   "base": "full-tunnel",
   "patch": {
     "modules": {
+      "vpn": { "data": { "clients": [
+        { "id": "example-vpn-a", "kind": "vpn", "generic": false, "adapters": [{ "interfaceIndex": 9 }] },
+        { "id": "example-vpn-b", "kind": "vpn", "generic": false, "adapters": [{ "interfaceIndex": 10 }] }
+      ] } },
       "adapters": { "data": { "adapters": [
         { "name": "Ethernet", "interfaceDescription": "Example Gigabit Ethernet", "interfaceIndex": 3, "status": "Up", "virtual": false, "hidden": false, "componentId": "PCI\\VEN_0000&DEV_0001" },
         { "name": "Wi-Fi", "interfaceDescription": "Example Wireless Adapter", "interfaceIndex": 5, "status": "Up", "virtual": false, "hidden": false, "componentId": "PCI\\VEN_0000&DEV_0002" },

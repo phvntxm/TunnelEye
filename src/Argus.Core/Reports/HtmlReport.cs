@@ -61,7 +61,9 @@ namespace Argus.Core.Reports
                 var check = checks.Single(c => Equals(JsonValue.Get(c, "id"), id));
                 b.Append("<li>").Append(H(JsonValue.Get(check, "fix"))).Append("</li>");
             }
-            b.Append("</ol></section><h2>").Append(t("Findings")).Append("</h2>");
+            b.Append("</ol></section>");
+            WriteExplanations(b, report);
+            b.Append("<h2>").Append(t("Findings")).Append("</h2>");
             foreach (var check in checks.Where(c => Equals(JsonValue.Get(c, "status"), "found")))
             {
                 b.Append("<article><p class=\"muted\">").Append(t("Level_" + JsonValue.Get(check, "level")));
@@ -131,6 +133,37 @@ namespace Argus.Core.Reports
                 b.Append("</section>");
             }
             return b.Append("</body></html>").ToString();
+        }
+
+        private static void WriteExplanations(StringBuilder b, Report report)
+        {
+            var explanations = JsonValue.GetList(report.Root, "explanations");
+            if (explanations.Count == 0) return;
+            var lang = (string)report.Root["language"];
+            b.Append("<section><h2>").Append(H(ReportText.Get("ExConfiguration", lang))).Append("</h2>");
+            foreach (var explanation in explanations)
+            {
+                b.Append("<article class=\"explanation\"><p><strong>").Append(H(ReportText.Get("ExAssessment_" + JsonValue.Get(explanation, "assessment"), lang)))
+                    .Append("</strong></p><h3>").Append(H(JsonValue.Get(explanation, "title"))).Append("</h3>");
+                foreach (var field in new[] { "ExMechanism|mechanism", "ExSymptom|possibleSymptom", "ExAction|action", "ExLimit|primaryLimitation" })
+                {
+                    var parts = field.Split('|');
+                    b.Append("<p><strong>").Append(H(ReportText.Get(parts[0], lang))).Append(": </strong>").Append(H(JsonValue.Get(explanation, parts[1]))).Append("</p>");
+                }
+                b.Append("<details><summary>").Append(H(ReportText.Get("ExClaims", lang))).Append("</summary><div class=\"evidence-scroll\"><table><thead><tr>");
+                foreach (var header in ExplanationPresentation.Headers(lang)) b.Append("<th scope=\"col\">").Append(H(header)).Append("</th>");
+                b.Append("</tr></thead><tbody>");
+                foreach (var row in ExplanationPresentation.Rows(explanation, lang))
+                {
+                    b.Append("<tr>"); foreach (var cell in row) b.Append("<td>").Append(H(cell)).Append("</td>"); b.Append("</tr>");
+                }
+                b.Append("</tbody></table></div>");
+                foreach (var path in ExplanationPresentation.Paths(explanation, lang)) b.Append("<p>").Append(H(path)).Append("</p>");
+                foreach (var limitation in JsonValue.GetList(explanation, "limitations")) b.Append("<p>").Append(H(limitation)).Append("</p>");
+                b.Append("<details><summary>").Append(H(ReportText.Get("EvidenceJson", lang))).Append("</summary><pre>")
+                    .Append(H(JsonValue.Serialize(explanation))).Append("</pre></details></details></article>");
+            }
+            b.Append("</section>");
         }
     }
 }

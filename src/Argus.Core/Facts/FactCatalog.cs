@@ -87,6 +87,7 @@ namespace Argus.Core.Facts
                 new ProxyFacts(),
                 new LeftoverFacts(),
                 new TunnelFacts(),
+                new TunnelRouteOverlapFacts(),
                 new TunnelCoverageFacts(),
                 new DnsServerFacts(),
                 new HostsFacts(),

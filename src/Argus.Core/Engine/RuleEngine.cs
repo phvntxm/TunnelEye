@@ -69,6 +69,8 @@ namespace Argus.Core.Engine
         public IReadOnlyList<string> RuleErrors { get; }
         /// <summary>Facts and rules that failed while evaluating; their rules are "not checked".</summary>
         public IReadOnlyList<string> EvaluationErrors { get; }
+        // Not serialized in analysis/1. Explanations share this analysis' lazy facts.
+        internal FactContext Facts { get; set; }
     }
 
     /// <summary>Evaluates rules over the facts of one snapshot.</summary>
@@ -97,7 +99,7 @@ namespace Argus.Core.Engine
                 }
             }
             errors.InsertRange(0, context.Errors);
-            return new AnalysisResult(snapshot.SnapshotId, results, (ruleErrors ?? new string[0]).ToList(), errors);
+            return new AnalysisResult(snapshot.SnapshotId, results, (ruleErrors ?? new string[0]).ToList(), errors) { Facts = context };
         }
 
         private static RuleResult Evaluate(FactContext context, Rule rule, DateTime nowUtc)

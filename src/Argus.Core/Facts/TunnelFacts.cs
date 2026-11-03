@@ -11,8 +11,8 @@ namespace Argus.Core.Facts
     /// Fact 'tunnels': tunnel adapters (fact 'adapters') that are up or carry
     /// routes, with whether they capture the default route: 0.0.0.0/0 or a
     /// half of it (0.0.0.0/1, 128.0.0.0/1 - OpenVPN def1), ::/0 or ::/1,
-    /// 8000::/1. Two tunnels capturing the default route fight for all
-    /// traffic. A tunnel adapter without such routes (WAN Miniport, a mesh
+    /// 8000::/1. These legacy flags describe individual broad routes, not
+    /// full coverage or a proven conflict. A tunnel adapter without such routes (WAN Miniport, a mesh
     /// network without an exit node) only carries its own prefixes.
     /// Requires 'routing' and fact 'adapters'.
     /// </summary>

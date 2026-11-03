@@ -4,7 +4,7 @@
   "patch": {
     "snapshotId": "00000000-0000-4000-8000-000000000004",
     "modules": {
-      "dns-proxy": { "data": { "proxy": { "user": { "proxyEnable": true, "proxyServer": "http://127.0.0.1:8118" } } } },
+      "dns-proxy": { "data": { "proxy": { "user": { "proxyEnable": true, "proxyServer": "http://127.0.0.1:8118", "connectionSettings": { "proxyEnabled": true, "autoConfigEnabled": false, "autoDetect": false, "proxyServer": "http://127.0.0.1:8118" } } } } },
       "connectivity": { "data": { "proxies": [
         { "source": "user", "enabled": true, "scheme": "http", "host": "127.0.0.1", "port": 8118, "addressClass": "loopback", "tested": true, "reason": "local", "status": "refused", "viaInterfaceIndex": 1, "viaInterfaceAlias": "Loopback" }
       ] } }

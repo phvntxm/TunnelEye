@@ -20,6 +20,7 @@ using Xunit;
 
 namespace Argus.Core.Tests
 {
+    [Collection("WPF resources")]
     public class ArgusInterfaceTests
     {
         [Theory]

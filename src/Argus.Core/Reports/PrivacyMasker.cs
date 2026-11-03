@@ -177,7 +177,18 @@ namespace Argus.Core.Reports
             return value is string ? Replace((string)value) : value;
         }
 
-        private static bool IsMetadata(string key, string path) => Metadata.Contains(key) || (path == ".modules[]" && key == "name");
+        private static bool IsMetadata(string key, string path)
+        {
+            if (Metadata.Contains(key) || path == ".modules[]" && key == "name") return true;
+            // Protect only the typed protocol fields. Never exempt user-facing
+            // text/scope/path labels or arbitrary nested personal values.
+            if (path == ".explanations[]") return key == "assessment" || key == "placement";
+            if (path == ".explanations[].claims[]") return key == "kind" || key == "availability" || key == "evidenceRefs";
+            if (path == ".explanations[].evidence[]") return key == "kind";
+            if (path == ".explanations[].path.nodes[]") return key == "claimRefs";
+            if (path == ".explanations[].path.edges[]") return key == "kind" || key == "from" || key == "to" || key == "claimRefs";
+            return false;
+        }
 
         private static bool IsHardwareLabel(string key, string path) => HardwareLabels.Contains(key) &&
             (path.StartsWith(".modules.hardware.data", StringComparison.Ordinal) || path.StartsWith(".sections.hardware", StringComparison.Ordinal));

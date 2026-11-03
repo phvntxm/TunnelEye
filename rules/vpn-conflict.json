@@ -1,53 +1,33 @@
 {
   "schema": "tunneleye.rule/1",
   "id": "vpn-conflict",
-  "level": "critical",
+  "level": "important",
   "facts": [
-    "tunnels"
+    "tunnel-route-overlaps"
   ],
   "condition": {
-    "from": "tunnels",
+    "from": "tunnel-route-overlaps",
     "where": {
-      "allOf": [
-        {
-          "path": "status",
-          "eq": "Up"
-        },
-        {
-          "anyOf": [
-            {
-              "path": "capturesDefaultIPv4",
-              "eq": true
-            },
-            {
-              "path": "capturesDefaultIPv6",
-              "eq": true
-            }
-          ]
-        },
-        {
-          "path": "otherClientsCapturingDefault",
-          "gte": 1
-        }
-      ]
+      "path": "overlapConfirmed",
+      "eq": true
     }
   },
   "text": {
     "title": {
-      "ru": "Два VPN одновременно",
-      "en": "Two VPNs at once"
+      "ru": "Пересекающиеся маршруты через два VPN",
+      "en": "Overlapping routes through two VPNs"
     },
     "why": {
-      "ru": "Сразу несколько VPN или прокси-туннелей пытаются пропустить через себя весь трафик. Они мешают друг другу: сайты не открываются, соединения рвутся, трафик идёт не через тот VPN.",
-      "en": "Several VPNs or proxy tunnels try to carry all traffic at the same time. They get in each other's way: sites do not open, connections drop, traffic goes through the wrong VPN."
+      "ru": "В таблице есть пересекающиеся широкие маршруты одного семейства через интерфейсы двух разных клиентов. Это возможная причина выбора другого пути; связь со сбоем приложения не установлена.",
+      "en": "The routing table contains overlapping broad routes of the same address family through interfaces linked to two distinct clients. This may affect path selection; a connection to an application failure has not been established."
     },
     "details": {
-      "ru": "У разных активных VPN-клиентов есть маршруты по умолчанию (включая половины /1). Несколько адаптеров одного клиента считаются одним VPN.",
-      "en": "Distinct active VPN clients have default routes (including /1 halves). Multiple adapters of one client count as one VPN."
+      "ru": "Подтверждены пересечение и связь интерфейсов с разными клиентами. Автор записи маршрутов и фактический путь каждого соединения неизвестны. Неизвестный участник или общий компонент не доказывает второго клиента.",
+      "en": "The overlap and links to distinct clients are confirmed. The author of the routes and the actual path of every connection are unknown. An unknown participant or shared component does not prove a second client."
     },
     "fix": {
-      "ru": "Оставьте включённым один VPN, остальные отключите. Если второй нужен для отдельных адресов (работа, игры), включите в нём раздельное туннелирование.",
-      "en": "Keep one VPN on and turn the others off. If the second one is needed for specific addresses (work, games), turn on split tunneling in it."
+      "ru": "Уточните, какой VPN нужен ресурсу. Сохраните настройки и сравните один запрос с каждым клиентом отдельно в согласованном тестовом окружении. Обязательный VPN проверяйте с администратором.",
+      "en": "Identify which VPN the resource requires. Preserve settings and compare the same request with each client separately in an approved test environment. Consult the administrator for a mandatory VPN."
     }
   }
 }

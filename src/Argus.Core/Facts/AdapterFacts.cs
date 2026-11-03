@@ -32,6 +32,7 @@ namespace Argus.Core.Facts
 
             // Interface index -> claiming client, from the vpn module.
             var claims = new Dictionary<int, IDictionary<string, object>>();
+            var allClaims = new Dictionary<int, List<object>>();
             string vpnReason;
             var vpn = context.ModuleData("vpn", out vpnReason);
             if (vpn == null) fact.Limitations.Add("tunnel-detection-by-description:" + vpnReason);
@@ -44,6 +45,11 @@ namespace Argus.Core.Facts
                     foreach (var adapter in JsonValue.GetList(client, "adapters"))
                     {
                         var index = JsonValue.AsInt(JsonValue.Get(adapter, "interfaceIndex"));
+                        if (index != null)
+                        {
+                            if (!allClaims.ContainsKey(index.Value)) allClaims[index.Value] = new List<object>();
+                            allClaims[index.Value].Add(client);
+                        }
                         if (index != null && !claims.ContainsKey(index.Value)) claims[index.Value] = JsonValue.AsObject(client);
                     }
                 }
@@ -60,6 +66,10 @@ namespace Argus.Core.Facts
                 if (index != null) claims.TryGetValue(index.Value, out client);
                 var looksLikeTunnel = (description != null && TunnelPattern.IsMatch(description)) || (componentId != null && TunnelPattern.IsMatch(componentId));
                 var driver = JsonValue.Get(a, "driver");
+                var identified = index != null && allClaims.ContainsKey(index.Value) && allClaims[index.Value].Count == 1 &&
+                    TunnelRouteOverlapFacts.Specific(allClaims[index.Value][0]) ? allClaims[index.Value][0] : null;
+                var evidence = new List<string> { "adapters.adapters[" + i + "]" };
+                if (identified != null) evidence.Add("vpn.clients[" + JsonValue.GetList(vpn, "clients").IndexOf(identified) + "]");
                 fact.Items.Add(new FactItem(new Dictionary<string, object>(StringComparer.Ordinal)
                 {
                     ["name"] = JsonValue.AsString(JsonValue.Get(a, "name")),
@@ -78,7 +88,9 @@ namespace Argus.Core.Facts
                     ["isTunnel"] = client != null || looksLikeTunnel,
                     ["clientId"] = client != null ? JsonValue.AsString(JsonValue.Get(client, "id")) : null,
                     ["clientKind"] = client != null ? JsonValue.AsString(JsonValue.Get(client, "kind")) : null,
-                }, new[] { "adapters.adapters[" + i + "]" }));
+                    ["identifiedClientId"] = JsonValue.Get(identified, "id"),
+                    ["identifiedClientName"] = JsonValue.Get(identified, "name") ?? JsonValue.Get(identified, "id"),
+                }, evidence));
             }
             return fact;
         }

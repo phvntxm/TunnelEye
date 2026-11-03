@@ -64,7 +64,7 @@ namespace Argus.Core.Tests
         };
 
         /// <summary>Snapshots on which nothing may be found.</summary>
-        private static readonly string[] Silent = { "clean", "clean-wifi", "full-tunnel", "routing-failed" };
+        private static readonly string[] Silent = { "clean", "clean-wifi", "full-tunnel", "vpn-expected", "routing-failed" };
 
         public static IEnumerable<object[]> ProblemCases() => Problems.Select(p => new object[] { p.Key, p.Value });
 
@@ -115,6 +115,7 @@ namespace Argus.Core.Tests
 
         [Theory]
         [InlineData("full-tunnel")]
+        [InlineData("vpn-expected")]
         [InlineData("routing-failed")]
         public void Nothing_is_found_on_a_silent_snapshot(string snapshot)
         {

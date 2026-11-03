@@ -19,6 +19,7 @@ using Xunit;
 
 namespace Argus.Core.Tests
 {
+    [Collection("WPF resources")]
     public class CollectionModeTests
     {
         private static Snapshot Source(bool? elevated)

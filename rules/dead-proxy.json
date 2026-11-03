@@ -2,16 +2,42 @@
   "schema": "tunneleye.rule/1",
   "id": "dead-proxy",
   "level": "critical",
-  "facts": [ "proxies" ],
+  "facts": [
+    "proxies"
+  ],
   "condition": {
     "from": "proxies",
     "where": {
       "allOf": [
-        { "path": "effective", "eq": true },
+        {
+          "path": "effective",
+          "eq": true
+        },
         {
           "anyOf": [
-            { "path": "tcpStatus", "in": [ "refused", "timeout" ] },
-            { "allOf": [ { "path": "isLoopback", "eq": true }, { "path": "listening", "eq": false } ] }
+            {
+              "path": "tcpStatus",
+              "in": [
+                "refused",
+                "timeout"
+              ]
+            },
+            {
+              "allOf": [
+                {
+                  "path": "isLoopback",
+                  "eq": true
+                },
+                {
+                  "path": "listening",
+                  "eq": false
+                },
+                {
+                  "path": "tcpStatus",
+                  "exists": false
+                }
+              ]
+            }
           ]
         }
       ]
@@ -23,16 +49,16 @@
       "en": "The proxy does not respond"
     },
     "why": {
-      "ru": "В Windows включён прокси, но по его адресу никто не принимает подключения. Браузер и многие программы не открывают сайты, хотя сеть работает.",
-      "en": "Windows has a proxy turned on, but nothing accepts connections at its address. The browser and many programs cannot open sites although the network works."
+      "ru": "В действующей ручной настройке прокси есть признак недоступности конечной точки. Отказ подключения, тайм-аут и отсутствие слушателя различаются в объяснении. Возможна ошибка у использующих эту настройку запросов; сбой всех приложений не установлен.",
+      "en": "An effective manual proxy setting has evidence of endpoint unavailability. Refusal, timeout and listener absence are distinguished in the explanation. Requests using this setting may fail; failure of all applications is not established."
     },
     "details": {
-      "ru": "Прокси из настроек пользователя, компьютера или WinHTTP действует, а TCP-подключение к нему отклонено или не отвечает, либо на локальном порту прокси нет слушающего процесса. Часто остаётся после удалённого или выключенного VPN-клиента.",
-      "en": "A proxy from the user, machine or WinHTTP settings is in force, while a TCP connection to it is refused or times out, or nothing listens on the local proxy port. It is often left behind by a removed or stopped VPN client."
+      "ru": "Отдельно показаны результат TCP-проверки и полная таблица слушателей, если они доступны. Секции собраны последовательно. Программа-владелец и автор настройки без отдельного доказательства неизвестны.",
+      "en": "The TCP test and complete listener table are shown separately when available. Sections were collected sequentially. The endpoint owner and author of the setting are unknown without separate evidence."
     },
     "fix": {
-      "ru": "Выключите прокси: Параметры → Сеть и Интернет → Прокси → «Использовать прокси-сервер» — выкл. Или запустите программу, которая должна этот прокси обслуживать.",
-      "en": "Turn the proxy off: Settings → Network & internet → Proxy → \"Use a proxy server\" — off. Or start the program that is supposed to serve this proxy."
+      "ru": "Если прокси нужен, проверьте обслуживающую программу или уточните настройки у администратора. Если больше не нужен, сохраните исходные настройки перед ручным отключением. Затем повторите проверку.",
+      "en": "If the proxy is required, check its serving application or consult the administrator. If no longer required, preserve the original settings before disabling it manually. Then repeat the check."
     }
   }
 }

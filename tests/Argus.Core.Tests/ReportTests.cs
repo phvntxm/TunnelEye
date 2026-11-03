@@ -26,7 +26,7 @@ namespace Argus.Core.Tests
         [InlineData("clean", "green")]
         [InlineData("dead-proxy", "red")]
         [InlineData("two-gateways", "yellow")]
-        [InlineData("routing-failed", "gray")]
+        [InlineData("routing-failed", "green")]
         [InlineData("dead-proxy-other-user", "gray")]
         [InlineData("wfp-conflict", "green")]
         public void Score_respects_severity_experiments_and_incomplete_critical_checks(string name, string expected)

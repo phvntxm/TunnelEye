@@ -4,7 +4,7 @@
 <data name="Version" xml:space="preserve"><value>Версия</value></data>
 <data name="Masked" xml:space="preserve"><value>Экспорт без личных данных</value></data>
 <data name="Score_red" xml:space="preserve"><value>Найдены критические проблемы</value></data>
-<data name="Score_yellow" xml:space="preserve"><value>Есть важные проблемы</value></data>
+<data name="Score_yellow" xml:space="preserve"><value>Есть находки, требующие проверки</value></data>
 <data name="Score_green" xml:space="preserve"><value>Критические проверки выполнены</value></data>
 <data name="Score_gray" xml:space="preserve"><value>Проверено не всё</value></data>
 <data name="Scope" xml:space="preserve"><value>Оценка относится к выполненным правилам. Ограничения проверок перечислены ниже. Анализ трафика и рекомендации по апгрейду появятся на следующих этапах.</value></data>
@@ -104,4 +104,88 @@
   <data name="EvidenceField_elevated" xml:space="preserve"><value>Права администратора</value></data>
   <data name="EvidenceField_elevatedAsOtherUser" xml:space="preserve"><value>Сбор под другой учётной записью</value></data>
   <data name="EvidenceField_externalAllowed" xml:space="preserve"><value>Согласие на внешние проверки</value></data>
+<data name="ExConfiguration" xml:space="preserve"><value>Настройки и объяснения</value></data>
+<data name="ExAssessment_expectedBehavior" xml:space="preserve"><value>Ожидаемая работа</value></data>
+<data name="ExAssessment_possibleCause" xml:space="preserve"><value>Возможная причина</value></data>
+<data name="ExAssessment_confirmedConfigurationProblem" xml:space="preserve"><value>Подтверждённая проблема конфигурации</value></data>
+<data name="ExAssessment_insufficientData" xml:space="preserve"><value>Недостаточно данных</value></data>
+<data name="ExMechanism" xml:space="preserve"><value>Механизм влияния</value></data>
+<data name="ExSymptom" xml:space="preserve"><value>Возможный симптом</value></data>
+<data name="ExAction" xml:space="preserve"><value>Что проверить</value></data>
+<data name="ExLimit" xml:space="preserve"><value>Ограничение</value></data>
+<data name="ExClaims" xml:space="preserve"><value>Утверждения и доказательства</value></data>
+<data name="ExKind_observed" xml:space="preserve"><value>Наблюдение</value></data>
+<data name="ExKind_derived" xml:space="preserve"><value>Вывод из данных</value></data>
+<data name="ExKind_hypothesis" xml:space="preserve"><value>Предположение</value></data>
+<data name="ExKind_recommendation" xml:space="preserve"><value>Рекомендация</value></data>
+<data name="ExAvailability_known" xml:space="preserve"><value>Известно</value></data>
+<data name="ExAvailability_unknown" xml:space="preserve"><value>Неизвестно</value></data>
+<data name="ExPath_configured" xml:space="preserve"><value>Настроено</value></data>
+<data name="ExPath_locallySelected" xml:space="preserve"><value>Локальный выбор</value></data>
+<data name="ExPath_measured" xml:space="preserve"><value>Измерено</value></data>
+<data name="ExPath_unknown" xml:space="preserve"><value>Путь неизвестен</value></data>
+<data name="ExUnknownMechanism" xml:space="preserve"><value>Известных данных недостаточно, чтобы объяснить влияние настройки.</value></data>
+<data name="ExNoSymptom" xml:space="preserve"><value>Сбой приложения по этим данным не установлен.</value></data>
+<data name="ExInspect" xml:space="preserve"><value>Уточните проблемное приложение и сохраните снимок для сравнения.</value></data>
+<data name="ExIncomplete" xml:space="preserve"><value>Данных для этого утверждения недостаточно.</value></data>
+<data name="ExTime" xml:space="preserve"><value>Модули собраны последовательно. Их состояния могли измениться между проверками; точные времена отдельных проверок здесь не установлены.</value></data>
+<data name="ExContextMissing" xml:space="preserve"><value>Контекст фактов этого анализа недоступен; основной отчёт сохранён.</value></data>
+<data name="ExBuildFailed" xml:space="preserve"><value>Объяснение не удалось построить. Это не означает нормальную работу; основной отчёт сохранён.</value></data>
+<data name="ExUnavailable" xml:space="preserve"><value>Объяснение недоступно</value></data>
+<data name="ExVpnTitle" xml:space="preserve"><value>Маршруты и настройки VPN</value></data>
+<data name="ExOverlapTitle" xml:space="preserve"><value>В таблице есть пересекающиеся маршруты через два VPN</value></data>
+<data name="ExBroadScope" xml:space="preserve"><value>Широкие маршруты одной семьи; не все соединения приложений</value></data>
+<data name="ExOverlapMechanism" xml:space="preserve"><value>Пересекающиеся широкие маршруты дают несколько вариантов пути для одних адресов. Выбор для конкретной цели показан отдельно, если он известен.</value></data>
+<data name="ExOverlapSymptom" xml:space="preserve"><value>Если ресурсу нужен путь через другой VPN, возможна недоступность. Причина жалобы этим не доказана.</value></data>
+<data name="ExOverlapAction" xml:space="preserve"><value>Уточните, какой VPN нужен ресурсу. Сохраните настройки и сравните один запрос с каждым клиентом отдельно в согласованном тестовом окружении. Обязательный VPN проверяйте с администратором.</value></data>
+<data name="ExCausality" xml:space="preserve"><value>Пересечение подтверждено; связь со сбоем приложения не доказана.</value></data>
+<data name="ExOverlapClaim" xml:space="preserve"><value>Через клиентов {0} и {1} пересекаются широкие маршруты {2}: {3}.</value></data>
+<data name="ExRouteMechanism" xml:space="preserve"><value>Маршруты задают варианты пути. Локальный выбор для контрольного адреса не подтверждает передачу трафика.</value></data>
+<data name="ExVpnAction" xml:space="preserve"><value>Если жалоб нет, исправление по этим данным не требуется. Иначе уточните приложение и воспроизведите проблему.</value></data>
+<data name="ExNotTraffic" xml:space="preserve"><value>Фактический путь пакетов и работоспособность интернета не проверены.</value></data>
+<data name="ExNoOverlap" xml:space="preserve"><value>В полном наборе данных не найдено пересечения рассматриваемых широких маршрутов двух доказанно разных клиентов.</value></data>
+<data name="ExVpnIncomplete" xml:space="preserve"><value>Проверка VPN неполна: не все маршруты, состояния или участники установлены. Отсутствие конфликта не подтверждено.</value></data>
+<data name="ExNoAuthorship" xml:space="preserve"><value>Участие интерфейса или процесса в пути не доказывает, кто изменил настройку.</value></data>
+<data name="ExRoute" xml:space="preserve"><value>Маршрут {0} указан через интерфейс {1}.</value></data>
+<data name="ExRoutingScope" xml:space="preserve"><value>Текущая таблица маршрутов</value></data>
+<data name="ExSelected" xml:space="preserve"><value>Для контрольного адреса {0} Windows выбрала интерфейс {1}.</value></data>
+<data name="ExLocalSelectionScope" xml:space="preserve"><value>Локальный выбор маршрута без отправки пакета</value></data>
+<data name="ExLocalTable" xml:space="preserve"><value>Локальная таблица маршрутов</value></data>
+<data name="ExInterface" xml:space="preserve"><value>Интерфейс {0}</value></data>
+<data name="ExSelectionLabel" xml:space="preserve"><value>Выбор для {0}</value></data>
+<data name="ExUnknownBeyond" xml:space="preserve"><value>Дальнейший путь неизвестен</value></data>
+<data name="ExSelectionUnknown" xml:space="preserve"><value>Успешный выбор контрольного маршрута неизвестен.</value></data>
+<data name="ExDns" xml:space="preserve"><value>На интерфейсе {0} назначены DNS-адреса: {1}. Принадлежность VPN и доступность не установлены.</value></data>
+<data name="ExDnsScope" xml:space="preserve"><value>Назначение DNS интерфейсу; не выбор каждого приложения</value></data>
+<data name="ExDnsUnknown" xml:space="preserve"><value>Назначение DNS в этой области не установлено; известные маршруты сохранены.</value></data>
+<data name="ExProxyUnavailable" xml:space="preserve"><value>Данные настройки прокси недоступны.</value></data>
+<data name="ExProxyTitle" xml:space="preserve"><value>Настройка прокси</value></data>
+<data name="ExProxyScope_user" xml:space="preserve"><value>Ручной прокси собранной учётной записи; только использующие его запросы без подходящего исключения</value></data>
+<data name="ExProxyScope_machine" xml:space="preserve"><value>Ручной прокси компьютера по политике; только использующие его запросы без подходящего исключения</value></data>
+<data name="ExProxyScope_winhttp" xml:space="preserve"><value>Прокси WinHTTP; только запросы, использующие эти настройки без подходящего исключения</value></data>
+<data name="ExProxyEndpoint" xml:space="preserve"><value>Настроенная точка прокси: {0}</value></data>
+<data name="ExProxyMechanism" xml:space="preserve"><value>Запрос, использующий эту ручную настройку без исключения, сначала требует соединения с указанной точкой прокси.</value></data>
+<data name="ExProxySymptom" xml:space="preserve"><value>У использующего эту настройку запроса возможна ошибка прокси. Сбой конкретного приложения не наблюдался.</value></data>
+<data name="ExProxyBoundary" xml:space="preserve"><value>Вывод ограничен точкой и временем проверки, а не всеми приложениями. TCP не проверяет протокол HTTP/SOCKS.</value></data>
+<data name="ExProxyAction" xml:space="preserve"><value>Если прокси нужен, проверьте обслуживающую программу или уточните настройки у администратора. Если не нужен, сохраните исходные настройки перед ручным отключением. Затем повторите локальную проверку и запрос приложения.</value></data>
+<data name="ExProxySetting" xml:space="preserve"><value>В настройках указан прокси {0}.</value></data>
+<data name="ExProxyApplies" xml:space="preserve"><value>Ручная настройка применяется в указанной области, но не обязательно всеми приложениями.</value></data>
+<data name="ExProxyDisabled" xml:space="preserve"><value>Эта ручная настройка не действует в указанной области.</value></data>
+<data name="ExProxyScopeUnknown" xml:space="preserve"><value>Эффективная область прокси неизвестна или неоднозначна (режим, политика или учётная запись). Известная настройка сохранена.</value></data>
+<data name="ExTcp_refused" xml:space="preserve"><value>TCP-подключение к настроенной точке отклонено во время теста.</value></data>
+<data name="ExTcp_timeout" xml:space="preserve"><value>Ответ на TCP-подключение не получен за время проверки. Это не доказывает отсутствие слушателя.</value></data>
+<data name="ExTcp_open" xml:space="preserve"><value>TCP-подключение принято; работа прокси-протокола и запроса приложения не проверена.</value></data>
+<data name="ExTcp_error" xml:space="preserve"><value>При проверке TCP произошла ошибка; доступность этим не установлена.</value></data>
+<data name="ExTcp_unknown" xml:space="preserve"><value>Доступность точки не проверена. Внешние проверки требуют согласия на запуск.</value></data>
+<data name="ExListenerPresent" xml:space="preserve"><value>В таблице найден подходящий слушатель для адреса, семейства и порта.</value></data>
+<data name="ExListenerAbsent" xml:space="preserve"><value>В полной таблице не найден подходящий слушатель для адреса, семейства и порта в момент сбора.</value></data>
+<data name="ExListenerUnknown" xml:space="preserve"><value>Наличие подходящего слушателя неизвестно; отсутствие строки не считается доказательством.</value></data>
+<data name="ExOwnerUnknown" xml:space="preserve"><value>Программа-владелец точки неизвестна; автор настройки также не установлен.</value></data>
+<data name="ExListenerOwner" xml:space="preserve"><value>Найденный слушатель связан с процессом {0} (PID {1}); автор настройки неизвестен.</value></data>
+<data name="ExProxyApp" xml:space="preserve"><value>Запрос приложения, использующий этот прокси</value></data>
+<data name="ExTcpProbe" xml:space="preserve"><value>TCP-проверка точки</value></data>
+<data name="ExOtherUser" xml:space="preserve"><value>Сбор выполнен под другой учётной записью: настройки прокси владельца не проверены.</value></data>
+<data name="ExActiveInterface" xml:space="preserve"><value>Интерфейс {0} ({1}) активен.</value></data>
+<data name="ExInterfaceClient" xml:space="preserve"><value>Интерфейс {0} связан с клиентом {1}; автор настройки маршрутов не установлен.</value></data>
+<data name="ExInterfaceClientUnknown" xml:space="preserve"><value>Программа, связанная с интерфейсом {0}, не установлена однозначно.</value></data>
 </root>
