@@ -102,13 +102,47 @@ Describe 'Invoke-Snapshot: started with powershell.exe -File' {
     # under -File; the GUI starts the orchestrator exactly this way (UAC).
     $orchestrator = Join-Path (Get-RepoRoot) 'collectors\Invoke-Snapshot.ps1'
     $outDir = Join-Path $TestDrive 'file-run'
-    & (Join-Path $PSHOME 'powershell.exe') -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $orchestrator -OutputDirectory $outDir -Modules 'system' | Out-Null
+    & (Join-Path $PSHOME 'powershell.exe') -NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File $orchestrator -OutputDirectory $outDir -Modules 'system' | Out-Null
 
     It 'finds its collectors and produces an ok envelope' {
         $path = Join-Path $outDir 'snapshot.json'
         Test-Path $path | Should Be $true
         $snapshot = ConvertFrom-CollectorJson ([IO.File]::ReadAllText($path, [Text.Encoding]::UTF8))
         $snapshot['modules']['system']['status'] | Should Be 'ok'
+    }
+}
+
+Describe 'Invoke-Snapshot: process-scoped script policy' {
+    It 'runs local fixtures from a restricted parent without changing persistent policy' {
+        $orchestrator = Join-Path (Get-RepoRoot) 'collectors\Invoke-Snapshot.ps1'
+        $outDir = Join-Path $TestDrive 'restricted-parent'
+        $userPolicy = Get-ExecutionPolicy -Scope CurrentUser
+        $machinePolicy = Get-ExecutionPolicy -Scope LocalMachine
+        $start = New-Object Diagnostics.ProcessStartInfo
+        $start.FileName = Join-Path $PSHOME 'powershell.exe'
+        $start.Arguments = '-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File "{0}" -OutputDirectory "{1}" -CollectorPath "{2}" -Modules fixture-ok -TimeoutSec 10' -f $orchestrator,$outDir,(Join-Path $PSScriptRoot 'fixtures')
+        $start.UseShellExecute = $false
+        $start.CreateNoWindow = $true
+        $start.EnvironmentVariables['PSExecutionPolicyPreference'] = 'Restricted'
+        $start.RedirectStandardOutput = $true
+        $start.RedirectStandardError = $true
+        $process = New-Object Diagnostics.Process
+        $process.StartInfo = $start
+        try {
+            [void]$process.Start()
+            $stdout = $process.StandardOutput.ReadToEndAsync()
+            $stderr = $process.StandardError.ReadToEndAsync()
+            $process.WaitForExit(30000) | Should Be $true
+            $process.ExitCode | Should Be 0
+            $snapshot = ConvertFrom-CollectorJson ([IO.File]::ReadAllText((Join-Path $outDir 'snapshot.json'),[Text.Encoding]::UTF8))
+            $snapshot['modules']['fixture-ok']['status'] | Should Be 'ok'
+            $snapshot['externalAllowed'] | Should Be $false
+            (Get-ExecutionPolicy -Scope CurrentUser) | Should Be $userPolicy
+            (Get-ExecutionPolicy -Scope LocalMachine) | Should Be $machinePolicy
+        } finally {
+            if (!$process.HasExited) { $process.Kill() }
+            $process.Dispose()
+        }
     }
 }
 

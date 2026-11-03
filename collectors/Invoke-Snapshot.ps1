@@ -79,8 +79,8 @@ function Invoke-ModuleProcess {
 
     $psi = New-Object Diagnostics.ProcessStartInfo
     $psi.FileName = Join-Path $PSHOME 'powershell.exe'
-    # Bypass applies to this child process only; the machine policy is untouched.
-    $psi.Arguments = ('-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "{0}" -OutFile "{1}" {2}' -f $Script, $OutFile, $ExtraArguments).TrimEnd()
+    # RemoteSigned applies to this child process only; user/machine policy is untouched.
+    $psi.Arguments = ('-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File "{0}" -OutFile "{1}" {2}' -f $Script, $OutFile, $ExtraArguments).TrimEnd()
     $psi.UseShellExecute = $false
     $psi.CreateNoWindow = $true
     $psi.RedirectStandardOutput = $true
