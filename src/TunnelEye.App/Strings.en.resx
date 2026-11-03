@@ -129,6 +129,7 @@
 <data name="CollectionStopped" xml:space="preserve"><value>Collection stopped · {0}</value></data>
 <data name="CollectionFailureNote" xml:space="preserve"><value>The diagnosis could not finish. Try again or open a saved snapshot.</value></data>
 <data name="ModuleFailedContinuing" xml:space="preserve"><value>This module failed. The remaining modules will still be collected.</value></data>
-<data name="AwaitingCollectorNote" xml:space="preserve"><value>Waiting for the first collector event or UAC confirmation. No estimated percentage is shown.</value></data>
-<data name="AnimationProgressNote" xml:space="preserve"><value>Progress comes from collector events. Eye movement is decorative. System motion preferences take priority.</value></data>
+<data name="AwaitingCollectorNote" xml:space="preserve"><value>If Windows asks for permission, confirm it. If you decline, the check will continue without administrator rights.</value></data>
+<data name="AnimationProgressNote" xml:space="preserve"><value>Checking your network settings. This may take a few minutes.</value></data>
+<data name="AnimationsHint" xml:space="preserve"><value>If animations are turned off in Windows settings, a static mark is shown instead of moving eyes.</value></data>
 </root>

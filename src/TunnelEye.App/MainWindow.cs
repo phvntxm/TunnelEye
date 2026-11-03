@@ -134,7 +134,10 @@ namespace TunnelEye.App
             mask = new CheckBox { Content = S("MaskExports"), IsChecked = true, IsEnabled = !busy, Margin = new Thickness(0, 0, 24, 8) };
             options.Children.Add(consent); options.Children.Add(mask); actions.Add(consent); actions.Add(mask); toolbar.Children.Add(options);
             var animation = new CheckBox { Content = S("EnableAnimations"), IsChecked = animationsEnabled, Margin = new Thickness(0, 0, 0, 8) };
+            animation.ToolTip = new ToolTip { Content = new TextBlock { Text = S("AnimationsHint"), TextWrapping = TextWrapping.Wrap, MaxWidth = 320 },
+                Background = AppTheme.Raised, Foreground = ink, BorderBrush = line };
             AutomationProperties.SetAutomationId(animation, "EnableAnimations");
+            AutomationProperties.SetHelpText(animation, S("AnimationsHint"));
             animation.Click += (s, e) => { animationsEnabled = animation.IsChecked == true; if (diagnosis != null) diagnosis.Eyes.AnimationsEnabled = animationsEnabled; };
             options.Children.Add(animation);
             DockPanel.SetDock(toolbar, Dock.Top); root.Children.Add(toolbar);

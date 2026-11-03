@@ -129,6 +129,7 @@
 <data name="CollectionStopped" xml:space="preserve"><value>Сбор остановлен · {0}</value></data>
 <data name="CollectionFailureNote" xml:space="preserve"><value>Не удалось завершить диагностику. Можно повторить запуск или открыть сохранённый снимок.</value></data>
 <data name="ModuleFailedContinuing" xml:space="preserve"><value>Модуль завершился с ошибкой. Сбор остальных модулей продолжается.</value></data>
-<data name="AwaitingCollectorNote" xml:space="preserve"><value>До первого события сборщика показываем ожидание запуска/UAC, без выдуманного процента.</value></data>
-<data name="AnimationProgressNote" xml:space="preserve"><value>Прогресс — по событиям сборщика. Движение глаз декоративное. Системное ограничение анимаций имеет приоритет.</value></data>
+<data name="AwaitingCollectorNote" xml:space="preserve"><value>Если появится запрос Windows, подтвердите его. При отмене проверка продолжится без прав администратора.</value></data>
+<data name="AnimationProgressNote" xml:space="preserve"><value>Проверяем настройки сети. Это может занять несколько минут.</value></data>
+<data name="AnimationsHint" xml:space="preserve"><value>Если анимации отключены в настройках Windows, вместо движущихся глаз показывается статичный знак.</value></data>
 </root>
