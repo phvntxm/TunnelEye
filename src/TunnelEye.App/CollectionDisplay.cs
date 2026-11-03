@@ -15,6 +15,8 @@ namespace TunnelEye.App
         public bool? Elevated { get; private set; }
         public bool Ended { get; private set; }
         public bool Failed { get; private set; }
+        public CollectionFailure? FailureReason { get; private set; }
+        public int? FailureExitCode { get; private set; }
         public bool Slow { get; private set; }
         public bool Analyzing { get; private set; }
         public bool ModuleFailed { get; private set; }
@@ -41,9 +43,10 @@ namespace TunnelEye.App
             if (progress.Status == "end") Ended = true;
         }
         public void Analyze() { Analyzing = true; }
-        public void Fail() { Failed = true; }
+        public void Fail(CollectionFailure? reason = null, int? exitCode = null) { Failed = true; FailureReason = reason; FailureExitCode = exitCode; }
         public string Current(string language)
         {
+            if (Failed && string.IsNullOrEmpty(Module)) return AppStrings.Get(HasEvents ? "CollectionStoppedNoModule" : "CollectionStartStopped", language);
             var key = Failed ? "CollectionStopped" : Analyzing || Ended ? "Analyzing" :
                 !HasEvents ? "AwaitingCollector" : string.IsNullOrEmpty(Module) ? "AwaitingModule" : "CheckingModule";
             return string.Format(CultureInfo.GetCultureInfo(language), AppStrings.Get(key, language),
@@ -52,7 +55,12 @@ namespace TunnelEye.App
         public string Count(string language) => Total.HasValue ? string.Format(CultureInfo.GetCultureInfo(language),
             AppStrings.Get("CompletedModules", language), Done, Total.Value) : AppStrings.Get("UnknownProgress", language);
         public string Mode(string language) => AppStrings.Get(Elevated == true ? "CollectionAdmin" : Elevated == false ? "CollectionLimited" : "CollectionUnknownRights", language);
-        public string Note(string language) => AppStrings.Get(Failed ? "CollectionFailureNote" : Slow ? "SlowCollection" :
-            ModuleFailed ? "ModuleFailedContinuing" : !HasEvents ? "AwaitingCollectorNote" : "AnimationProgressNote", language);
+        public string Note(string language)
+        {
+            var text = AppStrings.Get(Failed ? FailureReason.HasValue ? "CollectionFailure_" + FailureReason.Value : "CollectionFailureNote" : Slow ? "SlowCollection" :
+                ModuleFailed ? "ModuleFailedContinuing" : !HasEvents ? "AwaitingCollectorNote" : "AnimationProgressNote", language);
+            if (Failed && FailureExitCode.HasValue) text += " " + string.Format(CultureInfo.GetCultureInfo(language), AppStrings.Get("CollectionExitCode", language), FailureExitCode.Value);
+            return text;
+        }
     }
 }

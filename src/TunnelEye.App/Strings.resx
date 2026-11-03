@@ -132,4 +132,12 @@
 <data name="AwaitingCollectorNote" xml:space="preserve"><value>Если появится запрос Windows, подтвердите его. При отмене проверка продолжится без прав администратора.</value></data>
 <data name="AnimationProgressNote" xml:space="preserve"><value>Проверяем настройки сети. Это может занять несколько минут.</value></data>
 <data name="AnimationsHint" xml:space="preserve"><value>Если анимации отключены в настройках Windows, вместо движущихся глаз показывается статичный знак.</value></data>
+<data name="CollectionStartStopped" xml:space="preserve"><value>Не удалось начать сбор</value></data>
+<data name="CollectionStoppedNoModule" xml:space="preserve"><value>Не удалось завершить сбор</value></data>
+<data name="CollectionFailure_MissingCollectors" xml:space="preserve"><value>Не найдены модули сбора. Распакуйте ZIP целиком: папки collectors и rules должны быть рядом с TunnelEye.exe.</value></data>
+<data name="CollectionFailure_StartFailed" xml:space="preserve"><value>Windows не смогла запустить сборщик. Проверьте доступность Windows PowerShell и разрешения на запуск.</value></data>
+<data name="CollectionFailure_ProcessFailed" xml:space="preserve"><value>PowerShell завершил сбор с ошибкой. Среди возможных причин — запрет запуска сценариев. Нужно проверить политику PowerShell и запуск сборщика внутри этой Windows.</value></data>
+<data name="CollectionFailure_MissingSnapshot" xml:space="preserve"><value>Сборщик завершился, но снимок не найден. Проверьте доступ к локальной папке результатов.</value></data>
+<data name="CollectionFailure_InvalidSnapshot" xml:space="preserve"><value>Снимок повреждён или имеет неподдерживаемый формат. Повторите сбор; если ошибка повторится, сохраните результат для разбора.</value></data>
+<data name="CollectionExitCode" xml:space="preserve"><value>Код выхода PowerShell: {0}.</value></data>
 </root>

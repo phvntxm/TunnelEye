@@ -23,6 +23,29 @@ namespace Argus.Core.Tests
     public class ArgusInterfaceTests
     {
         [Theory]
+        [InlineData("ru", CollectionFailure.MissingCollectors)]
+        [InlineData("en", CollectionFailure.MissingCollectors)]
+        [InlineData("ru", CollectionFailure.StartFailed)]
+        [InlineData("en", CollectionFailure.StartFailed)]
+        [InlineData("ru", CollectionFailure.ProcessFailed)]
+        [InlineData("en", CollectionFailure.ProcessFailed)]
+        [InlineData("ru", CollectionFailure.MissingSnapshot)]
+        [InlineData("en", CollectionFailure.MissingSnapshot)]
+        [InlineData("ru", CollectionFailure.InvalidSnapshot)]
+        [InlineData("en", CollectionFailure.InvalidSnapshot)]
+        public void Startup_failure_explains_its_reason_and_safe_exit_code(string language, CollectionFailure reason)
+        {
+            var state = new CollectionDisplay();
+            state.Fail(reason, reason == CollectionFailure.ProcessFailed ? (int?)7 : null);
+            Assert.Equal(AppStrings.Get("CollectionStartStopped", language), state.Current(language));
+            var key = "CollectionFailure_" + reason;
+            Assert.NotEqual(key, AppStrings.Get(key, language));
+            Assert.StartsWith(AppStrings.Get(key, language), state.Note(language));
+            if (reason == CollectionFailure.ProcessFailed) Assert.Contains("7", state.Note(language));
+            Assert.False(state.CanAnimate); Assert.Null(state.Total);
+        }
+
+        [Theory]
         [InlineData("ru", "Прогресс пока неизвестен", "DNS и прокси")]
         [InlineData("en", "Progress not yet known", "DNS and proxy")]
         public void Only_events_advance_progress_and_module_failures_do_not_abort_others(string language, string unknown, string module)
@@ -144,7 +167,7 @@ namespace Argus.Core.Tests
                     Assert.Contains("DNS", Logical(window).OfType<TextBlock>().Single(t => AutomationProperties.GetAutomationId(t) == "CurrentModule").Text);
                     completions[0].SetException(new CollectionRunException(CollectionFailure.ProcessFailed)); await first;
                     Assert.DoesNotContain(Logical(window).OfType<ArgusEyes>(), e => e.IsAnimating);
-                    Assert.Contains(AppStrings.Get("CollectionFailureNote", "ru"), Logical(window).OfType<TextBlock>().Select(t => t.Text));
+                    Assert.Contains(AppStrings.Get("CollectionFailure_ProcessFailed", "ru"), Logical(window).OfType<TextBlock>().Select(t => t.Text));
                     var second = window.DiagnoseAsync();
                     notifications[0].Report(new CollectionProgress(12, 13, "hardware", "running"));
                     await Dispatcher.Yield(DispatcherPriority.Background);

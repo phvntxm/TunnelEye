@@ -132,4 +132,12 @@
 <data name="AwaitingCollectorNote" xml:space="preserve"><value>If Windows asks for permission, confirm it. If you decline, the check will continue without administrator rights.</value></data>
 <data name="AnimationProgressNote" xml:space="preserve"><value>Checking your network settings. This may take a few minutes.</value></data>
 <data name="AnimationsHint" xml:space="preserve"><value>If animations are turned off in Windows settings, a static mark is shown instead of moving eyes.</value></data>
+<data name="CollectionStartStopped" xml:space="preserve"><value>Could not start collection</value></data>
+<data name="CollectionStoppedNoModule" xml:space="preserve"><value>Could not finish collection</value></data>
+<data name="CollectionFailure_MissingCollectors" xml:space="preserve"><value>Collection modules were not found. Extract the entire ZIP: the collectors and rules folders must be next to TunnelEye.exe.</value></data>
+<data name="CollectionFailure_StartFailed" xml:space="preserve"><value>Windows could not start the collector. Check that Windows PowerShell is available and launching it is permitted.</value></data>
+<data name="CollectionFailure_ProcessFailed" xml:space="preserve"><value>PowerShell ended collection with an error. Script execution restrictions are one possible cause. Check the PowerShell policy and collector launch inside this Windows installation.</value></data>
+<data name="CollectionFailure_MissingSnapshot" xml:space="preserve"><value>The collector finished, but no snapshot was found. Check access to the local results folder.</value></data>
+<data name="CollectionFailure_InvalidSnapshot" xml:space="preserve"><value>The snapshot is damaged or has an unsupported format. Retry collection; if the error persists, keep the result for investigation.</value></data>
+<data name="CollectionExitCode" xml:space="preserve"><value>PowerShell exit code: {0}.</value></data>
 </root>

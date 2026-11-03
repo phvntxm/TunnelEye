@@ -39,8 +39,9 @@ namespace TunnelEye.App
     /// <summary>Safe machine-readable reason; the window supplies localized text.</summary>
     public sealed class CollectionRunException : Exception
     {
-        public CollectionRunException(CollectionFailure reason) : base(reason.ToString()) { Reason = reason; }
+        public CollectionRunException(CollectionFailure reason, int? exitCode = null) : base(reason.ToString()) { Reason = reason; ExitCode = exitCode; }
         public CollectionFailure Reason { get; }
+        public int? ExitCode { get; }
     }
 
     /// <summary>Injectable process boundary: tests never run UAC or real collectors.</summary>
@@ -143,7 +144,7 @@ namespace TunnelEye.App
                     await Task.Delay(pollInterval).ConfigureAwait(false);
                 }
                 reader.Poll(progress);
-                if (process.ExitCode != 0) throw new CollectionRunException(CollectionFailure.ProcessFailed);
+                if (process.ExitCode != 0) throw new CollectionRunException(CollectionFailure.ProcessFailed, process.ExitCode);
             }
             var snapshotPath = Path.Combine(output, "snapshot.json");
             if (!File.Exists(snapshotPath)) throw new CollectionRunException(CollectionFailure.MissingSnapshot);
@@ -158,7 +159,8 @@ namespace TunnelEye.App
 
         private ProcessStartInfo CreateStartInfo(string output, bool allowExternal, bool elevate)
         {
-            var arguments = "-NoProfile -NonInteractive -File " + Quote(scriptPath) + " -OutputDirectory " + Quote(output)
+            // Process scope only; do not change CurrentUser/LocalMachine policy or unblock files.
+            var arguments = "-NoProfile -NonInteractive -ExecutionPolicy RemoteSigned -File " + Quote(scriptPath) + " -OutputDirectory " + Quote(output)
                 + " -LaunchingUserSid " + Quote(launchingSid) + " -TimeoutSec 120";
             if (allowExternal) arguments += " -AllowExternal";
             var system = Environment.GetFolderPath(Environment.SpecialFolder.System);

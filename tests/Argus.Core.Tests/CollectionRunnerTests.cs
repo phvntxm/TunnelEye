@@ -35,7 +35,11 @@ namespace Argus.Core.Tests
                 Assert.True(launcher.Starts[0].UseShellExecute);
                 Assert.False(launcher.Starts[1].UseShellExecute);
                 Assert.True(launcher.Starts[1].CreateNoWindow);
-                Assert.All(launcher.Starts, s => Assert.Contains(" -AllowExternal", s.Arguments));
+                Assert.All(launcher.Starts, s => {
+                    Assert.Contains(" -AllowExternal", s.Arguments);
+                    Assert.Contains("-ExecutionPolicy RemoteSigned", s.Arguments);
+                    Assert.DoesNotContain("Bypass", s.Arguments);
+                });
                 Assert.Contains(progress.Values, p => p.Status == "notElevated");
             }
         }
@@ -140,6 +144,7 @@ namespace Argus.Core.Tests
                 });
                 var error = await Assert.ThrowsAsync<CollectionRunException>(() => fixture.Runner(launcher).RunAsync(false, null));
                 Assert.Equal(reason, error.Reason);
+                Assert.Equal(reason == CollectionFailure.ProcessFailed ? (int?)exitCode : null, error.ExitCode);
             }
         }
 

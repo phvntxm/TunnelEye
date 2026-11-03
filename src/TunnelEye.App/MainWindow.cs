@@ -393,7 +393,11 @@ namespace TunnelEye.App
                 await LoadAsync(result.SnapshotPath); collection = null; statusKey = "Loaded";
             }
             catch (Exception e) when (e is CollectionRunException || e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is SnapshotFormatException || e is InvalidOperationException)
-            { statusKey = "CollectionFailed"; collection.Fail(); UpdateCollectionStatus(); }
+            {
+                statusKey = "CollectionFailed";
+                var failure = e as CollectionRunException;
+                collection.Fail(failure?.Reason, failure?.ExitCode); UpdateCollectionStatus();
+            }
             finally { collecting = false; busy = false; Render(); }
         }
         private void Export(bool html)
