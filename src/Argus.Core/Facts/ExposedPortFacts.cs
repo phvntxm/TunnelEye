@@ -173,7 +173,14 @@ namespace Argus.Core.Facts
                 parts.Add(string.Equals(file, process, StringComparison.OrdinalIgnoreCase) ? Truth.True : Truth.False);
             }
 
-            if (!string.IsNullOrEmpty(JsonValue.AsString(JsonValue.Get(rule, "package")))) parts.Add(Truth.False);
+            if (!string.IsNullOrEmpty(JsonValue.AsString(JsonValue.Get(rule, "package"))) ||
+                !string.IsNullOrEmpty(JsonValue.AsString(JsonValue.Get(rule, "packageFamilyName")))) parts.Add(Truth.False);
+            if (JsonValue.AsBool(JsonValue.Get(rule, "hasOwnerRestriction")) == true ||
+                JsonValue.AsBool(JsonValue.Get(rule, "scopeComplete")) == false) parts.Add(Truth.Unknown);
+            // Older snapshots lost package-family/owner restrictions. An opaque
+            // Any-program/Any-port rule is not proof that every process is exposed.
+            if (!explicitPort && program == "Any" && JsonValue.AsBool(JsonValue.Get(rule, "scopeComplete")) != true)
+                parts.Add(Truth.Unknown);
 
             // A service rule: the hosting svchost cannot be tied to the service
             // (no PIDs of services in the snapshot) unless the port is explicit.

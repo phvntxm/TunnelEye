@@ -256,6 +256,10 @@ namespace Argus.Core.Tests
 
         [Theory]
         [InlineData("{\"protocol\":\"TCP\",\"localPorts\":[\"7680\"],\"program\":\"C:\\\\Windows\\\\system32\\\\svchost.exe\",\"localAddresses\":[\"Any\"],\"remoteAddresses\":[\"Any\"]}", Truth.True)]
+        [InlineData("{\"protocol\":\"Any\",\"localPorts\":[\"Any\"],\"program\":\"Any\",\"package\":null,\"localAddresses\":[\"Any\"],\"remoteAddresses\":[\"Any\"]}", Truth.Unknown)]
+        [InlineData("{\"protocol\":\"Any\",\"localPorts\":[\"Any\"],\"program\":\"Any\",\"packageFamilyName\":\"Example.App_family\",\"localAddresses\":[\"Any\"],\"remoteAddresses\":[\"Any\"]}", Truth.False)]
+        [InlineData("{\"protocol\":\"TCP\",\"localPorts\":[\"7680\"],\"program\":\"Any\",\"hasOwnerRestriction\":true,\"localAddresses\":[\"Any\"],\"remoteAddresses\":[\"Any\"]}", Truth.Unknown)]
+        [InlineData("{\"protocol\":\"Any\",\"localPorts\":[\"Any\"],\"program\":\"Any\",\"scopeComplete\":true,\"hasOwnerRestriction\":false,\"localAddresses\":[\"Any\"],\"remoteAddresses\":[\"Any\"]}", Truth.True)]
         [InlineData("{\"protocol\":\"UDP\",\"localPorts\":[\"7680\"],\"program\":\"Any\",\"localAddresses\":[\"Any\"],\"remoteAddresses\":[\"Any\"]}", Truth.False)]
         [InlineData("{\"protocol\":\"TCP\",\"localPorts\":[\"7000-8000\"],\"program\":\"Any\",\"localAddresses\":[\"Any\"],\"remoteAddresses\":[\"Any\"]}", Truth.True)]
         [InlineData("{\"protocol\":\"TCP\",\"localPorts\":[\"RPC\"],\"program\":\"Any\",\"localAddresses\":[\"Any\"],\"remoteAddresses\":[\"Any\"]}", Truth.False)]
