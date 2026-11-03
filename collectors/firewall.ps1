@@ -168,10 +168,24 @@ function Group-ByInstanceId {
     $map
 }
 
+function Get-FirewallRuleScope {
+    param($Rule, $ApplicationFilter, $ServiceFilter)
+    $owner = $Rule.PSObject.Properties['Owner']
+    $family = $Rule.PSObject.Properties['PackageFamilyName']
+    @{
+        service = if ($null -ne $ServiceFilter -and $ServiceFilter.Service -and $ServiceFilter.Service -ne 'Any') { [string]$ServiceFilter.Service } else { $null }
+        package = if ($null -ne $ApplicationFilter -and $ApplicationFilter.Package) { [string]$ApplicationFilter.Package } else { $null }
+        packageFamilyName = if ($null -ne $family -and $family.Value) { [string]$family.Value } else { $null }
+        # Retain the restriction, never the account SID itself.
+        hasOwnerRestriction = if ($null -ne $owner) { ![string]::IsNullOrEmpty([string]$owner.Value) } else { $null }
+        scopeComplete = $null -ne $ApplicationFilter -and $null -ne $ServiceFilter -and $null -ne $owner -and $null -ne $family
+    }
+}
+
 # Dot-sourcing (tests) loads the functions without collecting.
 if ($MyInvocation.InvocationName -eq '.') { return }
 
-Invoke-Collector -Module 'firewall' -Version '1.0.0' -OutFile $OutFile -ScriptBlock {
+Invoke-Collector -Module 'firewall' -Version '1.1.0' -OutFile $OutFile -ScriptBlock {
     param($ctx)
 
     $profiles = Invoke-Source -Context $ctx -Source 'Get-NetFirewallProfile' -AsList -ScriptBlock {
@@ -204,6 +218,9 @@ Invoke-Collector -Module 'firewall' -Version '1.0.0' -OutFile $OutFile -ScriptBl
     $portFilters = Invoke-Source -Context $ctx -Source 'Get-NetFirewallPortFilter' -AsList -ScriptBlock {
         Get-NetFirewallPortFilter -All -PolicyStore ActiveStore
     }
+    $serviceFilters = Invoke-Source -Context $ctx -Source 'Get-NetFirewallServiceFilter' -AsList -ScriptBlock {
+        Get-NetFirewallServiceFilter -All -PolicyStore ActiveStore
+    }
     $addressFilters = Invoke-Source -Context $ctx -Source 'Get-NetFirewallAddressFilter' -AsList -ScriptBlock {
         Get-NetFirewallAddressFilter -All -PolicyStore ActiveStore
     }
@@ -213,11 +230,13 @@ Invoke-Collector -Module 'firewall' -Version '1.0.0' -OutFile $OutFile -ScriptBl
         $appById = Group-ByInstanceId $appFilters
         $portById = Group-ByInstanceId $portFilters
         $addressById = Group-ByInstanceId $addressFilters
+        $serviceById = Group-ByInstanceId $serviceFilters
         $rules = @($rawRules | Sort-Object Name | ForEach-Object {
                 $r = $_
                 $app = $appById[$r.InstanceID]
                 $port = $portById[$r.InstanceID]
                 $address = $addressById[$r.InstanceID]
+                $scope = Get-FirewallRuleScope $r $app $serviceById[$r.InstanceID]
                 [ordered]@{
                     name                  = Hide-UserProfilePath $r.Name
                     displayName           = Hide-UserProfilePath $r.DisplayName
@@ -231,8 +250,11 @@ Invoke-Collector -Module 'firewall' -Version '1.0.0' -OutFile $OutFile -ScriptBl
                     primaryStatus         = $r.PrimaryStatus
                     # Filters missing from a partial read are null, not "any".
                     program               = if ($null -ne $app) { Hide-UserProfilePath $app.Program } else { $null }
-                    service               = if ($null -ne $app -and $app.Service -and $app.Service -ne 'Any') { $app.Service } else { $null }
-                    package               = if ($null -ne $app -and $app.Package) { $app.Package } else { $null }
+                    service               = $scope.service
+                    package               = $scope.package
+                    packageFamilyName     = $scope.packageFamilyName
+                    hasOwnerRestriction   = $scope.hasOwnerRestriction
+                    scopeComplete         = $scope.scopeComplete
                     protocol              = if ($null -ne $port) { [string]$port.Protocol } else { $null }
                     localPorts            = if ($null -ne $port) { ConvertTo-StringList $port.LocalPort } else { $null }
                     remotePorts           = if ($null -ne $port) { ConvertTo-StringList $port.RemotePort } else { $null }

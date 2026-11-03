@@ -13,7 +13,7 @@
 | Секция | Источник (`errors[].source`) |
 | --- | --- |
 | `profiles` | `Get-NetFirewallProfile -PolicyStore ActiveStore` |
-| `rules` | `Get-NetFirewallRule -PolicyStore ActiveStore` + `Get-NetFirewallApplicationFilter`, `Get-NetFirewallPortFilter`, `Get-NetFirewallAddressFilter` (`-All`, соединяются по `InstanceID`) |
+| `rules` | `Get-NetFirewallRule -PolicyStore ActiveStore` + `Get-NetFirewallApplicationFilter`, `Get-NetFirewallPortFilter`, `Get-NetFirewallAddressFilter`, `Get-NetFirewallServiceFilter` (`-All`, соединяются по `InstanceID`) |
 | `products` | `SecurityCenter2 FirewallProduct` (CIM `root/SecurityCenter2`) |
 | `services` | `Win32_Service` (`mpssvc`, `BFE`) |
 | `wfp` | `netsh wfp show state` (только с правами админа) → `wfpstate.xml` |
@@ -47,7 +47,10 @@
 | `policyStoreSourceType` | string | `Local` \| `GroupPolicy` \| `Dynamic` \| … |
 | `primaryStatus` | string | `OK` \| `Inactive` \| `Error` |
 | `program` | string \| null | `Any`, `System` или путь (папка профиля скрыта); `null` — фильтр приложения не прочитан |
-| `service`, `package` | string \| null | Служба; SID пакета (AppContainer) |
+| `service`, `package` | string \| null | Служба из ServiceFilter; SID пакета из ApplicationFilter |
+| `packageFamilyName` | string \| null | Семейство приложения из NetFirewallRule; добавлено в 1.1.0 |
+| `hasOwnerRestriction` | bool \| null | Есть ограничение владельцем; сам SID/имя не сохраняются; null — поле недоступно |
+| `scopeComplete` | bool | Прочитаны фильтры приложения/службы и метаданные области Owner/PackageFamilyName |
 | `protocol` | string \| null | `TCP`, `UDP`, `Any`, номер |
 | `localPorts`, `remotePorts` | string[] \| null | `Any`, номера, диапазоны, `RPC`, … |
 | `localAddresses`, `remoteAddresses` | string[] \| null | Личные данные: маскируются при экспорте |
@@ -119,3 +122,6 @@
 `providerContextCount` — int, число контекстов провайдеров (IPsec и VPN-политики).
 
 Объём: тысяча с лишним фильтров WFP — порядка 1 МБ JSON; это основная часть модуля под админом.
+
+
+Версия firewall 1.1.0 сохраняет область пакетных/пользовательских правил, даже когда ApplicationFilter.Package пуст. Service читается из Get-NetFirewallServiceFilter, не из ApplicationFilter. В старых снимках общий Program=Any/LocalPort=Any без подтверждения scopeComplete не считается доказательством разрешения для всех процессов. Имя правила не используется для угадывания его области.

@@ -11,6 +11,28 @@ $wfpFixture = Join-Path $PSScriptRoot 'fixtures\wfpstate-sample.xml'
 Describe 'firewall helpers' {
     . $collector
 
+    It 'reads service scope from the service filter and retains package family without owner SID' {
+        $rule = [pscustomobject]@{ Owner = 'ExampleOwner'; PackageFamilyName = 'Example.App_family' }
+        $app = [pscustomobject]@{ Program = 'Any'; Package = $null; Service = 'WrongSource' }
+        $service = [pscustomobject]@{ Service = 'ExampleService' }
+        $scope = Get-FirewallRuleScope $rule $app $service
+        $scope.service | Should Be 'ExampleService'
+        $scope.packageFamilyName | Should Be 'Example.App_family'
+        $scope.hasOwnerRestriction | Should Be $true
+        $scope.scopeComplete | Should Be $true
+        ($scope | ConvertTo-Json) | Should Not Match 'ExampleOwner|WrongSource'
+    }
+    It 'distinguishes unrestricted scope from unread scope' {
+        $rule = [pscustomobject]@{ Owner = $null; PackageFamilyName = $null }
+        $app = [pscustomobject]@{ Package = $null }
+        $scope = Get-FirewallRuleScope $rule $app ([pscustomobject]@{ Service = 'Any' })
+        $scope.hasOwnerRestriction | Should Be $false
+        $scope.scopeComplete | Should Be $true
+        $scope = Get-FirewallRuleScope ([pscustomobject]@{}) $app $null
+        $scope.hasOwnerRestriction | Should Be $null
+        $scope.scopeComplete | Should Be $false
+    }
+
     It 'splits flag enums into lists' {
         (ConvertTo-FlagList 'Domain, Private') -join '|' | Should Be 'Domain|Private'
         , (ConvertTo-FlagList 'Any') | Should BeOfType [object[]]
